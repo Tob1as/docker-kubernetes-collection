@@ -1,0 +1,78 @@
+#
+# Docker Compose
+# created 15.11.2016 by T.H.
+# PASSWORD: root/postgres:passw0rd (PLEASE CHANGE THE DEFAULT PASSWORDS!)
+# Todo:	
+#	sudo mkdir -p /srv/tobias/{mysql,postgresql,geoserver,nginx,ssl,html}
+# 	docker-compose up -d
+#
+
+tobias-mysql:
+  image: mysql/mysql-server:5.6
+  environment:
+    MYSQL_ROOT_PASSWORD: passw0rd
+  #ports:
+  #  - "3306:3306"
+  volumes:
+    - /srv/tobias/mysql:/var/lib/mysql
+
+tobias-phpmyadmin:
+  image: phpmyadmin/phpmyadmin:latest
+  links:
+    - "tobias-mysql:db"
+  #ports:
+  #  - "8306:80"
+
+tobias-postgresql:
+  image: mdillon/postgis:latest
+  environment:
+    POSTGRES_PASSWORD: passw0rd
+  #ports:
+  #  - "5432:5432"
+  volumes:
+    - /srv/tobias/postgresql:/var/lib/postgresql/data
+
+tobias-phppgadmin:
+  image: superkul/phppgadmin:latest
+  links:
+    - "tobias-postgresql:postgres"
+  #ports:
+  #  - "8432:80"
+
+tobias-geoserver:
+  image: kartoza/geoserver:latest
+  links:
+    - "tobias-postgresql:postgis"
+  ports:
+    - "8088:8080"
+  volumes:
+    - /srv/tobias/geoserver:/opt/geoserver/data_dir
+
+tobias-phpapache:
+  #image: php:5.6-apache
+  image: phpapache:5.6
+  links:
+    - "tobias-mysql:mysql"
+    - "tobias-postgresql:postgresql"
+  #ports:
+  #  - "80:80"
+  #  - "443:443"
+  volumes:
+    - /srv/tobias/html:/var/www/html
+    #- /etc/localtime:/etc/localtime:ro
+    #- /srv/tobias/ssl:/etc/ssl:ro
+
+tobias-nginx:
+  image: nginx:latest
+  ports:
+    - "80:80"
+    - "443:443"
+  links:
+    - "tobias-phpmyadmin:phpmyadmin"
+    - "tobias-phppgadmin:phppgadmin"
+    - "tobias-geoserver:geoserver"
+    - "tobias-phpapache:phpapache"
+  volumes:
+    - /srv/tobias/nginx:/etc/nginx/conf.d:ro
+    - /srv/tobias/ssl:/etc/nginx/ssl:ro
+    - /srv/tobias/html:/var/www/html
