@@ -50,7 +50,7 @@ tobias-geoserver:
 
 tobias-phpapache:
   #image: php:5.6-apache
-  image: phpapache:5.6
+  image: php:5.6-apache-extend
   links:
     - "tobias-mysql:mysql"
     - "tobias-postgresql:postgresql"
