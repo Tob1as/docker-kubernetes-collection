@@ -4,9 +4,9 @@
 # PASSWORD: root/postgres:passw0rd (PLEASE CHANGE THE DEFAULT PASSWORDS!)
 # Todo:	
 #	Install Docker-Compose https://docs.docker.com/compose/install/
-#	sudo mkdir -p /home/pi/{html,.ssl}
-#	sudo mkdir -p /home/pi/.config/nginx
-#	sudo mkdir -p /home/pi/.local/share/{postgresql,mysql}
+#	mkdir -p /home/pi/{html,.ssl}
+#	mkdir -p /home/pi/.config/nginx
+#	mkdir -p /home/pi/.local/share/{postgresql,mysql}
 # 	docker-compose up -d
 #
 
