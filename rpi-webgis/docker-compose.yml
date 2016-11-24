@@ -1,0 +1,54 @@
+#
+# Docker Compose
+# created 24.11.2016 by T.H.
+# PASSWORD: root/postgres:passw0rd (PLEASE CHANGE THE DEFAULT PASSWORDS!)
+# Todo:	
+#	Install Docker-Compose https://docs.docker.com/compose/install/
+#	sudo mkdir -p /home/pi/{html,.ssl}
+#	sudo mkdir -p /home/pi/.config/nginx
+#	sudo mkdir -p /home/pi/.local/share/{postgresql,mysql}
+# 	docker-compose up -d
+#
+
+pi-mysql:
+  image: tobi312/rpi-mysql:5.5
+  environment:
+    MYSQL_ROOT_PASSWORD: passw0rd
+  #ports:
+  #  - "3306:3306"
+  volumes:
+    - /home/pi/.local/share/mysql:/var/lib/mysql
+
+pi-postgresql:
+  image: tobi312/rpi-postgresql-postgis:9.4-2.1
+  environment:
+    POSTGRES_PASSWORD: passw0rd
+  #ports:
+  #  - "5432:5432"
+  volumes:
+    - /home/pi/.local/share/postgresql:/var/lib/postgresql/data
+
+pi-phpapache:
+  image: tobi312/rpi-php:5.6-apache-extend
+  links:
+    - "pi-mysql:mysql"
+    - "pi-postgresql:postgresql"
+  #ports:
+  #  - "80:80"
+  #  - "443:443"
+  volumes:
+    - /home/pi/html:/var/www/html
+    #- /etc/localtime:/etc/localtime:ro
+    #- /home/pi/.ssl:/etc/ssl:ro
+
+pi-nginx:
+  image: nginx:latest
+  ports:
+    - "80:80"
+    - "443:443"
+  links:
+    - "pi-phpapache:phpapache"
+  volumes:
+    - /home/pi/.config/nginx:/etc/nginx/conf.d:ro
+    - /home/pi/.ssl:/etc/nginx/ssl:ro
+    - /home/pi/html:/var/www/html
