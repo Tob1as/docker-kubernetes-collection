@@ -12,7 +12,7 @@ Use:
 * Optional (SSL): 
 	* ``` openssl genrsa -out ssl.key 4096 ```
 	* ``` openssl req -new -key ssl.key -out ssl.csr ```
-	* ``` openssl x509 -req -days 1825 -in ssl.csr -signkey ssl.key -out ssl.crt ```
+	* ``` openssl x509 -req -days 1825 -in ssl.csr -signkey ssl.key -out ssl.crt -sha256 ```
 	* ``` sudo mv ssl.* /home/pi/.ssl/ ```
 * ``` sudo cp default.conf /home/pi/.config/nginx/ ``` 
 * ``` docker-compose up -d ```  
