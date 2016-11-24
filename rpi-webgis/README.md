@@ -1,22 +1,19 @@
-# WebGIS on x86_64 
-* https://hub.docker.com/_/mysql/
-* https://hub.docker.com/r/phpmyadmin/phpmyadmin/
-* https://hub.docker.com/r/mdillon/postgis/ with https://hub.docker.com/_/postgres/
-* https://hub.docker.com/r/superkul/phppgadmin/
-* https://hub.docker.com/r/kartoza/geoserver/
-* https://hub.docker.com/_/php/
-* https://hub.docker.com/_/nginx/
+# WebGIS on Raspberry Pi / armhf
+* https://github.com/TobiasH87Docker/rpi-mysql
+* https://github.com/TobiasH87Docker/rpi-postgresql-postgis with https://github.com/TobiasH87Docker/rpi-postgresql
+* https://github.com/TobiasH87Docker/rpi-php
+* https://hub.docker.com/r/tobi312/rpi-nginx/
 
 Use:
-* ``` git clone REPOSITORY && docker-compose/webgis/ ```
-* ``` docker build -t php:5.6-apache-extend ../../php/5.6-apache-extend/ ```
+* ``` git clone https://github.com/TobiasH87Docker/docker-compose.git && docker-compose/rpi-webgis/ ```
 * Change Passwords and Settings: ``` nano docker-compose.yml ```
-* ``` sudo mkdir -p /srv/tobias/{mysql,postgresql,geoserver,nginx,ssl,html} ```
+* Edit nginx config (Hostname): ``` nano default.conf ```
+* ``` mkdir -p /home/pi/{html,.ssl} && mkdir -p /home/pi/.config/nginx && mkdir -p /home/pi/.local/share/{postgresql,mysql} ```
 * Optional (SSL): 
 	* ``` openssl genrsa -out ssl.key 4096 ```
 	* ``` openssl req -new -key ssl.key -out ssl.csr ```
 	* ``` openssl x509 -req -days 1825 -in ssl.csr -signkey ssl.key -out ssl.crt ```
-	* ``` sudo mv ssl.* /srv/tobias/ssl/ ```
-* ``` sudo cp default.conf /srv/tobias/nginx/ ``` 
+	* ``` sudo mv ssl.* /home/pi/.ssl/ ```
+* ``` sudo cp default.conf /home/pi/.config/nginx/ ``` 
 * ``` docker-compose up -d ```  
 * http://localhost 
