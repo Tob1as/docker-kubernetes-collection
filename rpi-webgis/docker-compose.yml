@@ -42,7 +42,7 @@ pi-phpapache:
     #- /home/pi/.ssl:/etc/ssl:ro
 
 pi-nginx:
-  image: rpi-nginx:latest
+  image: tobi312/rpi-nginx:latest
   ports:
     - "80:80"
     - "443:443"
