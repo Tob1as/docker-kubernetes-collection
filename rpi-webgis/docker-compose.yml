@@ -1,11 +1,12 @@
 #
 # Docker Compose
-# created 24.11.2016 by T.H.
+# created 14.12.2016 by T.H.
 # PASSWORD: root/postgres:passw0rd (PLEASE CHANGE THE DEFAULT PASSWORDS!)
+# List of timezones: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 # Todo:	
 #	Install Docker-Compose https://docs.docker.com/compose/install/
 #	mkdir -p /home/pi/{html,.ssl}
-#	mkdir -p /home/pi/.config/nginx
+#	mkdir -p /home/pi/.config/{nginx,httpd}
 #	mkdir -p /home/pi/.local/share/{postgresql,mysql}
 # 	docker-compose up -d
 #
@@ -13,6 +14,7 @@
 pi-mysql:
   image: tobi312/rpi-mysql:5.5
   environment:
+    TZ: "Europe/Berlin"
     MYSQL_ROOT_PASSWORD: passw0rd
   ports:
     - "3306:3306"
@@ -22,32 +24,56 @@ pi-mysql:
 pi-postgresql:
   image: tobi312/rpi-postgresql-postgis:9.4-2.1
   environment:
+    TZ: Europe/Berlin
     POSTGRES_PASSWORD: passw0rd
   ports:
     - "5432:5432"
   volumes:
     - /home/pi/.local/share/postgresql:/var/lib/postgresql/data
 
-pi-phpapache:
-  image: tobi312/rpi-php:5.6-apache-extend
+pi-php:
+  image: tobi312/rpi-php:5.6-fpm
+  environment:
+    TZ: "Europe/Berlin"
+    PHP_ERRORS: 1
+    PHP_MEM_LIMIT: 128
+    PHP_POST_MAX_SIZE: 50
+    PHP_UPLOAD_MAX_FILESIZE: 250
+    PHP_MAX_FILE_UPLOADS: 25
   links:
     - "pi-mysql:mysql"
     - "pi-postgresql:postgresql"
-  #ports:
-  #  - "80:80"
-  #  - "443:443"
   volumes:
     - /home/pi/html:/var/www/html
-    #- /etc/localtime:/etc/localtime:ro
-    #- /home/pi/.ssl:/etc/ssl:ro
 
+#pi-httpd:
+#  image: tobi312/rpi-apache2:latest
+#  environment:
+#    TZ: "Europe/Berlin"
+#    ENABLE_PROXY_HTTP: 1
+#    ENABLE_PROXY_HTML: 1
+#    ENABLE_PROXY_FCGI: 1
+#    ENABLE_REWRITE: 1
+#    ENABLE_SSL: 1
+#    ALLOWOVERRIDE: 1
+#  ports:
+#    - "80:80"
+#    - "443:443"
+#  links:
+#    - "pi-php:phphost"
+#  volumes:
+#    #- /home/pi/.config/httpd:/etc/apache2/*
+#    #- /home/pi/.ssl:/etc/ssl/.ssl:ro
+#    - /home/pi/html:/var/www/html
+	
 pi-nginx:
   image: tobi312/rpi-nginx:latest
   ports:
     - "80:80"
     - "443:443"
   links:
-    - "pi-phpapache:phpapache"
+    - "pi-php:phphost"
+#    - "pi-httpd:httpd"
   volumes:
     - /home/pi/.config/nginx:/etc/nginx/conf.d:ro
     - /home/pi/.ssl:/etc/nginx/ssl:ro
