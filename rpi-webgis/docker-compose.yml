@@ -65,7 +65,7 @@ pi-php:
 #    #- /home/pi/.config/httpd:/etc/apache2/*
 #    #- /home/pi/.ssl:/etc/ssl/.ssl:ro
 #    - /home/pi/html:/var/www/html
-	
+
 pi-nginx:
   image: tobi312/rpi-nginx:latest
   ports:
