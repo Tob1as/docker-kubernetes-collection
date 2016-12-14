@@ -67,7 +67,7 @@ pi-php:
 #    - /home/pi/html:/var/www/html
 
 pi-nginx:
-  image: tobi312/rpi-nginx:latest
+  image: tobi312/rpi-nginx:1.6
   ports:
     - "80:80"
     - "443:443"
