@@ -7,12 +7,12 @@
 
 Use:
 * ``` $ git clone https://github.com/TobiasH87Docker/docker-compose.git && docker-compose/rpi-webgis/ ```
-* Change Passwords and Settings: ``` nano docker-compose.yml ```
-* Edit nginx config (e.g. Hostname): ``` nano default.conf ```
-* ``` mkdir -p /home/pi/{html,.ssl} && mkdir -p /home/pi/.config/nginx && mkdir -p /home/pi/.local/share/{postgresql,mysql} ```
+* ``` $ mkdir -p /home/pi/{html,.ssl} && mkdir -p /home/pi/.config/{nginx,httpd} && mkdir -p /home/pi/.local/share/{postgresql,mysql} ```
 * Optional (SSL): 
 	* ``` $ openssl req -x509 -newkey rsa:4086 -subj "/C=/ST=/L=/O=/CN=localhost" -keyout "ssl.key" -out "ssl.crt" -days 3650 -nodes -sha256 ```
 	* ``` $ mv ssl.* /home/pi/.ssl/ ```
+* Edit nginx config (e.g. Hostname): ``` nano default.conf ```
 * ``` $ sudo cp default.conf /home/pi/.config/nginx/ ``` 
+* Change Passwords and Settings: ``` $ nano docker-compose.yml ```
 * ``` $ docker-compose up -d ```  
 * http://localhost
