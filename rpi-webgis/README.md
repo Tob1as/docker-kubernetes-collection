@@ -11,7 +11,7 @@ Use:
 * Optional (SSL): 
 	* ``` $ openssl req -x509 -newkey rsa:4086 -subj "/C=/ST=/L=/O=/CN=localhost" -keyout "ssl.key" -out "ssl.crt" -days 3650 -nodes -sha256 ```
 	* ``` $ mv ssl.* /home/pi/.ssl/ ```
-* Edit nginx config (e.g. Hostname): ``` nano default.conf ```
+* Edit nginx config (e.g. Hostname): ``` $ nano default.conf ```
 * ``` $ sudo cp default.conf /home/pi/.config/nginx/ ``` 
 * Change Passwords and Settings: ``` $ nano docker-compose.yml ```
 * ``` $ docker-compose up -d ```  
