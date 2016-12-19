@@ -45,6 +45,7 @@ pi-php:
     - "pi-postgresql:postgresql"
   volumes:
     - /home/pi/html:/var/www/html
+    #- /home/pi/Music:/Music
 
 pi-httpd:
   image: tobi312/rpi-apache2:latest
@@ -65,6 +66,7 @@ pi-httpd:
     #- /home/pi/.config/httpd:/etc/apache2/*
     #- /home/pi/.ssl:/etc/ssl/.ssl:ro
     - /home/pi/html:/var/www/html
+    #- /home/pi/Music:/Music
 
 pi-nginx:
   image: tobi312/rpi-nginx:1.10
