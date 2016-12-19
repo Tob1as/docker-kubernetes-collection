@@ -46,25 +46,25 @@ pi-php:
   volumes:
     - /home/pi/html:/var/www/html
 
-#pi-httpd:
-#  image: tobi312/rpi-apache2:latest
-#  environment:
-#    TZ: "Europe/Berlin"
-#    ENABLE_PROXY_HTTP: 1
-#    ENABLE_PROXY_HTML: 1
-#    ENABLE_PROXY_FCGI: 1
-#    ENABLE_REWRITE: 1
-#    ENABLE_SSL: 1
-#    ALLOWOVERRIDE: 1
-#  ports:
-#    - "80:80"
-#    - "443:443"
-#  links:
-#    - "pi-php:phphost"
-#  volumes:
-#    #- /home/pi/.config/httpd:/etc/apache2/*
-#    #- /home/pi/.ssl:/etc/ssl/.ssl:ro
-#    - /home/pi/html:/var/www/html
+pi-httpd:
+  image: tobi312/rpi-apache2:latest
+  environment:
+    TZ: "Europe/Berlin"
+    ENABLE_PROXY_HTTP: 1
+    ENABLE_PROXY_HTML: 1
+    ENABLE_PROXY_FCGI: 1
+    ENABLE_REWRITE: 1
+    ENABLE_SSL: 1
+    ALLOWOVERRIDE: 1
+  #ports:
+  #  - "80:80"
+  #  - "443:443"
+  links:
+    - "pi-php:phphost"
+  volumes:
+    #- /home/pi/.config/httpd:/etc/apache2/*
+    #- /home/pi/.ssl:/etc/ssl/.ssl:ro
+    - /home/pi/html:/var/www/html
 
 pi-nginx:
   image: tobi312/rpi-nginx:1.6
@@ -72,8 +72,8 @@ pi-nginx:
     - "80:80"
     - "443:443"
   links:
-    - "pi-php:phphost"
-#    - "pi-httpd:httpd"
+    #- "pi-php:phphost"
+    - "pi-httpd:httpd"
   volumes:
     - /home/pi/.config/nginx:/etc/nginx/conf.d:ro
     - /home/pi/.ssl:/etc/nginx/ssl:ro
