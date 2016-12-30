@@ -81,4 +81,4 @@ tobias-nginx:
   volumes:
     - /srv/webgis/nginx:/etc/nginx/conf.d:ro
     - /srv/webgis/ssl:/etc/nginx/ssl:ro
-    - /srv/webgis/html:/var/www/html:ro
+    #- /srv/webgis/html:/var/www/html:ro
