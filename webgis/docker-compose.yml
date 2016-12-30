@@ -18,6 +18,8 @@ tobias-mysql:
 
 tobias-phpmyadmin:
   image: phpmyadmin/phpmyadmin:latest
+  environment:
+    PMA_ABSOLUTE_URI: http://localhost/phpMyAdmin/
   links:
     - "tobias-mysql:db"
   #ports:
