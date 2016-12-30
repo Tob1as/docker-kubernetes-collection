@@ -50,7 +50,13 @@ tobias-geoserver:
 
 tobias-phpapache:
   #image: php:5.6-apache
-  image: php:5.6-apache-extend
+  image: tobi312/php:5.6-apache
+  environment:
+    TZ: "Europe/Berlin"
+    PHP_ERRORS: 1
+    PHP_UPLOAD_MAX_FILESIZE: 250
+    ENABLE_REWRITE: 1
+    ENABLE_SSL: 1
   links:
     - "tobias-mysql:mysql"
     - "tobias-postgresql:postgresql"
@@ -75,4 +81,4 @@ tobias-nginx:
   volumes:
     - /srv/tobias/nginx:/etc/nginx/conf.d:ro
     - /srv/tobias/ssl:/etc/nginx/ssl:ro
-    - /srv/tobias/html:/var/www/html
+    - /srv/tobias/html:/var/www/html:ro
