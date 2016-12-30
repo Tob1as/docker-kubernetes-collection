@@ -1,11 +1,11 @@
 # WebGIS on x86_64 
-* https://hub.docker.com/_/mysql/
-* https://hub.docker.com/r/phpmyadmin/phpmyadmin/
-* https://hub.docker.com/r/mdillon/postgis/ with https://hub.docker.com/_/postgres/
-* https://hub.docker.com/r/superkul/phppgadmin/
-* https://hub.docker.com/r/kartoza/geoserver/
-* https://hub.docker.com/r/tobi312/php/ with https://hub.docker.com/_/php/
-* https://hub.docker.com/_/nginx/
+* MySQL: https://hub.docker.com/_/mysql/
+* phpMyAdmin: https://hub.docker.com/r/phpmyadmin/phpmyadmin/
+* PostgreSQL with PostGIS: https://hub.docker.com/r/mdillon/postgis/ with https://hub.docker.com/_/postgres/
+* phpPgAdmin: https://hub.docker.com/r/superkul/phppgadmin/
+* GeoServer (with Tomcat): https://hub.docker.com/r/kartoza/geoserver/ with https://hub.docker.com/_/tomcat/
+* PHP (with Apache2): https://hub.docker.com/r/tobi312/php/ with https://hub.docker.com/_/php/
+* NGNIX (as Proxy): https://hub.docker.com/_/nginx/
 
 Use (Linux):
 * ``` $ git clone https://github.com/TobiasH87Docker/docker-compose.git && docker-compose/webgis/ ```
