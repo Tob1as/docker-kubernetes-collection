@@ -9,7 +9,7 @@
 
 Use (Linux):
 * ``` $ git clone https://github.com/TobiasH87Docker/docker-compose.git && docker-compose/webgis/ ```
-* Change Passwords and Settings: ``` nano docker-compose.yml ```
+* Change Passwords and Settings: ``` $ nano docker-compose.yml ```
 * ``` $ sudo mkdir -p /srv/webgis/{mysql,postgresql,geoserver,nginx,ssl,html} ```
 * Optional (SSL): 
 	* ``` $ openssl req -x509 -newkey rsa:4086 -subj "/C=/ST=/L=/O=/CN=localhost" -keyout "ssl.key" -out "ssl.crt" -days 3650 -nodes -sha256 ```
