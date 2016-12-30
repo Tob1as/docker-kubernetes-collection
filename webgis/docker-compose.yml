@@ -44,7 +44,7 @@ tobias-geoserver:
   links:
     - "tobias-postgresql:postgis"
   ports:
-    - "8088:8080"
+    - "8080:8080"
   volumes:
     - /srv/webgis/geoserver:/opt/geoserver/data_dir
 
