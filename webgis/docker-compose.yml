@@ -1,13 +1,13 @@
 #
 # Docker Compose
-# created 15.11.2016 by T.H.
+# created/edit 31.12.2016 by T.H.
 # PASSWORD: root/postgres:passw0rd (PLEASE CHANGE THE DEFAULT PASSWORDS!)
 # Todo:	
 #	sudo mkdir -p /srv/webgis/{mysql,postgresql,geoserver,nginx,ssl,html}
 # 	sudo docker-compose up -d
 #
 
-tobias-mysql:
+webgis-mysql:
   image: mysql/mysql-server:5.6
   environment:
     MYSQL_ROOT_PASSWORD: passw0rd
@@ -16,16 +16,16 @@ tobias-mysql:
   volumes:
     - /srv/webgis/mysql:/var/lib/mysql
 
-tobias-phpmyadmin:
-  image: phpmyadmin/phpmyadmin:latest
-  environment:
-    PMA_ABSOLUTE_URI: http://localhost/phpMyAdmin/
-  links:
-    - "tobias-mysql:db"
-  #ports:
-  #  - "8306:80"
+#webgis-phpmyadmin:
+#  image: phpmyadmin/phpmyadmin:latest
+#  environment:
+#    PMA_ABSOLUTE_URI: http://localhost/phpMyAdmin/
+#  links:
+#    - "webgis-mysql:db"
+#  #ports:
+#  #  - "8306:80"
 
-tobias-postgresql:
+webgis-postgresql:
   #image: postgres:latest
   image: mdillon/postgis:latest
   environment:
@@ -35,23 +35,23 @@ tobias-postgresql:
   volumes:
     - /srv/webgis/postgresql:/var/lib/postgresql/data
 
-tobias-phppgadmin:
-  image: superkul/phppgadmin:latest
-  links:
-    - "tobias-postgresql:postgres"
-  #ports:
-  #  - "8432:80"
+#webgis-phppgadmin:
+#  image: superkul/phppgadmin:latest
+#  links:
+#    - "webgis-postgresql:postgres"
+#  #ports:
+#  #  - "8432:80"
 
-tobias-geoserver:
+webgis-geoserver:
   image: kartoza/geoserver:latest
   links:
-    - "tobias-postgresql:postgis"
+    - "webgis-postgresql:postgis"
   ports:
     - "8080:8080"
   volumes:
     - /srv/webgis/geoserver:/opt/geoserver/data_dir
 
-tobias-phpapache:
+webgis-phpapache:
   #image: php:5.6-apache
   image: tobi312/php:5.6-apache
   environment:
@@ -62,8 +62,8 @@ tobias-phpapache:
     ENABLE_SSL: 1
     ALLOWOVERRID: 1
   links:
-    - "tobias-mysql:mysql"
-    - "tobias-postgresql:postgresql"
+    - "webgis-mysql:mysql"
+    - "webgis-postgresql:postgresql"
   #ports:
   #  - "80:80"
   #  - "443:443"
@@ -72,16 +72,16 @@ tobias-phpapache:
     #- /etc/localtime:/etc/localtime:ro
     #- /srv/webgis/ssl:/etc/ssl:ro
 
-tobias-nginx:
+webgis-nginx:
   image: nginx:latest
   ports:
     - "80:80"
     - "443:443"
   links:
-    - "tobias-phpmyadmin:phpmyadmin"
-    - "tobias-phppgadmin:phppgadmin"
-    - "tobias-geoserver:geoserver"
-    - "tobias-phpapache:phpapache"
+    #- "webgis-phpmyadmin:phpmyadmin"
+    #- "webgis-phppgadmin:phppgadmin"
+    - "webgis-geoserver:geoserver"
+    - "webgis-phpapache:phpapache"
   volumes:
     - /srv/webgis/nginx:/etc/nginx/conf.d:ro
     - /srv/webgis/ssl:/etc/nginx/ssl:ro

@@ -15,4 +15,7 @@ Use:
 * ``` $ cp default.conf /home/pi/.config/nginx/ ``` 
 * Change Passwords and Settings: ``` $ nano docker-compose.yml ```
 * ``` $ sudo docker-compose up -d ```  
+* Optional (phpMyAdmin+phpPgAdmin+adminer manually installation):
+	* Change path and check current version numbers: ``` $ nano phpApps.sh ```
+	* ``` $ chmod +x phpApps.sh && ./phpApps.sh ```
 * http://localhost
