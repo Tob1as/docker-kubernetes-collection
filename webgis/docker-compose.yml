@@ -26,6 +26,7 @@ tobias-phpmyadmin:
   #  - "8306:80"
 
 tobias-postgresql:
+  #image: postgres:latest
   image: mdillon/postgis:latest
   environment:
     POSTGRES_PASSWORD: passw0rd
