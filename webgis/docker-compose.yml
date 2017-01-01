@@ -61,6 +61,7 @@ webgis-phpapache:
     ENABLE_REWRITE: 1
     ENABLE_SSL: 1
     ALLOWOVERRID: 1
+    REMOTEIP: 1
   links:
     - "webgis-mysql:mysql"
     - "webgis-postgresql:postgresql"
