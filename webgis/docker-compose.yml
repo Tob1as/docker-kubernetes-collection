@@ -60,7 +60,6 @@ webgis-phpapache:
     PHP_UPLOAD_MAX_FILESIZE: 250
     ENABLE_REWRITE: 1
     ENABLE_SSL: 1
-    ALLOWOVERRIDE: 1
     REMOTEIP: 1
   links:
     - "webgis-mysql:mysql"
