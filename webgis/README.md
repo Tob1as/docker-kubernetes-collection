@@ -17,10 +17,8 @@ Use (Linux):
 * ``` $ sudo cp default.conf /srv/webgis/nginx/ ``` 
 * ``` $ sudo docker-compose up -d ```
 * Optional (MySQL settings for root to login with phpMyAdmin):
-	* ``` $ sudo docker exec -it your-mysql-container bash ```
-	* ``` $ mysql -u root -p ```
+	* ``` $ docker exec -it some-mysql-container sh -c 'exec mysql -uroot -p"$MYSQL_ROOT_PASSWORD"' ```
 	* ``` $ GRANT ALL PRIVILEGES ON * . * TO 'root'@'%' IDENTIFIED BY 'YOUR-PASSWORD' WITH GRANT OPTION;FLUSH PRIVILEGES;\q; ```
-	* ``` $ exit ```
 * Optional (phpMyAdmin+phpPgAdmin+adminer manually installation instead of docker):
 	* Change path and check current version numbers: ``` $ nano phpApps.sh ```
 	* ``` $ chmod +x phpApps.sh && sudo ./phpApps.sh ```
