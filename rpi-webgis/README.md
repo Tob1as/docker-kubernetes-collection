@@ -14,7 +14,7 @@ Use:
 * Edit nginx config (e.g. Hostname): ``` $ nano default.conf ```
 * ``` $ cp default.conf /home/pi/.config/nginx/ ``` 
 * Change Passwords and Settings: ``` $ nano docker-compose.yml ```
-* ``` $ sudo docker-compose up -d ```  
+* ``` $ sudo docker-compose up -d ``` (Install docker-compose for Pi see here: https://github.com/hypriot/arm-compose) 
 * Optional (phpMyAdmin+phpPgAdmin+adminer manually installation):
 	* Change path and check current version numbers: ``` $ nano phpApps.sh ```
 	* ``` $ chmod +x phpApps.sh && ./phpApps.sh ```

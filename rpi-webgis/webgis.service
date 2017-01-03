@@ -1,0 +1,18 @@
+[Unit]
+Description=WebGIS
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+RestartSec=10
+Restart=always
+User=pi
+
+Environment="PROJECT_PATH=/home/pi/Tools"
+#WorkingDirectory=/home/pi/Tools
+ExecStartPre=/usr/local/bin/docker-compose -f "${PROJECT_PATH}/docker-compose.yml" pull
+ExecStart=/usr/local/bin/docker-compose --file "${PROJECT_PATH}/docker-compose.yml" up
+ExecStop=/usr/local/bin/docker-compose  --file "${PROJECT_PATH}/docker-compose.yml" stop
+
+[Install]
+WantedBy=docker.service
