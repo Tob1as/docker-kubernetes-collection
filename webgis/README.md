@@ -15,7 +15,7 @@ Use (Linux):
 	* ``` $ openssl req -x509 -newkey rsa:4086 -subj "/C=/ST=/L=/O=/CN=localhost" -keyout "ssl.key" -out "ssl.crt" -days 3650 -nodes -sha256 ```
 	* ``` $ sudo mv ssl.* /srv/webgis/ssl/ ```
 * ``` $ sudo cp default.conf /srv/webgis/nginx/ ``` 
-* ``` $ sudo docker-compose up -d ```
+* ``` $ sudo docker-compose up -d ``` (Install docker-compose see here: https://docs.docker.com/compose/install/) 
 * Optional (MySQL settings for root to login with phpMyAdmin):
 	* ``` $ docker exec -it some-mysql-container sh -c 'exec mysql -uroot -p"$MYSQL_ROOT_PASSWORD"' ```
 	* ``` $ GRANT ALL PRIVILEGES ON * . * TO 'root'@'%' IDENTIFIED BY 'YOUR-PASSWORD' WITH GRANT OPTION;FLUSH PRIVILEGES;\q; ```
