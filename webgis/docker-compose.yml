@@ -1,89 +1,95 @@
 #
 # Docker Compose
-# created/edit 31.12.2016 by T.H.
-# PASSWORD: root/postgres:passw0rd (PLEASE CHANGE THE DEFAULT PASSWORDS!)
-# List of timezones: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+# created 02.08.2017 by T.H.
 # Todo:	
-#	sudo mkdir -p /srv/webgis/{mysql,postgresql,geoserver,nginx,ssl,html}
+#	Change PASSWORD: root/postgres:passw0rd (PLEASE CHANGE THE DEFAULT PASSWORDS!)
+#	Change Domain and E-Mail for Lets Encrypt
+#	sudo mkdir -p /srv/webgis/{mysql,postgresql,geoserver,nginx,ssl,html,letsencrypt}
 # 	sudo docker-compose up -d
 #
 
-webgis-mysql:
-  image: mysql/mysql-server:5.6
-  environment:
-    MYSQL_ROOT_PASSWORD: passw0rd
-  #ports:
-  #  - "3306:3306"
-  volumes:
-    - /srv/webgis/mysql:/var/lib/mysql
+version: "2.0"
 
-#webgis-phpmyadmin:
-#  image: phpmyadmin/phpmyadmin:latest
-#  environment:
-#    PMA_ABSOLUTE_URI: http://localhost/phpMyAdmin/
-#  links:
-#    - "webgis-mysql:db"
-#  #ports:
-#  #  - "8306:80"
+services:
 
-webgis-postgresql:
-  #image: postgres:latest
-  image: mdillon/postgis:latest
-  environment:
-    POSTGRES_PASSWORD: passw0rd
-  #ports:
-  #  - "5432:5432"
-  volumes:
-    - /srv/webgis/postgresql:/var/lib/postgresql/data
+  mysql:
+    image: mysql/mysql-server:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: passw0rd
+    #ports:
+    #  - "3306:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
+    networks:
+      webgis:
+        aliases:
+         - db
+  
+  postgresql:
+    #image: postgres:latest
+    image: mdillon/postgis:9.6
+    environment:
+      POSTGRES_PASSWORD: passw0rd
+    #ports:
+    #  - "5432:5432"
+    volumes:
+      - ./postgresql:/var/lib/postgresql/data
+    networks:
+      webgis:
+        aliases:
+         - postgis
+         - postgres
+  
+  geoserver:
+    image: kartoza/geoserver:latest
+    #ports:
+    #  - "8088:8080"
+    volumes:
+      - ./geoserver:/opt/geoserver/data_dir
+  
+  phpapache:
+    #image: php:7.0-apache
+    image: tobi312/php:7.0-apache
+    environment:
+      TZ: "Europe/Berlin"
+      PHP_ERRORS: 1
+      PHP_UPLOAD_MAX_FILESIZE: 250
+      ENABLE_REWRITE: 1
+      ENABLE_SSL: 1
+      REMOTEIP: 1
+    #ports:
+    #  - "8080:80"
+    #  - "8443:443"
+    volumes:
+      - ./html:/var/www/html
+    #  - ./ssl:/etc/ssl:ro
+  
+  letsencrypt:
+    image: quay.io/letsencrypt/letsencrypt:latest
+    command:  bash -c "sleep 6 && certbot certonly --standalone -d __DOMAIN__ -d __DOMAINwithWWW__ --email __YOUR-EMAIL__ --text --agree-tos --server https://acme-v01.api.letsencrypt.org/directory --rsa-key-size 4096 --verbose --renew-by-default --standalone-supported-challenges http-01"
+    entrypoint: ""
+    #ports:
+    #  - "80:80"
+    #  - "443:443"
+    volumes:
+      - ./letsencrypt:/etc/letsencrypt
+    #  - /var/lib/letsencrypt
+    environment:
+      - TERM=xterm
+  
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d:ro
+      - ./letsencrypt:/etc/letsencrypt:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    #  - ./html:/var/www/html:ro
 
-#webgis-phppgadmin:
-#  image: superkul/phppgadmin:latest
-#  links:
-#    - "webgis-postgresql:postgres"
-#  #ports:
-#  #  - "8432:80"
-
-webgis-geoserver:
-  image: kartoza/geoserver:latest
-  links:
-    - "webgis-postgresql:postgis"
-  ports:
-    - "8080:8080"
-  volumes:
-    - /srv/webgis/geoserver:/opt/geoserver/data_dir
-
-webgis-phpapache:
-  #image: php:5.6-apache
-  image: tobi312/php:5.6-apache
-  environment:
-    TZ: "Europe/Berlin"
-    PHP_ERRORS: 1
-    PHP_UPLOAD_MAX_FILESIZE: 250
-    ENABLE_REWRITE: 1
-    ENABLE_SSL: 1
-    REMOTEIP: 1
-  links:
-    - "webgis-mysql:mysql"
-    - "webgis-postgresql:postgresql"
-  #ports:
-  #  - "80:80"
-  #  - "443:443"
-  volumes:
-    - /srv/webgis/html:/var/www/html
-    #- /etc/localtime:/etc/localtime:ro
-    #- /srv/webgis/ssl:/etc/ssl:ro
-
-webgis-nginx:
-  image: nginx:latest
-  ports:
-    - "80:80"
-    - "443:443"
-  links:
-    #- "webgis-phpmyadmin:phpmyadmin"
-    #- "webgis-phppgadmin:phppgadmin"
-    - "webgis-geoserver:geoserver"
-    - "webgis-phpapache:phpapache"
-  volumes:
-    - /srv/webgis/nginx:/etc/nginx/conf.d:ro
-    - /srv/webgis/ssl:/etc/nginx/ssl:ro
-    #- /srv/webgis/html:/var/www/html:ro
+networks:
+  webgis:
+  
+#volumes:
+#  letsencrypt-data:
