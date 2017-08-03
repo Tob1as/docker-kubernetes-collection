@@ -16,6 +16,9 @@ services:
     image: mysql/mysql-server:5.7
     environment:
       MYSQL_ROOT_PASSWORD: passw0rd
+    #  MYSQL_USER: myuser
+    #  MYSQL_PASSWORD: passw0rd
+    #  MYSQL_DATABASE: mydatabase
     #ports:
     #  - "3306:3306"
     volumes:
@@ -39,6 +42,7 @@ services:
         aliases:
          - postgis
          - postgres
+         - pgsql
   
   geoserver:
     image: kartoza/geoserver:latest

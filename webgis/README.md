@@ -1,25 +1,26 @@
 # WebGIS on x86_64 
 * MySQL: https://hub.docker.com/_/mysql/
-	* Optional: phpMyAdmin: https://hub.docker.com/r/phpmyadmin/phpmyadmin/
 * PostgreSQL with PostGIS: https://hub.docker.com/r/mdillon/postgis/ with https://hub.docker.com/_/postgres/
-	* Optional: phpPgAdmin: https://hub.docker.com/r/superkul/phppgadmin/
 * GeoServer (with Tomcat): https://hub.docker.com/r/kartoza/geoserver/ with https://hub.docker.com/_/tomcat/
 * PHP (with Apache2): https://hub.docker.com/r/tobi312/php/ with https://hub.docker.com/_/php/
+* LetsEncrypt (SSL): https://quay.io/repository/letsencrypt/letsencrypt
 * NGNIX (as Proxy): https://hub.docker.com/_/nginx/
 
-Use (Linux):
-* ``` $ git clone https://github.com/TobiasH87Docker/docker-compose.git && docker-compose/webgis/ ```
-* Change Passwords and Settings: ``` $ nano docker-compose.yml ```
-* ``` $ sudo mkdir -p /srv/webgis/{mysql,postgresql,geoserver,nginx,ssl,html} ```
-* Optional (SSL): 
-	* ``` $ openssl req -x509 -newkey rsa:4086 -subj "/C=/ST=/L=/O=/CN=localhost" -keyout "ssl.key" -out "ssl.crt" -days 3650 -nodes -sha256 ```
-	* ``` $ sudo mv ssl.* /srv/webgis/ssl/ ```
-* ``` $ sudo cp default.conf /srv/webgis/nginx/ ``` 
-* ``` $ sudo docker-compose up -d ``` (Install docker-compose see here: https://docs.docker.com/compose/install/) 
+Example (Linux/Debian):
+* Requirement: Installed [Docker](https://docs.docker.com/engine/installation/) ``` sudo curl -sSL https://get.docker.com | sh ``` and [Docker-Compose](https://docs.docker.com/compose/install/) 
+* ``` $ git clone https://github.com/TobiasH87Docker/docker-compose.git && cd ./docker-compose/webgis/ ```
+* ``` $ sudo mkdir -p /srv/webgis/{mysql,postgresql,geoserver,nginx,ssl,html} && sudo cp docker-compose.yml /srv/webgis/ && sudo cp default.conf /srv/webgis/nginx/ && sudo cp phpApps.sh /srv/webgis/ && cd /srv/webgis/ ``` 
+* Change Passwords and Settings (Domain, E-Mail ..): ``` $ nano docker-compose.yml ```
+* Change Domain ``` $ sudo nano ./nginx/default.conf ```
+* SSL-Certificate (temporary, later LetsEncrypt): ``` $ openssl req -x509 -newkey rsa:4086 -subj "/C=/ST=/L=/O=/CN=localhost" -keyout "./ssl/ssl.key" -out "./ssl/ssl.crt" -days 3650 -nodes -sha256 ```
+* Get Images and Start Container: ``` $ sudo docker-compose up -d ```
+* Change own Certificate to LetsEncrypt (uncomment/comment in ssl section): ``` $ sudo nano ./nginx/default.conf ``` and reload nginx ``` sudo docker exec webgis_nginx_1 nginx -s reload ```
+	* update/renew LetsEncrypt Certificate: ``` sudo docker start webgis_letsencrypt_1 && sudo docker exec webgis_nginx_1 nginx -s reload ``` (recommendation: via crontab)
+* Note: use for update images and container: ``` sudo docker-compose down && sudo docker-compose up -d ``` 
 * Optional (MySQL settings for root to login with phpMyAdmin):
-	* ``` $ docker exec -it some-mysql-container sh -c 'exec mysql -uroot -p"$MYSQL_ROOT_PASSWORD"' ```
+	* ``` $ sudo docker exec -it webgis_mysql_1 sh -c 'exec mysql -uroot -p"$MYSQL_ROOT_PASSWORD"' ``` and then in mysql console
 	* ``` $ GRANT ALL PRIVILEGES ON * . * TO 'root'@'%' IDENTIFIED BY 'YOUR-PASSWORD' WITH GRANT OPTION;FLUSH PRIVILEGES;\q; ```
 * Optional (phpMyAdmin+phpPgAdmin+adminer manually installation instead of docker):
-	* Change path and check current version numbers: ``` $ nano phpApps.sh ```
+	* check current version numbers: ``` $ nano phpApps.sh ```
 	* ``` $ chmod +x phpApps.sh && sudo ./phpApps.sh ```
-* http://localhost or https://localhost 
+* Call: http://YOUR-DOMAIN or https://YOUR-DOMAIN 
