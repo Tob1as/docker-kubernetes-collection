@@ -5,7 +5,7 @@
 #	Change PASSWORD: root/postgres:passw0rd (PLEASE CHANGE THE DEFAULT PASSWORDS!)
 #	Change Domain and E-Mail for Lets Encrypt
 #	sudo mkdir -p /srv/webgis/{mysql,postgresql,geoserver,nginx,ssl,html,letsencrypt}
-# 	sudo docker-compose up -d
+#	sudo docker-compose up -d
 #
 
 version: "2.0"
