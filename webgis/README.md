@@ -14,12 +14,12 @@ Example (Linux/Debian):
 * Change Domain ``` $ sudo nano ./nginx/default.conf ```
 * SSL-Certificate (temporary, later LetsEncrypt): ``` $ openssl req -x509 -newkey rsa:4086 -subj "/C=/ST=/L=/O=/CN=localhost" -keyout "./ssl/ssl.key" -out "./ssl/ssl.crt" -days 3650 -nodes -sha256 ```
 * Get Images and Start Container: ``` $ sudo docker-compose up -d ```
-* Change own Certificate to LetsEncrypt (uncomment/comment in ssl section): ``` $ sudo nano ./nginx/default.conf ``` and reload nginx ``` sudo docker exec webgis_nginx_1 nginx -s reload ```
-	* update/renew LetsEncrypt Certificate: ``` sudo docker start webgis_letsencrypt_1 && sudo docker exec webgis_nginx_1 nginx -s reload ``` (recommendation: via crontab)
-* Note: use for update images and container: ``` sudo docker-compose down && sudo docker-compose up -d ``` 
+* Change own Certificate to LetsEncrypt (uncomment/comment in ssl section): ``` $ sudo nano ./nginx/default.conf ``` and reload nginx ``` $ sudo docker exec webgis_nginx_1 nginx -s reload ```
+	* update/renew LetsEncrypt Certificate: ``` $ sudo docker start webgis_letsencrypt_1 && sudo docker exec webgis_nginx_1 nginx -s reload ``` (recommendation: via crontab)
+* Note: use for update images and container: ``` $ sudo docker-compose down && sudo docker-compose up -d ``` 
 * Optional (MySQL settings for root to login with phpMyAdmin):
 	* ``` $ sudo docker exec -it webgis_mysql_1 sh -c 'exec mysql -uroot -p"$MYSQL_ROOT_PASSWORD"' ``` and then in mysql console
-	* ``` $ GRANT ALL PRIVILEGES ON * . * TO 'root'@'%' IDENTIFIED BY 'YOUR-PASSWORD' WITH GRANT OPTION;FLUSH PRIVILEGES;\q; ```
+	* ``` GRANT ALL PRIVILEGES ON * . * TO 'root'@'%' IDENTIFIED BY 'YOUR-PASSWORD' WITH GRANT OPTION;FLUSH PRIVILEGES;\q; ```
 * Optional (phpMyAdmin+phpPgAdmin+adminer manually installation instead of docker):
 	* check current version numbers: ``` $ nano phpApps.sh ```
 	* ``` $ chmod +x phpApps.sh && sudo ./phpApps.sh ```
