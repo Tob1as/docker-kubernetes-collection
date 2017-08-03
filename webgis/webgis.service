@@ -12,8 +12,9 @@ Environment="PROJECT_PATH=/srv/webgis"
 #WorkingDirectory=/srv/webgis
 ExecStartPre=/usr/local/bin/docker-compose -f "${PROJECT_PATH}/docker-compose.yml" pull
 ExecStart=/usr/local/bin/docker-compose --file "${PROJECT_PATH}/docker-compose.yml" up
-ExecStop=/usr/local/bin/docker-compose  --file "${PROJECT_PATH}/docker-compose.yml" stop
+#ExecStop=/usr/local/bin/docker-compose  --file "${PROJECT_PATH}/docker-compose.yml" stop
 #ExecStopPost=/usr/local/bin/docker-compose  --file "${PROJECT_PATH}/docker-compose.yml" down
+ExecStop=/usr/local/bin/docker-compose  --file "${PROJECT_PATH}/docker-compose.yml" down
 
 [Install]
 WantedBy=docker.service
