@@ -72,6 +72,18 @@ services:
     networks:
       webgis:
   
+  #php:
+  #  #image: php:7.0-fpm
+  #  image: tobi312/php:7.0-fpm
+  #  environment:
+  #    TZ: "Europe/Berlin"
+  #    PHP_ERRORS: 1
+  #    PHP_UPLOAD_MAX_FILESIZE: 250
+  #  volumes:
+  #    - ./html:/var/www/html
+  #  networks:
+  #    webgis:
+  
   letsencrypt:
     image: quay.io/letsencrypt/letsencrypt:latest
     command:  bash -c "sleep 6 && certbot certonly --standalone -d __DOMAIN__ -d __DOMAINwithWWW__ --email __YOUR-EMAIL__ --text --agree-tos --server https://acme-v01.api.letsencrypt.org/directory --rsa-key-size 4096 --verbose --renew-by-default --standalone-supported-challenges http-01"
@@ -96,7 +108,7 @@ services:
       - ./nginx:/etc/nginx/conf.d:ro
       - ./letsencrypt:/etc/letsencrypt:ro
       - ./ssl:/etc/nginx/ssl:ro
-    #  - ./html:/var/www/html:ro
+    #  - ./html:/var/www/html
     networks:
       webgis:
 
