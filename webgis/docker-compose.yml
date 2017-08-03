@@ -46,6 +46,8 @@ services:
     #  - "8088:8080"
     volumes:
       - ./geoserver:/opt/geoserver/data_dir
+    networks:
+      webgis:
   
   phpapache:
     #image: php:7.0-apache
@@ -63,6 +65,8 @@ services:
     volumes:
       - ./html:/var/www/html
     #  - ./ssl:/etc/ssl:ro
+    networks:
+      webgis:
   
   letsencrypt:
     image: quay.io/letsencrypt/letsencrypt:latest
@@ -76,6 +80,8 @@ services:
     #  - /var/lib/letsencrypt
     environment:
       - TERM=xterm
+    networks:
+      webgis:
   
   nginx:
     image: nginx:latest
@@ -87,6 +93,8 @@ services:
       - ./letsencrypt:/etc/letsencrypt:ro
       - ./ssl:/etc/nginx/ssl:ro
     #  - ./html:/var/www/html:ro
+    networks:
+      webgis:
 
 networks:
   webgis:
