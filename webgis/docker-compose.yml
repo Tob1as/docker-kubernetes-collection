@@ -1,9 +1,10 @@
 #
 # Docker Compose
-# created 02.08.2017 by T.H.
+# created 04.08.2017 by T.H.
 # Todo:	
 #	Change PASSWORD: root/postgres:passw0rd (PLEASE CHANGE THE DEFAULT PASSWORDS!)
 #	Change Domain and E-Mail for Lets Encrypt
+#	Optional: Change Timezones, List: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 #	sudo mkdir -p /srv/webgis/{mysql,postgresql,geoserver,nginx,ssl,html,letsencrypt}
 #	sudo docker-compose up -d
 #
@@ -29,7 +30,7 @@ services:
          - db
   
   postgresql:
-    #image: postgres:latest
+    #image: postgres:9.6
     image: mdillon/postgis:9.6
     environment:
       POSTGRES_PASSWORD: passw0rd
@@ -45,11 +46,13 @@ services:
          - pgsql
   
   geoserver:
-    image: kartoza/geoserver:latest
+    #image: kartoza/geoserver:latest #2.9.1
+    image: oscarfonts/geoserver:2.11.2
     #ports:
     #  - "8088:8080"
     volumes:
-      - ./geoserver:/opt/geoserver/data_dir
+    #  - ./geoserver:/opt/geoserver/data_dir
+      - ./geoserver:/var/local/geoserver
     networks:
       webgis:
   
