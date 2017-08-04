@@ -30,7 +30,7 @@ services:
       webgis:
         aliases:
          - db
-         - mariadb
+        # - mariadb
   
   postgresql:
     #image: postgres:9.6
