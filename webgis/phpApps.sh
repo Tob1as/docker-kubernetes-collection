@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# sed -i -e 's/\r$//' phpApps.sh # use this command if error /bin/bash^M: bad interpreter
+
 ########### CONFIG ###########
 
 #INSTALLPATH=${PWD}
@@ -30,7 +32,7 @@ mv phpMyAdmin/config.sample.inc.php phpMyAdmin/config.inc.php
 sed -i "s/$cfg\['Servers'\]\[\$i\]\['host'\] = 'localhost';/$cfg\['Servers'\]\[\$i\]\['host'\] = 'mysql';/g" phpMyAdmin/config.inc.php
 echo ">>phpMyAdmin ${PHPMYADMIN_VERSION} installed. Visit: http://YOUR-DOMAIN/phpMyAdmin"
 
-if [ 'PHPPGADMIN_VERSION' = 'dev' ]
+if [ $PHPPGADMIN_VERSION == 'dev' ]
 then
 	git clone https://github.com/phppgadmin/phppgadmin.git phpPgAdmin
 	#git clone https://github.com/y92/phppgadmin phpPgAdmin
