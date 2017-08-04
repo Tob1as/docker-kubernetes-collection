@@ -32,6 +32,7 @@ mv phpMyAdmin/config.sample.inc.php phpMyAdmin/config.inc.php
 sed -i "s/$cfg\['Servers'\]\[\$i\]\['host'\] = 'localhost';/$cfg\['Servers'\]\[\$i\]\['host'\] = 'mysql';/g" phpMyAdmin/config.inc.php
 echo ">>phpMyAdmin ${PHPMYADMIN_VERSION} installed. Visit: http://YOUR-DOMAIN/phpMyAdmin"
 
+# http://phppgadmin.sourceforge.net/
 if [ $PHPPGADMIN_VERSION == 'dev' ]
 then
 	git clone https://github.com/phppgadmin/phppgadmin.git phpPgAdmin
@@ -42,7 +43,6 @@ then
 	sed -i 's/\(^.*conf\[.extra_login_security.\] =\) true/\1 false/' phpPgAdmin/conf/config.inc.php
 	echo ">>phpPgAdmin ${PHPPGADMIN_VERSION} installed. Visit: http://YOUR-DOMAIN/phpPgAdmin"
 else
-    # http://phppgadmin.sourceforge.net/
 	wget -q -O - http://downloads.sourceforge.net/project/phppgadmin/phpPgAdmin%20%5Bstable%5D/phpPgAdmin-${PHPPGADMIN_VERSION}/phpPgAdmin-${PHPPGADMIN_VERSION}.tar.gz | tar xvzf -
 	mv phpPgAdmin-${PHPPGADMIN_VERSION} phpPgAdmin
 	sed -i "s/$conf\['servers'\]\[0\]\['host'\] = '';/$conf\['servers'\]\[0]\['host'\] = 'postgresql';/g" phpPgAdmin/conf/config.inc.php
