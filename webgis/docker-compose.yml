@@ -78,19 +78,19 @@ services:
     networks:
       webgis:
   
-  phpfpm:
-    #image: php:7.1-fpm
-    image: tobi312/php:7.1-fpm
-    environment:
-      TZ: "Europe/Berlin"
-      PHP_ERRORS: 1
-      PHP_UPLOAD_MAX_FILESIZE: 250
-    volumes:
-      - ./html:/var/www/html
-    networks:
-      webgis:
-        aliases:
-         - php
+  #phpfpm:
+  #  #image: php:7.1-fpm
+  #  image: tobi312/php:7.1-fpm
+  #  environment:
+  #    TZ: "Europe/Berlin"
+  #    PHP_ERRORS: 1
+  #    PHP_UPLOAD_MAX_FILESIZE: 250
+  #  volumes:
+  #    - ./html:/var/www/html
+  #  networks:
+  #    webgis:
+  #      aliases:
+  #       - php
   
   letsencrypt:
     image: quay.io/letsencrypt/letsencrypt:latest
@@ -101,7 +101,6 @@ services:
     #  - "443:443"
     volumes:
       - ./letsencrypt:/etc/letsencrypt
-    #  - /var/lib/letsencrypt
     environment:
       - TERM=xterm
     networks:
