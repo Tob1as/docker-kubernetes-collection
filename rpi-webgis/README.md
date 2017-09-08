@@ -6,7 +6,7 @@
 * https://github.com/TobiasH87Docker/rpi-nginx
 
 Example (Linux/Raspbian):
-* Requirement: Installed [Docker](https://docs.docker.com/engine/installation/) ``` sudo curl -sSL https://get.docker.com | sh ``` and [Docker-Compose](https://docs.docker.com/compose/install/) 
+* Requirement: Installed [Docker](https://docs.docker.com/engine/installation/) ``` sudo curl -sSL https://get.docker.com | sh ``` and [Docker-Compose (use: pip)](https://docs.docker.com/compose/install/) 
 * ``` $ git clone https://github.com/TobiasH87Docker/docker-compose.git && cd ./docker-compose/rpi-webgis/ ```
 * ``` $ sudo mkdir -p /srv/webgis/{mysql,postgresql,nginx,ssl,html} && sudo cp docker-compose.yml /srv/webgis/ && sudo cp default.conf /srv/webgis/nginx/ && sudo cp phpApps.sh /srv/webgis/ && cd /srv/webgis/ ``` 
 * Change Passwords and Settings (Domain, ..): ``` $ nano docker-compose.yml ```
