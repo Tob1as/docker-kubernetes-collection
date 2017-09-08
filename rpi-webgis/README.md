@@ -8,7 +8,7 @@
 Example (Linux/Raspbian):
 * Requirement: Installed [Docker](https://docs.docker.com/engine/installation/) ``` sudo curl -sSL https://get.docker.com | sh ``` and [Docker-Compose](https://docs.docker.com/compose/install/) 
 * ``` $ git clone https://github.com/TobiasH87Docker/docker-compose.git && cd ./docker-compose/rpi-webgis/ ```
-* ``` $ sudo mkdir -p /srv/webgis/{mysql,postgresql,geoserver,nginx,ssl,html,letsencrypt} && sudo cp docker-compose.yml /srv/webgis/ && sudo cp default.conf /srv/webgis/nginx/ && sudo cp phpApps.sh /srv/webgis/ && cd /srv/webgis/ ``` 
+* ``` $ sudo mkdir -p /srv/webgis/{mysql,postgresql,nginx,ssl,html} && sudo cp docker-compose.yml /srv/webgis/ && sudo cp default.conf /srv/webgis/nginx/ && sudo cp phpApps.sh /srv/webgis/ && cd /srv/webgis/ ``` 
 * Change Passwords and Settings (Domain, ..): ``` $ nano docker-compose.yml ```
 * Change Domain ``` $ sudo nano ./nginx/default.conf ```
 * SSL-Certificate(temporary?): ``` $ openssl req -x509 -newkey rsa:4086 -subj "/C=/ST=/L=/O=/CN=localhost" -keyout "./ssl/ssl.key" -out "./ssl/ssl.crt" -days 3650 -nodes -sha256 ```
