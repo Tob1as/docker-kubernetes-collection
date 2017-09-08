@@ -1,82 +1,99 @@
 #
 # Docker Compose
-# created 14.12.2016 by T.H.
-# PASSWORD: root/postgres:passw0rd (PLEASE CHANGE THE DEFAULT PASSWORDS!)
-# List of timezones: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+# created 08.09.2017 by T.H.
 # Todo:	
-#	Install Docker-Compose https://docs.docker.com/compose/install/
-#	mkdir -p /home/pi/{html,.ssl}
-#	mkdir -p /home/pi/.config/{nginx,httpd}
-#	mkdir -p /home/pi/.local/share/{postgresql,mysql}
-# 	docker-compose up -d
+#	Change PASSWORD: root/postgres:passw0rd (PLEASE CHANGE THE DEFAULT PASSWORDS!)
+#	Optional: Change Timezones, List: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+#	sudo mkdir -p /srv/webgis/{mysql,postgresql,nginx,ssl,html}
+#	sudo docker-compose up -d
 #
 
-pi-mysql:
-  image: tobi312/rpi-mysql:5.5
-  environment:
-    TZ: "Europe/Berlin"
-    MYSQL_ROOT_PASSWORD: passw0rd
-  ports:
-    - "3306:3306"
-  volumes:
-    - /home/pi/.local/share/mysql:/var/lib/mysql
+version: "2.0"
 
-pi-postgresql:
-  image: tobi312/rpi-postgresql-postgis:9.4-2.1
-  environment:
-    TZ: Europe/Berlin
-    POSTGRES_PASSWORD: passw0rd
-  ports:
-    - "5432:5432"
-  volumes:
-    - /home/pi/.local/share/postgresql:/var/lib/postgresql/data
+services:
 
-pi-php:
-  image: tobi312/rpi-php:5.6-fpm
-  environment:
-    TZ: "Europe/Berlin"
-    PHP_ERRORS: 1
-    PHP_MEM_LIMIT: 128
-    PHP_POST_MAX_SIZE: 50
-    PHP_UPLOAD_MAX_FILESIZE: 250
-    PHP_MAX_FILE_UPLOADS: 25
-  links:
-    - "pi-mysql:mysql"
-    - "pi-postgresql:postgresql"
-  volumes:
-    - /home/pi/html:/var/www/html
-    #- /home/pi/Music:/Music
+  mysql:
+    image: tobi312/rpi-mysql:5.5
+    environment:
+      MYSQL_ROOT_PASSWORD: passw0rd
+    #  MYSQL_USER: myuser
+    #  MYSQL_PASSWORD: passw0rd
+    #  MYSQL_DATABASE: mydatabase
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
+    networks:
+      webgis:
+        aliases:
+         - db
+        # - mariadb
+  
+  postgresql:
+    #image: tobi312/rpi-postgresql:9.6
+    image: tobi312/rpi-postgresql-postgis:9.6-2.3
+    environment:
+      POSTGRES_PASSWORD: passw0rd
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgresql:/var/lib/postgresql/data
+    networks:
+      webgis:
+        aliases:
+         - postgis
+         - postgres
+         - pgsql
+  
+  phpfpm:
+    #image: tobi312/rpi-php:5.6-fpm
+    image: tobi312/rpi-php:7.0-fpm
+    environment:
+      TZ: "Europe/Berlin"
+      PHP_ERRORS: 1
+      #PHP_MEM_LIMIT: 128
+      PHP_UPLOAD_MAX_FILESIZE: 250
+      PHP_POST_MAX_SIZE: 250
+      #PHP_MAX_FILE_UPLOADS: 20
+    volumes:
+      - ./html:/var/www/html
+    networks:
+      webgis:
+        aliases:
+         - php
+         - phphost
+  
+  apache:
+    image: tobi312/rpi-apache2:latest
+    environment:
+      TZ: "Europe/Berlin"
+      ENABLE_PROXY_HTTP: 1
+      ENABLE_PROXY_HTML: 1
+      ENABLE_PROXY_FCGI: 1
+      ENABLE_REWRITE: 1
+      ENABLE_SSL: 1
+      ALLOWOVERRIDE: 1
+    #ports:
+    #  - "8080:80"
+    #  - "8443:443"
+    volumes:
+      - ./html:/var/www/html
+    #  - ./ssl:/etc/ssl:ro
+    networks:
+      webgis:
+  
+  nginx:
+    #image: tobi312/rpi-nginx:1.6
+    image: tobi312/rpi-nginx:1.10
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    #  - ./html:/var/www/html
+    networks:
+      webgis:
 
-pi-httpd:
-  image: tobi312/rpi-apache2:latest
-  environment:
-    TZ: "Europe/Berlin"
-    ENABLE_PROXY_HTTP: 1
-    ENABLE_PROXY_HTML: 1
-    ENABLE_PROXY_FCGI: 1
-    ENABLE_REWRITE: 1
-    ENABLE_SSL: 1
-    ALLOWOVERRIDE: 1
-  #ports:
-  #  - "80:80"
-  #  - "443:443"
-  links:
-    - "pi-php:phphost"
-  volumes:
-    #- /home/pi/.config/httpd:/etc/apache2/*
-    #- /home/pi/.ssl:/etc/ssl/.ssl:ro
-    - /home/pi/html:/var/www/html
-    #- /home/pi/Music:/Music
-
-pi-nginx:
-  image: tobi312/rpi-nginx:1.6
-  ports:
-    - "80:80"
-    - "443:443"
-  links:
-    #- "pi-php:phphost"
-    - "pi-httpd:httpd"
-  volumes:
-    - /home/pi/.config/nginx:/etc/nginx/conf.d:ro
-    - /home/pi/.ssl:/etc/nginx/ssl:ro
-    - /home/pi/html:/var/www/html
+networks:
+  webgis:
