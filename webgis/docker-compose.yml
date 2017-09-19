@@ -30,7 +30,7 @@ services:
       webgis:
         aliases:
          - db
-        # - mariadb
+         - mariadb
   
   postgresql:
     #image: postgres:9.6
@@ -100,6 +100,7 @@ services:
   
   letsencrypt:
     image: quay.io/letsencrypt/letsencrypt:latest
+    #image: certbot/certbot:latest
     command:  bash -c "sleep 6 && certbot certonly --standalone -d __YOUR-DOMAIN__ -d www.__YOUR-DOMAIN__ --email __YOUR-EMAIL__ --text --agree-tos --server https://acme-v01.api.letsencrypt.org/directory --rsa-key-size 4096 --verbose --renew-by-default --standalone-supported-challenges http-01"
     entrypoint: ""
     #ports:
@@ -111,6 +112,8 @@ services:
       - TERM=xterm
     networks:
       webgis:
+        aliases:
+         - certbot
   
   nginx:
     image: nginx:latest
