@@ -84,7 +84,8 @@ services:
   
   nginx:
     #image: tobi312/rpi-nginx:1.6
-    image: tobi312/rpi-nginx:1.10
+    #image: tobi312/rpi-nginx:1.10
+    image: tobi312/rpi-nginx:alpine
     ports:
       - "80:80"
       - "443:443"
