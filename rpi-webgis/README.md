@@ -3,7 +3,7 @@
 * https://github.com/TobiasH87Docker/rpi-postgresql-postgis with https://github.com/TobiasH87Docker/rpi-postgresql
 * https://github.com/TobiasH87Docker/rpi-php
 * https://github.com/TobiasH87Docker/rpi-apache2
-* https://hub.docker.com/r/tobi312/rpi-certbot/
+* https://github.com/TobiasH87Docker/rpi-certbot
 * https://github.com/TobiasH87Docker/rpi-nginx
 * based on [resin.io images](https://docs.resin.io/runtime/resin-base-images/)
 
