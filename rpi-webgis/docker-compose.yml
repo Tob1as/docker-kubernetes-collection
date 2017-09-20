@@ -1,10 +1,11 @@
 #
 # Docker Compose
-# created 08.09.2017 by T.H.
+# created 20.09.2017 by T.H.
 # Todo:	
 #	Change PASSWORD: root/postgres:passw0rd (PLEASE CHANGE THE DEFAULT PASSWORDS!)
+#	Change Domain and E-Mail for Lets Encrypt
 #	Optional: Change Timezones, List: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-#	sudo mkdir -p /srv/webgis/{mysql,postgresql,nginx,ssl,html}
+#	sudo mkdir -p /srv/webgis/{mysql,postgresql,nginx,ssl,html,letsencrypt}
 #	sudo docker-compose up -d
 #
 
@@ -82,6 +83,20 @@ services:
     networks:
       webgis:
   
+  letsencrypt:
+    image: tobi312/rpi-certbot:latest
+    command:  bash -c "sleep 6 && certbot certonly --standalone -d __YOUR-DOMAIN__ -d www.__YOUR-DOMAIN__ --email __YOUR-EMAIL__ --text --agree-tos --server https://acme-v01.api.letsencrypt.org/directory --rsa-key-size 4096 --verbose --renew-by-default --standalone-supported-challenges http-01"
+    entrypoint: ""
+    #ports:
+    #  - "80:80"
+    #  - "443:443"
+    volumes:
+      - ./letsencrypt:/etc/letsencrypt
+    networks:
+      webgis:
+        aliases:
+         - certbot
+  
   nginx:
     #image: tobi312/rpi-nginx:1.6
     #image: tobi312/rpi-nginx:1.10
@@ -91,6 +106,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx:/etc/nginx/conf.d:ro
+      - ./letsencrypt:/etc/letsencrypt:ro
       - ./ssl:/etc/nginx/ssl:ro
     #  - ./html:/var/www/html
     networks:

@@ -3,7 +3,9 @@
 * https://github.com/TobiasH87Docker/rpi-postgresql-postgis with https://github.com/TobiasH87Docker/rpi-postgresql
 * https://github.com/TobiasH87Docker/rpi-php
 * https://github.com/TobiasH87Docker/rpi-apache2
+* https://hub.docker.com/r/tobi312/rpi-certbot/
 * https://github.com/TobiasH87Docker/rpi-nginx
+* based on [resin.io images](https://docs.resin.io/runtime/resin-base-images/)
 
 Example (Linux/Raspbian):
 * Requirement: Installed [Docker](https://docs.docker.com/engine/installation/) ``` sudo curl -sSL https://get.docker.com | sh ``` and [Docker-Compose](https://docs.docker.com/compose/install/) (use: pip)
