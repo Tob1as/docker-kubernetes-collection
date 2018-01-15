@@ -35,9 +35,10 @@ echo ">>phpMyAdmin ${PHPMYADMIN_VERSION} installed. Visit: http://YOUR-DOMAIN/ph
 # http://phppgadmin.sourceforge.net/
 if [ $PHPPGADMIN_VERSION == 'dev' ]
 then
-	git clone https://github.com/phppgadmin/phppgadmin.git phpPgAdmin
-	#git clone https://github.com/y92/phppgadmin phpPgAdmin
-	#git clone https://github.com/ArturFormella/phppgadmin phpPgAdmin
+	#git clone https://github.com/phppgadmin/phppgadmin.git phpPgAdmin
+	git clone https://github.com/ralph800/phppgadmin.git phpPgAdmin
+	#git clone https://github.com/FranLMSP/phppgadmin.git phpPgAdmin
+	#git clone https://github.com/myfarms/phppgadmin.git phpPgAdmin
 	cp phpPgAdmin/conf/config.inc.php-dist phpPgAdmin/conf/config.inc.php
 	sed -i "s/$conf\['servers'\]\[0\]\['host'\] = '';/$conf\['servers'\]\[0]\['host'\] = 'postgresql';/g" phpPgAdmin/conf/config.inc.php
 	sed -i 's/\(^.*conf\[.extra_login_security.\] =\) true/\1 false/' phpPgAdmin/conf/config.inc.php
