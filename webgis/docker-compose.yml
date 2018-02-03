@@ -1,6 +1,7 @@
 #
 # Docker Compose
 # created 15.08.2017 by T.H.
+# updated 03.02.2018
 # Todo:	
 #	Change PASSWORD: root/postgres:passw0rd (PLEASE CHANGE THE DEFAULT PASSWORDS!)
 #	Change Domain and E-Mail for Lets Encrypt
@@ -33,8 +34,8 @@ services:
          - mariadb
   
   postgresql:
-    #image: postgres:9.6
-    image: mdillon/postgis:9.6
+    #image: postgres:10
+    image: mdillon/postgis:10
     environment:
       POSTGRES_PASSWORD: passw0rd
     #ports:
@@ -49,13 +50,13 @@ services:
          - pgsql
   
   geoserver:
-    #image: kartoza/geoserver:latest #2.9.1
-    image: oscarfonts/geoserver:2.11.2
+    image: kartoza/geoserver:latest
+    #image: oscarfonts/geoserver:latest
     #ports:
     #  - "8088:8080"
     volumes:
-    #  - ./geoserver:/opt/geoserver/data_dir
-      - ./geoserver:/var/local/geoserver
+      - ./geoserver:/opt/geoserver/data_dir
+    #  - ./geoserver:/var/local/geoserver
     networks:
       webgis:
   
