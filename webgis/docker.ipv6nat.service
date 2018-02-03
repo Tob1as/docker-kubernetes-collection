@@ -1,0 +1,18 @@
+[Unit]
+Description=Docker IPv6NAT
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+#RestartSec=10
+User=root
+Restart=always
+ExecStartPre=/usr/bin/docker pull robbertkl/ipv6nat
+ExecStartPre=-/usr/bin/docker kill ipv6nat
+ExecStartPre=-/usr/bin/docker rm ipv6nat
+#ExecStart=/usr/bin/docker run --rm --name ipv6nat -d --restart=always -v /var/run/docker.sock:/var/run/docker.sock:ro -v /lib/modules:/lib/modules:ro --privileged --net=host robbertkl/ipv6nat
+ExecStart=/usr/bin/docker run --name ipv6nat -d --restart=always -v /var/run/docker.sock:/var/run/docker.sock:ro -v /lib/modules:/lib/modules:ro --privileged --net=host robbertkl/ipv6nat
+
+[Install]
+WantedBy=docker.service
