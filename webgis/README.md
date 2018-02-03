@@ -5,6 +5,9 @@
 * PHP (with Apache2): https://hub.docker.com/r/tobi312/php/ include https://hub.docker.com/_/php/
 * LetsEncrypt (SSL): https://quay.io/repository/letsencrypt/letsencrypt
 * NGNIX (as Proxy): https://hub.docker.com/_/nginx/
+* IPv6: 
+** NAT https://hub.docker.com/r/robbertkl/ipv6nat/ or
+** https://docs.docker.com/engine/userguide/networking/default_network/ipv6/#how-ipv6-works-on-docker and https://docs.docker.com/compose/compose-file/#ipv4_address-ipv6_address
 
 Example (Linux/Debian):
 * Requirement: Installed [Docker](https://docs.docker.com/engine/installation/) ``` sudo curl -sSL https://get.docker.com | sh ``` and [Docker-Compose](https://docs.docker.com/compose/install/) 
