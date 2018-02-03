@@ -130,6 +130,15 @@ services:
 
 networks:
   webgis:
+    #name: webgis
+    #driver: bridge
+    #enable_ipv6: true
+    #ipam:
+    #  driver: default
+    #  config:
+    #    - subnet: 172.20.0.0/24
+    #    - subnet: fd00:dead:beef::/48
+
   
 #volumes:
 #  letsencrypt-data:
