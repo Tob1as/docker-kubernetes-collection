@@ -9,7 +9,7 @@
 #	sudo docker-compose up -d
 #
 
-version: "2.0"
+version: "2.1"
 
 services:
 
