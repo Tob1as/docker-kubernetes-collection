@@ -1,7 +1,7 @@
 # WebGIS on x86_64 
 * MySQL: https://hub.docker.com/_/mysql/ | https://hub.docker.com/r/mysql/mysql-server/
 * PostgreSQL with PostGIS: https://hub.docker.com/r/mdillon/postgis/ include https://hub.docker.com/_/postgres/
-* GeoServer with Tomcat: https://hub.docker.com/r/kartoza/geoserver/ (<= v2.8.0) | https://hub.docker.com/r/oscarfonts/geoserver/ (=> v2.9.0) include https://hub.docker.com/_/tomcat/
+* GeoServer with Tomcat: https://hub.docker.com/r/kartoza/geoserver/ (or https://hub.docker.com/r/oscarfonts/geoserver/) include https://hub.docker.com/_/tomcat/
 * PHP (with Apache2): https://hub.docker.com/r/tobi312/php/ include https://hub.docker.com/_/php/
 * LetsEncrypt (SSL): https://quay.io/repository/letsencrypt/letsencrypt
 * NGNIX (as Proxy): https://hub.docker.com/_/nginx/
