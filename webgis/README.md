@@ -7,7 +7,7 @@
 * NGNIX (as Proxy): https://hub.docker.com/_/nginx/
 * IPv6:
 	* NAT: https://hub.docker.com/r/robbertkl/ipv6nat/ or
-	* https://docs.docker.com/engine/userguide/networking/default_network/ipv6/#how-ipv6-works-on-docker or https://docs.docker.com/v17.09/engine/userguide/networking/default_network/ipv6/#using-ndp-proxying and https://docs.docker.com/compose/compose-file/#ipv4_address-ipv6_address
+	* https://docs.docker.com/engine/userguide/networking/default_network/ipv6/#how-ipv6-works-on-docker or https://docs.docker.com/v17.09/engine/userguide/networking/default_network/ipv6/#using-ndp-proxying and https://docs.docker.com/compose/compose-file/#ipv4_address-ipv6_address , https://github.com/DanielAdolfsson/ndppd/
 
 Example (Linux/Debian):
 * Requirement: Installed [Docker](https://docs.docker.com/engine/installation/) ``` sudo curl -sSL https://get.docker.com | sh ``` and [Docker-Compose](https://docs.docker.com/compose/install/) 
