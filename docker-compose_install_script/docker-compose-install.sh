@@ -43,3 +43,31 @@ case "$lsb_dist" in
 	;;
 
 esac
+
+# https://docs.docker.com/compose/completion/
+case "$lsb_dist" in
+
+	ubuntu|debian|centos|photon|raspbian)		
+		 curl -L https://raw.githubusercontent.com/docker/compose/$DOCKER_COMPOSE_VERSION/contrib/completion/bash/docker-compose -o /etc/bash_completion.d/docker-compose
+	;;
+	
+	coreos)
+		# https://github.com/coreos/bugs/issues/22#issuecomment-59951575
+		echo "Source: https://github.com/coreos/bugs/issues/22#issuecomment-59951575"
+		echo "execute: 
+		
+		toolbox dnf -y install bash-completion curl \ 
+			&& toolbox curl -L https://raw.githubusercontent.com/docker/docker-ce/master/components/cli/contrib/completion/bash/docker -o /usr/share/bash-completion/completions/docker \ 
+			&& toolbox curl -L https://raw.githubusercontent.com/docker/compose/$DOCKER_COMPOSE_VERSION/contrib/completion/bash/docker-compose -o /usr/share/bash-completion/completions/docker-compose \ 
+			&& toolbox cp /usr/share/bash-completion /media/root/var/ -R  \ 
+			&& source /var/bash-completion/bash_completion \ 
+			&& cp /home/core/.bashrc /home/core/.bashrc.new && mv /home/core/.bashrc.new /home/core/.bashrc && chown core:core /home/core/.bashrc \ 
+			&& echo 'source /var/bash-completion/bash_completion' >> /home/core/.bashrc
+		"
+	;;
+
+	*)
+		echo "... and command completion not needed."
+	;;
+
+esac
