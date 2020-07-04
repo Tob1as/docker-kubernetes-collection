@@ -75,6 +75,9 @@ install_docker_compose () {
 	#sudo pip install docker-compose --upgrade
 	
 	## Python3
+	#sudo apt install -y python3-dockerpty python3-docopt python3-dotenv python3-texttable python3-docker python3-cached-property \
+	#	python3-distro python3-link-grammar python3-websocket python3-jsonschema python3-paramiko python3-attr python3-cffi python3-pycparser
+	#sudo apt install -y python3-pyrsistent python3-importlib-metadata python3-zipp # only in sid
 	sudo apt install -y python3-bcrypt python3-nacl
 	sudo pip3 install docker-compose --upgrade
 }
