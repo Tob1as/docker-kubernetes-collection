@@ -3,7 +3,7 @@ set -e
 
 # Docker on Raspbian 10 Buster!!!!
 # Source-URL: https://gist.github.com/Tob1as/f6fba3fc041d3c8aacfa68441cc54124
-# Created: 2019-07-24 ; last Updated: 2020-01-12
+# Created: 2019-07-24 ; last Updated: 2020-07-04
 # if error "/bin/bash^M: bad interpreter" then execute: "sed -i -e 's/\r$//' *.sh"
 # Read more:
 # 	https://github.com/docker/for-linux/issues/709
@@ -65,12 +65,13 @@ EOF'
 # Install docker-compose
 install_docker_compose () {
 	#sudo apt install -y docker-compose # old Version (1.21.0-3), use pip!
-	sudo apt install -y python-pip libffi-dev python-backports.ssl-match-hostname
-	sudo apt install -y python-pretty-yaml python-dockerpty python-texttable python-functools32 python-bcrypt python-nacl \
-		python-chardet python-certifi python-urllib3 python-idna python-requests python-websocket python-dockerpycreds \
-		python-pycparser python-cffi  python-docker python-paramiko python-jsonschema python-docopt python-cached-property \
-		python-backports-shutil-get-terminal-size
-	sudo pip install docker-compose --upgrade
+	#sudo apt install -y python-pip libffi-dev python-backports.ssl-match-hostname
+	#sudo apt install -y python-pretty-yaml python-dockerpty python-texttable python-functools32 python-bcrypt python-nacl \
+	#	python-chardet python-certifi python-urllib3 python-idna python-requests python-websocket python-dockerpycreds \
+	#	python-pycparser python-cffi  python-docker python-paramiko python-jsonschema python-docopt python-cached-property \
+	#	python-backports-shutil-get-terminal-size
+	#sudo pip install docker-compose --upgrade
+	sudo pip3 install docker-compose --upgrade
 }
 
 # Install Bash Completion for docker
