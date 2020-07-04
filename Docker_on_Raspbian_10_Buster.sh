@@ -65,12 +65,17 @@ EOF'
 # Install docker-compose
 install_docker_compose () {
 	#sudo apt install -y docker-compose # old Version (1.21.0-3), use pip!
+	
+	## Python2
 	#sudo apt install -y python-pip libffi-dev python-backports.ssl-match-hostname
 	#sudo apt install -y python-pretty-yaml python-dockerpty python-texttable python-functools32 python-bcrypt python-nacl \
 	#	python-chardet python-certifi python-urllib3 python-idna python-requests python-websocket python-dockerpycreds \
 	#	python-pycparser python-cffi  python-docker python-paramiko python-jsonschema python-docopt python-cached-property \
 	#	python-backports-shutil-get-terminal-size
 	#sudo pip install docker-compose --upgrade
+	
+	## Python3
+	sudo apt install -y python3-bcrypt python3-nacl
 	sudo pip3 install docker-compose --upgrade
 }
 
