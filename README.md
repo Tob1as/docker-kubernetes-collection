@@ -1,6 +1,3 @@
-# Docker-Compose Example
+# Collection
 
-* WebGIS
-	* .. on x86_64 
-	* .. on Raspberry Pi / armhf
-	* with WebServer, Database and more
+Scripts, Docker-Compose examples, kubernetes exampless and more
