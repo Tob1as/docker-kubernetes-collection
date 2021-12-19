@@ -1,3 +1,3 @@
 # Collection
 
-Scripts, Docker-Compose examples, kubernetes exampless and more
+Scripts, Docker-Compose examples, kubernetes examples and more
