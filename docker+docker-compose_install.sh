@@ -36,6 +36,7 @@ lsb_dist="$(. /etc/os-release && echo "$ID" | tr '[:upper:]' '[:lower:]')"
 #lsb_dist_codename="$(lsb_release -cs | tr '[:upper:]' '[:lower:]')"
 #kernelname="$(uname -s | tr '[:upper:]' '[:lower:]')"
 #arch="$(uname -m | tr '[:upper:]' '[:lower:]')"
+#arch_dpkg=$(dpkg --print-architecture)
 current_user=$(whoami)
 #current_user=$(echo $USER)
 
