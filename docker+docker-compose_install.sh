@@ -34,6 +34,7 @@ install_requirements () {
 lsb_dist="$(. /etc/os-release && echo "$ID" | tr '[:upper:]' '[:lower:]')"
 #lsb_dist="$(lsb_release -is | tr '[:upper:]' '[:lower:]')"
 #lsb_dist_codename="$(lsb_release -cs | tr '[:upper:]' '[:lower:]')"
+#kernelname="$(uname -s | tr '[:upper:]' '[:lower:]')"
 #arch="$(uname -m | tr '[:upper:]' '[:lower:]')"
 current_user=$(whoami)
 #current_user=$(echo $USER)
@@ -103,7 +104,7 @@ install_docker_compose () {
     sudo chmod +x /usr/libexec/docker/cli-plugins/docker-compose
 
     # check version
-    #DOCKER_COMPOSE_VERSION_INSTALLED=$(docker-compose version | cut -d ' ' -f4)
+    #DOCKER_COMPOSE_VERSION_INSTALLED=$(docker compose version | cut -d ' ' -f4)
     sudo docker compose version
 }
 
