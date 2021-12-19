@@ -20,13 +20,13 @@ set -e
 # Install some required packages
 install_requirements () {
     echo ">> Install some required packages"
-	sudo apt update
-	sudo apt install -y \
-		apt-transport-https \
-		ca-certificates \
-		curl \
-		gnupg2 \
-		software-properties-common \
+    sudo apt update
+    sudo apt install -y \
+        apt-transport-https \
+        ca-certificates \
+        curl \
+        gnupg2 \
+        software-properties-common \
         lsb-release
 }
 
@@ -52,24 +52,24 @@ install_docker () {
     # Install Docker
     sudo apt update
     case "$lsb_dist" in
-	    raspbian)
-		    sudo apt install -y --no-install-recommends docker-ce-cli docker-ce containerd.io
+        raspbian)
+            sudo apt install -y --no-install-recommends docker-ce-cli docker-ce containerd.io
             sudo apt install -y docker-ce-rootless-extras
-	    ;;
-	    *)
-		    sudo apt install -y docker-ce-cli docker-ce containerd.io docker-ce-rootless-extras
-	    ;;
+        ;;
+        *)
+            sudo apt install -y docker-ce-cli docker-ce containerd.io docker-ce-rootless-extras
+        ;;
     esac
 
     # add docker permission to user (restart shell session requied)
     case "$lsb_dist" in
-	    raspbian)
-		    echo ">>> add user pi to docker group"
+        raspbian)
+            echo ">>> add user pi to docker group"
             sudo usermod -aG docker pi
-	    ;;
-	    *)
+        ;;
+        *)
             if [[ "$current_user" != "root" ]]; then
-		        sudo usermod -aG docker $current_user
+                sudo usermod -aG docker $current_user
             else
                 echo ">>> optional: add your user to docker group with: \"sudo usermod -aG docker USER\""
             fi
@@ -129,9 +129,9 @@ set_docker_compose_alias () {
 
 # Main
 main () {
-	install_requirements
-	install_docker
-	install_docker_compose
+    install_requirements
+    install_docker
+    install_docker_compose
     #enable_docker_ipv6nat
     set_docker_compose_alias
     echo ">> install done! (Recommended: Restart you shell session!)"
