@@ -1,0 +1,42 @@
+# docker-compose -f minio.yml up -d
+version: '2.4'
+services:
+
+  # MinIO - Object Storage compatible with S3
+  # https://min.io/
+  # https://github.com/minio/minio
+  # https://hub.docker.com/r/minio/minio
+  # https://github.com/Tob1asDocker/minio
+  # URL: http://localhost:9001/
+  # fix permission problem before startup, when use user/group settings: "mkdir ./minio-data && chmod 777 ./minio-data"
+  minio:
+    image: minio/minio:latest     # Supported architectures: amd64, arm64 
+    #image: tobi312/minio:latest  # Supported architectures: amd64, arm64, arm32 (RaspberryPi) (based on AlpineLinux)
+    container_name: minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000" # MinIO Buckets API
+      - "9001:9001" # MinIO Console
+    volumes:
+      - ./minio-data:/data:rw
+      #- ./ssl/ssl.crt:/root/.minio/certs/public.crt:ro  # works only with root/group user and set URLs (and Port)
+      #- ./ssl/ssl.key:/root/.minio/certs/private.key:ro # (https://github.com/Tob1asDocker/minio/issues/1#issuecomment-1003127867)
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+      # user/group in container instead root
+      MINIO_USERNAME: minio
+      MINIO_GROUPNAME: minio
+      MINIO_UID: 1000
+      MINIO_GID: 1000
+      # use for MinIO Console behind a load balancer, proxy or k8s ingress
+      #MINIO_SERVER_URL: "https://minio.example.net"
+      #MINIO_BROWSER_REDIRECT_URL: "https://console.minio.example.net"
+    command:  ["server", "--address", ":9000", "--console-address", ":9001", "/data"]
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:9000/minio/health/live"]
+      #test: ["CMD", "curl", "--fail", "--insecure", "https://localhost:9000/minio/health/live"] # when use minio ssl
+      #start_period: 30s
+      interval: 60s
+      timeout: 10s
+      retries: 3

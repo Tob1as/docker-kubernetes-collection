@@ -1,0 +1,42 @@
+  # docker-compose -f keycloak.yml up -d
+version: '2.4'
+services:
+  
+  # Keycloak - identity and access management solution
+  # https://www.keycloak.org/
+  # https://github.com/rabbitmq/rabbitmq-server
+  # https://hub.docker.com/r/jboss/keycloak + https://github.com/keycloak/keycloak-containers/tree/main/server
+  # Supported architectures: amd64
+  # URL: http://localhost:8080/
+  # start database (mariadb/postgres) before start keycloak!
+  keycloak:
+    image: jboss/keycloak:16.1.0
+    #image: quay.io/keycloak/keycloak:16.1.0
+    container_name: keycloak
+    environment:
+      DB_VENDOR: mariadb
+      DB_ADDR: mariadb
+      DB_DATABASE: db
+      DB_USER: user
+      DB_PASSWORD: passw0rd
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: passw0rd
+      KEYCLOAK_LOGLEVEL: INFO
+      #PROXY_ADDRESS_FORWARDING: "true"  # use behind proxy
+      JAVA_OPTS: "-server -Xms64m -Xmx2048m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true -Djavax.net.ssl.trustStore=/etc/x509/https/cacerts.jks -Dkeycloak.profile.feature.docker=enabled"
+      KEYCLOAK_STATISTICS: all
+    restart: unless-stopped
+    volumes:
+      #- /etc/timezone:/etc/timezone:ro
+      #- /etc/localtime:/etc/localtime:ro
+      - ssl:/etc/x509/https:ro
+      #- ./keycloak-themes/my-theme:/opt/jboss/keycloak/themes/my-theme:ro
+    ports:
+    #- 8080
+      - 8080:8080
+    healthcheck:
+      test:  curl -fL  http://localhost:8080/auth/realms/master || exit 1
+      start_period: 60s
+      interval: 15s
+      timeout: 2s
+      retries: 3

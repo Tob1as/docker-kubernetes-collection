@@ -1,0 +1,25 @@
+# docker-compose -f memcached.yml up -d
+version: '2.4'
+services:
+  
+  # Memcached - memory object caching system
+  # https://memcached.org/
+  # https://github.com/redis/redis
+  # https://hub.docker.com/_/memcached + https://github.com/docker-library/memcached
+  # Supported architectures: arm32v5, arm32v6, arm32v7, arm64v8, amd64, ...
+  memcached:
+    image: memcached:latest
+    container_name: memcached
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Berlin
+      #MEMCACHED_USERNAME: memcached # not working
+      #MEMCACHED_PASSWORD: passw0rd
+    ports:
+      - 11211:11211
+    healthcheck:
+      test: ["CMD","sh","-c","exec memcached --version"]
+      #start_period: 30s
+      interval: 10s
+      timeout: 10s
+      retries: 3

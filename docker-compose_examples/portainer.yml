@@ -1,0 +1,33 @@
+# docker-compose -f portainer.yml up -d
+version: '2.4'
+services:
+  
+  # Portainer - Database management in PHP
+  # https://www.portainer.io/
+  # https://github.com/portainer/portainer
+  # https://hub.docker.com/r/portainer/portainer-ce
+  # Supported architectures: arm32v7, arm64v8, amd64, ...
+  # URL: https://localhost:9443/
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    #privileged: true   # if SELinux enabled
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - ./portainer-data:/data:rw
+    #  - ./ssl:/certs:ro
+    ports:
+      #- 8000:8000
+      - 9443:9443  # https (default Portainer generates self-signed SSL certificate, alternatively use your own)
+      - 9000:9000  # http (legacy)
+    #command:
+    #  #--ssl
+    #  --sslcert /certs/ssl.crt
+    #  --sslkey /certs/ssl.key
+    healthcheck:
+      test: ["CMD", "/docker", "container", "top", "portainer"]
+      #start_period: 30s
+      interval: 60s
+      timeout: 3s
+      retries: 3

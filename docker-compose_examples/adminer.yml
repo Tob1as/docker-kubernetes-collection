@@ -1,0 +1,20 @@
+# docker-compose -f adminer.yml up -d
+version: '2.4'
+services:
+  
+  # Adminer - Database management in PHP
+  # https://www.adminer.org/
+  # https://github.com/vrana/adminer/
+  # https://hub.docker.com/_/adminer
+  # Supported architectures: arm32v6, arm32v7, arm64v8, amd64, ...
+  # URL: http://localhost:8080/
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    restart: unless-stopped
+    environment:
+      #- ADMINER_DEFAULT_SERVER=db  # default: db
+      #- ADMINER_PLUGINS=""
+      - ADMINER_DESIGN=nette
+    ports:
+      - 8080:8080

@@ -1,0 +1,33 @@
+# docker-compose -f rabbitmq.yml up -d
+version: '2.4'
+services:
+  
+  # RabbitMQ - multi-protocol messaging broker
+  # https://www.rabbitmq.com/
+  # https://github.com/rabbitmq/rabbitmq-server
+  # https://hub.docker.com/_/rabbitmq + https://github.com/docker-library/rabbitmq
+  # Supported architectures: arm32v6, arm32v7, arm64v8, amd64, ...
+  # URL: http://localhost:15672/
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: rabbitmq
+    #hostname: rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: passw0rd
+      #RABBITMQ_DEFAULT_VHOST: test
+      RABBITMQ_NODENAME: "rabbit@localhost"  # default: "rabbit@$HOSTNAME"
+    volumes:
+      - ./rabbitmq-data:/var/lib/rabbitmq/mnesia:rw
+    ports:
+      # https://www.rabbitmq.com/networking.html#ports
+      - "5672:5672/tcp"   # amqp
+      - "15672:15672/tcp" # HTTP API & Web UI
+      #- "15692:15692/tcp" # exporter
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      #start_period: 60s
+      interval: 30s
+      timeout: 10s
+      retries: 3
