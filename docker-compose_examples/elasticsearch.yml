@@ -1,0 +1,34 @@
+# docker-compose -f elasticsearch.yml up -d
+version: '2.4'
+services:
+  
+  # Elasticsearch - RESTful search and analytics engine
+  # https://memcached.org/
+  # https://github.com/elastic/elasticsearch
+  # https://hub.docker.com/_/elasticsearch + https://hub.docker.com/r/elastic/elasticsearch
+  # https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
+  # https://discuss.elastic.co/t/set-password-and-user-with-docker-compose/225075/2
+  # gui for the browser: https://elasticvue.com/
+  # Supported architectures: arm64v8, amd64
+  # # fix permission problem before startup: "mkdir ./elasticsearch-data/ && chmod 777 ./elasticsearch-data/"
+  elasticsearch:
+    image: elastic/elasticsearch:7.16.3
+    container_name: elasticsearch
+    restart: unless-stopped
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=es-docker-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx1g"
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=passw0rd  # Password for default user "elastic"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      #- 9300:9300
