@@ -13,10 +13,8 @@ services:
     restart: unless-stopped
     environment:
       TZ: Europe/Berlin
-      #MEMCACHED_USERNAME: memcached # not working
-      #MEMCACHED_PASSWORD: passw0rd
-    ports:
-      - 11211:11211
+    #ports:    # Do NOT open port external (without password)!
+    #  - 11211:11211
     healthcheck:
       test: ["CMD","sh","-c","exec memcached --version"]
       #start_period: 30s

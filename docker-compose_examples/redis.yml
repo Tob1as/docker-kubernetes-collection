@@ -16,14 +16,16 @@ services:
     restart: unless-stopped
     environment:
       TZ: Europe/Berlin
-      REDIS_PASSWORD: passw0rd
-    command: ["sh", "-c", "exec redis-server --appendonly yes --save 20 1 --loglevel warning --requirepass $${REDIS_PASSWORD}"]
+    #  REDIS_PASSWORD: passw0rd
+    #command: ["sh", "-c", "exec redis-server --appendonly yes --save 20 1 --loglevel warning --requirepass $${REDIS_PASSWORD}"]
+    command: ["sh", "-c", "exec redis-server --appendonly yes --save 20 1 --loglevel warning"]
     volumes:
       - ./redis-data:/data:rw
-    ports:
-      - 6379:6379
+    #ports:    # Do NOT open port external (without password)! <https://redis.io/topics/acl>
+    #  - 6379:6379
     healthcheck:
-      test: ["CMD","sh","-c","exec redis-cli --no-auth-warning -a $${REDIS_PASSWORD} ping"]
+      #test: ["CMD","sh","-c","exec redis-cli --no-auth-warning -a $${REDIS_PASSWORD} ping"]
+      test: ["CMD","sh","-c","exec redis-cli ping"]
       #start_period: 30s
       interval: 60s
       timeout: 10s
