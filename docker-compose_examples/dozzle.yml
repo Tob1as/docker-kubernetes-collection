@@ -1,0 +1,27 @@
+# docker-compose -f dozzle.yml up -d
+version: '2.4'
+services:
+
+  # Dozzle - a real-time log viewer for docker containers
+  # https://dozzle.dev/
+  # https://github.com/amir20/dozzle
+  # https://hub.docker.com/r/amir20/dozzle
+  # Supported architectures: arm32v7, arm64v8, amd64
+  # URL: http://localhost:8080/logging
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "8080:8080"
+    environment:
+      #- "DOZZLE_ADDR=:8080"
+      - "DOZZLE_BASE=/logging"
+      #- "DOZZLE_LEVEL=info"
+      #- "DOZZLE_TAILSIZE=300"
+      #- "DOZZLE_FILTER="
+      - "DOZZLE_USERNAME=dozzle"
+      - "DOZZLE_PASSWORD=passw0rd"
+      - "DOZZLE_KEY=dozzle_session_qv9f8r"
+      #- "DOZZLE_NO_ANALYTICS=false"
