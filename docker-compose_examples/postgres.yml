@@ -21,8 +21,8 @@ services:
     environment:
        TZ: Europe/Berlin
        POSTGRES_PASSWORD: passw0rd
-       POSTGRES_DB: postgres
-       POSTGRES_USER: postgres
+       #POSTGRES_DB: postgres
+       #POSTGRES_USER: postgres
        #PGDATA: /var/lib/postgresql/data/pgdata
     restart: unless-stopped
     ports:
