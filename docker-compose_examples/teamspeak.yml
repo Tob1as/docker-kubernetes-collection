@@ -1,0 +1,39 @@
+# docker-compose -f teamspeak.yml up -d
+version: '2.4'
+services:
+
+  # Teamspeak - voice communication (free for 32 users)
+  # https://www.teamspeak.com/
+  # https://hub.docker.com/_/teamspeak
+  # https://github.com/TeamSpeak-Systems/teamspeak-linux-docker-images
+  # https://support.teamspeak.com/hc/en-us/articles/360002712257-Which-ports-does-the-TeamSpeak-3-server-use-
+  # Supported architectures: amd64
+  # Requirements: setup database (mariadb) before start teamspeak OR use sqlite!
+  # Admin-Token see in logs after start: docker logs -f teamspeak
+  teamspeak:
+    image: teamspeak:latest   # 3.13.6
+    container_name: teamspeak
+    restart: unless-stopped
+    ports:
+      - 9987:9987/udp
+      - 10011:10011/tcp
+      - 30033:30033/tcp
+    environment:
+      TS3SERVER_DB_PLUGIN: ts3db_mariadb            # for sqlite set to: ts3db_sqlite3
+      TS3SERVER_DB_SQLCREATEPATH: create_mariadb    # for sqlite set to: create_sqlite
+      TS3SERVER_DB_HOST: mariadb                    # for sqlite not needed
+      #TS3SERVER_DB_PORT: 3306                      # for sqlite not needed
+      TS3SERVER_DB_NAME: teamspeak                  # for sqlite not needed
+      TS3SERVER_DB_USER: teamspeak                  # for sqlite not needed
+      TS3SERVER_DB_PASSWORD: passw0rd               # for sqlite not needed
+      TS3SERVER_DB_WAITUNTILREADY: 30
+      TS3SERVER_LICENSE: accept
+    volumes:
+      - ./teamspeak-data:/var/ts3server:rw
+    healthcheck:
+      #test:  ["CMD-SHELL", "[ \"$$(wget -qO- localhost:30033 2>&1)\" = \"wget: error getting response: Connection reset by peer\" ] || exit 1"]
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 10011 || exit 1"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      #start_period: 30s

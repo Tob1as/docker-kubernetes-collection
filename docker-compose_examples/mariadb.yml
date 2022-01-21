@@ -8,8 +8,8 @@ services:
   # https://github.com/MariaDB/mariadb-docker
   # https://github.com/Tob1asDocker/rpi-mariadb/
   mariadb:
-    image: mariadb:10.4                      # Supported architectures: amd64, arm64v8
-    # image: tobi312/rpi-mariadb:10.4-alpine # Supported architectures: arm32v7 (RaspberryPi)
+    image: mariadb:10.6                      # Supported architectures: amd64, arm64v8
+    # image: tobi312/rpi-mariadb:10.6-alpine # Supported architectures: arm32v7 (RaspberryPi)
     container_name: mariadb
     restart: unless-stopped
     volumes:

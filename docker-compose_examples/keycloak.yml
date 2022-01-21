@@ -8,7 +8,7 @@ services:
   # https://hub.docker.com/r/jboss/keycloak + https://github.com/keycloak/keycloak-containers/tree/main/server
   # Supported architectures: amd64
   # URL: http://localhost:8080/
-  # start database (mariadb/postgres) before start keycloak!
+  # Requirements: setup database (mariadb or postgres) before start keycloak!
   keycloak:
     image: jboss/keycloak:16.1.0
     #image: quay.io/keycloak/keycloak:16.1.0
@@ -16,8 +16,8 @@ services:
     environment:
       DB_VENDOR: mariadb
       DB_ADDR: mariadb
-      DB_DATABASE: db
-      DB_USER: user
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
       DB_PASSWORD: passw0rd
       KEYCLOAK_USER: admin
       KEYCLOAK_PASSWORD: passw0rd
