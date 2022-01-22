@@ -9,13 +9,20 @@ services:
   # https://postgis.net/ + https://github.com/postgis/postgis/
   # https://hub.docker.com/r/postgis/postgis + https://github.com/postgis/docker-postgis
   # https://github.com/Tob1asDocker/rpi-postgresql-postgis
+  # Optional: additional user without admin permission
+  # * with init script (init-user-db.sh): https://github.com/docker-library/docs/tree/master/postgres#initialization-scripts
+  # * with docker command when container running: docker exec -it postgres psql 
+  #   CREATE ROLE user_name WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOREPLICATION CONNECTION LIMIT -1 PASSWORD 'user_password';
+  #   CREATE DATABASE database_name WITH OWNER = user_name ENCODING = 'UTF8' CONNECTION LIMIT = -1;
+  #   GRANT ALL PRIVILEGES ON DATABASE "database_name" to user_name;
   postgres:
-    image: postgres:14-alpine                           # Supported architectures: arm32v5, arm32v6, arm32v7, arm64v8, amd64
+    image: postgres:14-alpine                            # Supported architectures: arm32v5, arm32v6, arm32v7, arm64v8, amd64
     #image: postgis/postgis:14-3.1-alpine                # Supported architectures: amd64
     #image: tobi312/rpi-postgresql-postgis:14-3.1-alpine # Supported architectures: arm32v7
     container_name: postgres
     volumes:
       - ./postgres-data:/var/lib/postgresql/data:rw
+      #- ./postgres-init/init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh:ro
       #- /etc/timezone:/etc/timezone:ro
       #- /etc/localtime:/etc/localtime:ro
     environment:
@@ -26,7 +33,7 @@ services:
        #PGDATA: /var/lib/postgresql/data/pgdata
     restart: unless-stopped
     ports:
-      - 5432:5432
+      - 5432:5432/tcp
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 60s
