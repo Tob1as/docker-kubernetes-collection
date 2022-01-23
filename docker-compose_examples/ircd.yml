@@ -1,0 +1,26 @@
+# docker-compose -f icd.yml up -d
+version: '2.4'
+services:
+
+  # Ergo (formerly known as Oragono) - IRC server written in Go
+  # https://ergo.chat/
+  # https://github.com/ergochat/ergo
+  # https://github.com/ergochat/ergo/blob/master/distrib/docker/README.md
+  # Supported architectures: amd64, arm64, ...
+  # Oper Credentials see in logs after first start: docker logs ergo 2>&1 | grep 'Oper username:password'
+  # After first start change settings in config in ./ergo-data/ircd.yaml and "/rehash" in chat or restart container or "docker kill -s SIGHUP ergo".
+  ircd:
+    image: ghcr.io/ergochat/ergo:stable  # 2.9.1
+    container_name: ergo
+    restart: unless-stopped
+    ports:
+      - 6667:6667/tcp
+      - 6697:6697/tcp  # TLS
+    volumes:
+      - ./ergo-data:/ircd:rw
+    healthcheck:
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 6697 || exit 1"]
+      interval: 120s
+      timeout: 5s
+      retries: 3
+      #start_period: 30s
