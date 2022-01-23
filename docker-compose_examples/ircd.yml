@@ -5,6 +5,7 @@ services:
   # Ergo (formerly known as Oragono) - IRC server written in Go
   # https://ergo.chat/
   # https://github.com/ergochat/ergo
+  # https://github.com/ergochat/ergo/blob/master/docs/MANUAL.md
   # https://github.com/ergochat/ergo/blob/master/distrib/docker/README.md
   # Supported architectures: amd64, arm64, ...
   # Oper Credentials see in logs after first start: docker logs ergo 2>&1 | grep 'Oper username:password'
