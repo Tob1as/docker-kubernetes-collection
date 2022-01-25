@@ -20,15 +20,22 @@ services:
       - cluster.name=es-docker-cluster
       - discovery.type=single-node
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx1g"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx2g"
       - xpack.security.enabled=true
       - ELASTIC_PASSWORD=passw0rd  # Password for default user "elastic"
     ulimits:
       memlock:
         soft: -1
         hard: -1
+    mem_limit: 2g
     volumes:
       - ./elasticsearch-data:/usr/share/elasticsearch/data
     ports:
-      - 9200:9200
-      #- 9300:9300
+      - 9200:9200/tcp
+      #- 9300:9300/tcp
+    healthcheck:
+        test: ["CMD-SHELL", "curl --silent --fail -XGET 'localhost:9200/_cluster/health?pretty' --user elastic:$$ELASTIC_PASSWORD || exit 1"]
+        #start_period: 30s
+        interval: 60s
+        timeout: 10s
+        retries: 3

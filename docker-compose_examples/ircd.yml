@@ -17,6 +17,8 @@ services:
     ports:
       - 6667:6667/tcp
       - 6697:6697/tcp  # TLS
+      #- 8067:8067/tcp  # Websocket
+      #- 8097:8097/tcp  # Websocket TLS
     volumes:
       - ./ergo-data:/ircd:rw
     healthcheck:

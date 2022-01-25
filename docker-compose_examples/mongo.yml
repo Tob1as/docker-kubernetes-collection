@@ -17,7 +17,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: user
       MONGO_INITDB_ROOT_PASSWORD: passw0rd
     ports:
-      - 27017:27017
+      - 27017:27017/tcp
     healthcheck:
       test:  mongo -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval db.adminCommand\(\"ping\"\) || exit 1
       interval: 60s

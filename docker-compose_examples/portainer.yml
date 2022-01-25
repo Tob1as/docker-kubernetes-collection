@@ -18,9 +18,9 @@ services:
       - ./portainer-data:/data:rw
     #  - ./ssl:/certs:ro
     ports:
-      #- 8000:8000
-      - 9443:9443  # https (default Portainer generates self-signed SSL certificate, alternatively use your own)
-      - 9000:9000  # http (legacy)
+      #- 8000:8000/tcp
+      - 9443:9443/tcp  # https (default Portainer generates self-signed SSL certificate, alternatively use your own)
+      #- 9000:9000/tcp  # http (legacy)
     #command:
     #  #--ssl
     #  --sslcert /certs/ssl.crt

@@ -17,4 +17,10 @@ services:
       #- ADMINER_PLUGINS=""
       - ADMINER_DESIGN=nette
     ports:
-      - 8080:8080
+      - 8080:8080/tcp
+    healthcheck:
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 8080 || exit 1"]
+      #start_period: 30s
+      interval: 60s
+      timeout: 5s
+      retries: 3

@@ -14,7 +14,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
-      - "8080:8080"
+      - "8080:8080/tcp"
     environment:
       #- "DOZZLE_ADDR=:8080"
       - "DOZZLE_BASE=/logging"

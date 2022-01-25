@@ -15,6 +15,7 @@ services:
       TZ: Europe/Berlin
     #ports:    # Do NOT open port external (without password)!
     #  - 11211:11211
+    #entrypoint: memcached -m 256
     healthcheck:
       test: ["CMD","sh","-c","exec memcached --version"]
       #start_period: 30s
