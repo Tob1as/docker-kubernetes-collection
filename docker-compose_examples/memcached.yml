@@ -19,6 +19,6 @@ services:
     healthcheck:
       test: ["CMD","sh","-c","exec memcached --version"]
       #start_period: 30s
-      interval: 10s
+      interval: 60s
       timeout: 10s
       retries: 3
