@@ -62,6 +62,7 @@ services:
         timeout: 10s
         retries: 3
 
+  # Seafile - file sync and share solution
   # https://www.seafile.com/ & https://github.com/haiwen/seafile
   # https://manual.seafile.com/docker/pro-edition/deploy_seafile_pro_with_docker/
   # https://docker.seafile.top/harbor/projects/4/repositories/seafile-pro-mc?publicAndNotLogged=yes
