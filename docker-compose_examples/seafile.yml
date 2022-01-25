@@ -46,7 +46,7 @@ services:
   # https://github.com/haiwen/seafile/issues/2118#issuecomment-523688712 (CSRF_TRUSTED_ORIGINS = ['seafile.example.com:23456'])
   # https://forum.seafile.com/t/check-status-of-seafile-server/3720/6   
   seafile:
-    image: seafileltd/seafile-mc:latest
+    image: seafileltd/seafile-mc:latest # 8.0.7
     container_name: seafile
     ports:
       - "8080:80/tcp"
