@@ -34,7 +34,7 @@ services:
     restart: unless-stopped
     ports:
       - 5432:5432/tcp
-      #- 127.0.0.1:5432:5432/tcp # use this and comment in the other, if you want connect only from localhost
+      #- 127.0.0.1:5432:5432/tcp # use this and comment out the other, if you want connect only from localhost
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 60s

@@ -34,7 +34,7 @@ services:
       #ME_CONFIG_MONGODB_AUTH_USERNAME: "admin"  # only needed if ME_CONFIG_MONGODB_ENABLE_ADMIN is "false"
       #ME_CONFIG_MONGODB_AUTH_PASSWORD: "pass"   # only needed if ME_CONFIG_MONGODB_ENABLE_ADMIN is "false"
     ports:
-      - 8081:8081
+      - 8081:8081/tcp
     healthcheck:
       test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 8081 || exit 1"]
       #start_period: 30s

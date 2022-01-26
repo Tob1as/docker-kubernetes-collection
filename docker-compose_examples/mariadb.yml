@@ -38,7 +38,7 @@ services:
     #  "
     ports:
       - 3306:3306/tcp
-      #- 127.0.0.1:3306:3306/tcp # use this and comment in the other, if you want connect only from localhost
+      #- 127.0.0.1:3306:3306/tcp # use this and comment out the other, if you want connect only from localhost
     healthcheck:
       test:  mysqladmin ping -h 127.0.0.1 -u root --password=$$MARIADB_ROOT_PASSWORD || exit 1
       #test:  mysqladmin ping -h 127.0.0.1 -u $$MARIADB_USER --password=$$MARIADB_PASSWORD || exit 1

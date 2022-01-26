@@ -22,7 +22,7 @@ services:
     volumes:
       - ./redis-data:/data:rw
     #ports:    # Do NOT open port external (without password)! <https://redis.io/topics/acl>
-    #  - 6379:6379/tcp
+    #  - 127.0.0.1:6379:6379/tcp
     healthcheck:
       #test: ["CMD","sh","-c","exec redis-cli --no-auth-warning -a $${REDIS_PASSWORD} ping"]
       test: ["CMD","sh","-c","exec redis-cli ping"]
