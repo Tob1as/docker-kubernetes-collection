@@ -19,7 +19,7 @@ services:
       - 25565:25565/tcp
     mem_limit: 4g
     #mem_reservation: 512m
-    #cpus: 1.0
+    #cpus: 2.0
     environment:
       TZ: Europe/Berlin
       EULA: "TRUE"
