@@ -1,0 +1,73 @@
+# docker-compose -f minecraft.yml up -d
+version: '2.4'
+services:
+
+  # Minecraft - a sandbox video game
+  # Minecraft Server - Java Edition
+  # https://www.minecraft.net/
+  # https://hub.docker.com/r/itzg/minecraft-server + https://github.com/itzg/docker-minecraft-server
+  # Supported architectures: arm32v7, arm64v8, amd64
+  minecraft:
+    image: itzg/minecraft-server:latest
+    container_name: mc
+    restart: unless-stopped
+    tty: true         # docker run -i
+    stdin_open: true  # docker run -t
+    volumes:
+      - ./minecraft-data:/data
+    ports:
+      - 25565:25565/tcp
+    mem_limit: 4g
+    #mem_reservation: 512m
+    #cpus: 1.0
+    environment:
+      TZ: Europe/Berlin
+      EULA: "TRUE"
+      TYPE: "vanilla"
+      VERSION: "latest"
+      #OVERRIDE_SERVER_PROPERTIES: "true"      # reset any manual configuration of the server.properties
+      MOTD: "A §l§cMinecraft§r §nserver"
+      DIFFICULTY: "easy"
+      #WHITELIST_FILE: "/extra/whitelist.json"
+      #WHITELIST: "user1,uuid2"
+      ENFORCE_WHITELIST: "TRUE"
+      ENABLE_WHITELIST: "TRUE"
+      #OPS_FILE: "https://config.example.com/extra/ops.json"
+      OPS: "user1,uuid2"                            # set your minecraft name!
+      #OVERRIDE_OPS: "true"
+      #ICON: "http://..../some/other/image.png"
+      #OVERRIDE_ICON: "TRUE"
+      #ENABLE_RCON: "true"
+      #RCON_PASSWORD: "testing"
+      #ENABLE_QUERY: "true"
+      MAX_PLAYERS: "20"
+      MAX_WORLD_SIZE: "10000"
+      ALLOW_NETHER: "true"
+      ENABLE_COMMAND_BLOCK: "true"
+      FORCE_GAMEMODE: "true"
+      GENERATE_STRUCTURES: "true"
+      HARDCORE: "false"
+      SNOOPER_ENABLED: "false"
+      MAX_BUILD_HEIGHT: "256"
+      MAX_TICK_TIME: "60000" # set -1 for disable
+      SPAWN_ANIMALS: "true"
+      SPAWN_MONSTERS: "true"
+      SPAWN_NPCS: "true"
+      SPAWN_PROTECTION: "0" # value 0 = disable, 1 = 3x3, 2 = 5x5, 3 = 7x7
+      SEED: "1785852800490497919"
+      MODE: "survival"  # creative, survival, adventure, spectator
+      PVP: "false"
+      LEVEL_TYPE: "default"
+      ONLINE_MODE: "TRUE" # server checks connecting players against Minecraft's account database
+      ALLOW_FLIGHT: "FALSE"
+      SERVER_NAME: "Minecraft Server"
+      #SERVER_PORT: "25565" # default: 25565
+      #UID: "1000"
+      #GID: "1000"
+      #MEMORY: 2G        # Xms + Xmx
+      INIT_MEMORY: "512M" # Xms
+      MAX_MEMORY: "4G"    # Xmx
+      #EXEC_DIRECTLY: "true"
+      ENABLE_ROLLING_LOGS: "true"
+      #PROXY: "proxy:3128"
+      #ENABLE_AUTOPAUSE: "TRUE"
