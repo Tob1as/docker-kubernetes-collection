@@ -2,6 +2,8 @@
 version: '2.4'
 services:
 
+  # NOT READY !!!! (read offical docs)
+
   # Mumble - voice-chat software
   # https://www.mumble.info/ + https://github.com/mumble-voip/mumble
   # https://hub.docker.com/r/mumblevoip/mumble-server + https://github.com/mumble-voip/mumble-docker
