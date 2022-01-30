@@ -2,14 +2,14 @@
 version: '2.4'
 services:
 
-  # NOT READY !!!! (read offical docs)
+  # NOT READY !!!! (read also offical docs https://github.com/mumble-voip/mumble-docker )
 
   # Mumble - voice-chat software
   # https://www.mumble.info/ + https://github.com/mumble-voip/mumble
   # https://hub.docker.com/r/mumblevoip/mumble-server + https://github.com/mumble-voip/mumble-docker
   # https://github.com/mumble-voip/mumble/blob/master/scripts/murmur.ini
-  # Supported architectures: amd64, arm64
-  # # fix permission problem before startup: mkdir ./mumble-data/ && chmod 777 ./mumble-data/
+  # Supported architectures: amd64, arm64, arm32v7
+  # fix permission problem before startup: mkdir ./mumble-data/ && chmod 777 ./mumble-data/
   # Password: set env or see in logs after start: docker logs mumble-server 2>&1 | grep SUPERUSER_PASSWORD
   # When login with "Superuser" and Password you have admin permission.
   mumble:
@@ -29,7 +29,7 @@ services:
       #MUMBLE_BANDWIDTH: 7200
       #MUMBLE_CHANNELNAME: [ \\-=\\w\\#\\[\\]\\{\\}\\(\\)\\@\|]+
       #MUMBLE_DATABASE: /data/murmur.sqlite
-      #MUMBLE_DB_DRIVER: QSQLITE
+      #MUMBLE_DB_DRIVER: QSQLITE  # for MariaDB set "QMYSQL"
       #MUMBLE_DB_USERNAME: ---
       #MUMBLE_DB_PASSWORD: ---
       #MUMBLE_DEFAULTCHANNEL: ---
@@ -66,6 +66,13 @@ services:
     volumes:
       #- mumble-data:/data:rw
       - ./mumble-data:/data:rw
+      # or single files:
+      #- ./mumble-data/database.sqlite:/data/database.sqlite:rw
+      #- ./mumble-data/murmur.ini:/data/murmur.ini:rw
+      # SSL
+      #- ./mumble-data/cert.pem:/data/cert.pem:ro
+      #- ./mumble-data/intermediate.pem:/data/intermediate.pem:ro
+      #- ./mumble-data/key.pem:/data/key.pem:ro
     healthcheck:
       test:  ["CMD-SHELL", "mumble-server -version || exit 1"]
       interval: 60s
