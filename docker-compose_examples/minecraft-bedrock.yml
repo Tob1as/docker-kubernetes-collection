@@ -17,7 +17,7 @@ services:
       - ./minecraft-bedrock-data:/data:rw
     ports:
       - 19132:19132/udp
-    #mem_limit: 5g          # set more then MAX_MEMORY (Xmx)
+    #mem_limit: 4g
     #mem_reservation: 512m
     #cpus: 2.0
     environment:
