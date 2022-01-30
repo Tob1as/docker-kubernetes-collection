@@ -17,7 +17,7 @@ services:
       - ./minecraft-data:/data
     ports:
       - 25565:25565/tcp
-    mem_limit: 4g
+    mem_limit: 5g          # set more then MAX_MEMORY (Xmx)
     #mem_reservation: 512m
     #cpus: 2.0
     environment:
