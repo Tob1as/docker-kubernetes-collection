@@ -34,7 +34,7 @@ services:
       GAMEMODE: "survival"   # Options: survival, creative, adventure
       DIFFICULTY: "normal"   # Options: peaceful, easy, normal, hard
       LEVEL_TYPE: "DEFAULT"  # Options: FLAT, LEGACY, DEFAULT
-      ALLOW_CHEATS: "false"  # Options: true, false
+      ALLOW_CHEATS: "true"   # Options: true, false
       MAX_PLAYERS: "20"
       ONLINE_MODE: "true" # Options: true, false (removes Xbox Live account requirements)
       #WHITE_LIST: "false" # Options: true, false  # with 1.16.230.50 replace with allow list
