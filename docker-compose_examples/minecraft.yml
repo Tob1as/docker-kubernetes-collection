@@ -28,11 +28,11 @@ services:
       VERSION: "latest"
       #OVERRIDE_SERVER_PROPERTIES: "true"      # reset any manual configuration of the server.properties
       MOTD: "A §l§cMinecraft§r §nserver"
-      DIFFICULTY: "easy"
+      DIFFICULTY: "normal"  # easy, normal, hard
       #WHITELIST_FILE: "/extra/whitelist.json"
       #WHITELIST: "user1,uuid2"
-      ENFORCE_WHITELIST: "TRUE"
-      ENABLE_WHITELIST: "TRUE"
+      #ENFORCE_WHITELIST: "TRUE"
+      #ENABLE_WHITELIST: "TRUE"
       #OPS_FILE: "https://config.example.com/extra/ops.json"
       OPS: "user1,uuid2"                            # set your minecraft name!
       #OVERRIDE_OPS: "true"
@@ -58,7 +58,8 @@ services:
       SEED: "1785852800490497919"
       MODE: "survival"  # creative, survival, adventure, spectator
       PVP: "false"
-      LEVEL_TYPE: "default"
+      LEVEL_TYPE: "default" # DEFAULT, FLAT, LARGEBIOMES, AMPLIFIED, CUSTOMIZED, BUFFET, BIOMESOP, BIOMESOPLENTY
+      #GENERATOR_SETTINGS: ''
       ONLINE_MODE: "TRUE" # server checks connecting players against Minecraft's account database
       ALLOW_FLIGHT: "FALSE"
       SERVER_NAME: "Minecraft Server"
