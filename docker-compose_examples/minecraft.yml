@@ -5,6 +5,7 @@ services:
   # Minecraft - a sandbox video game
   # Minecraft Server - Java Edition
   # https://www.minecraft.net/
+  # https://www.minecraft.net/en-us/download/server
   # https://hub.docker.com/r/itzg/minecraft-server + https://github.com/itzg/docker-minecraft-server
   # Supported architectures: arm32v7, arm64v8, amd64
   minecraft:
@@ -34,7 +35,7 @@ services:
       #ENFORCE_WHITELIST: "TRUE"
       #ENABLE_WHITELIST: "TRUE"
       #OPS_FILE: "https://config.example.com/extra/ops.json"
-      OPS: "user1,uuid2"                            # set your minecraft name!
+      OPS: "user1,uuid2"                            # set your minecraft name! (UUID: https://playerdb.co/api/player/minecraft/USERNAME)
       #OVERRIDE_OPS: "true"
       #ICON: "http://..../some/other/image.png"
       #OVERRIDE_ICON: "TRUE"
