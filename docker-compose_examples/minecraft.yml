@@ -14,9 +14,10 @@ services:
     tty: true         # docker run -i
     stdin_open: true  # docker run -t
     volumes:
-      - ./minecraft-data:/data
+      - ./minecraft-data:/data:rw
     ports:
       - 25565:25565/tcp
+      #- 25565:25565/udp
     mem_limit: 5g          # set more then MAX_MEMORY (Xmx)
     #mem_reservation: 512m
     #cpus: 2.0
