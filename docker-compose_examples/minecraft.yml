@@ -56,7 +56,7 @@ services:
       SPAWN_MONSTERS: "true"
       SPAWN_NPCS: "true"
       SPAWN_PROTECTION: "0" # value 0 = disable, 1 = 3x3, 2 = 5x5, 3 = 7x7
-      SEED: "1785852800490497919"
+      #SEED: "1785852800490497919"
       MODE: "survival"  # creative, survival, adventure, spectator
       PVP: "false"
       LEVEL_TYPE: "default" # DEFAULT, FLAT, LARGEBIOMES, AMPLIFIED, CUSTOMIZED, BUFFET, BIOMESOP, BIOMESOPLENTY
