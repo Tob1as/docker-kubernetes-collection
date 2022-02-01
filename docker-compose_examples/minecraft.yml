@@ -18,20 +18,22 @@ services:
       - ./minecraft-data:/data:rw
     ports:
       - 25565:25565/tcp
-      #- 25565:25565/udp
-    mem_limit: 5g          # set more then MAX_MEMORY (Xmx)
+      #- 25565:25565/udp  # Query
+      #- 25575:25575/tcp  # RCON
+    mem_limit: 3g         # set a higher than MAX_MEMORY (Xmx)
     #mem_reservation: 512m
-    #cpus: 2.0
+    #cpus: 1.0
     environment:
       TZ: Europe/Berlin
       EULA: "TRUE"
       TYPE: "vanilla"
       VERSION: "latest"
-      #OVERRIDE_SERVER_PROPERTIES: "true"      # reset any manual configuration of the server.properties
-      MOTD: "A §l§cMinecraft§r §nserver"
+      #OVERRIDE_SERVER_PROPERTIES: "true"          # reset any manual configuration of the server.properties
+      MOTD: "A §l§cMinecraft§r §nserver"           # unicode characters allowed https://minecraft.fandom.com/wiki/Formatting_codes
       DIFFICULTY: "normal"  # easy, normal, hard
       #WHITELIST_FILE: "/extra/whitelist.json"
       #WHITELIST: "user1,uuid2"
+      #OVERRIDE_WHITELIST: "true"
       #ENFORCE_WHITELIST: "TRUE"
       #ENABLE_WHITELIST: "TRUE"
       #OPS_FILE: "https://config.example.com/extra/ops.json"
@@ -40,8 +42,10 @@ services:
       #ICON: "http://..../some/other/image.png"
       #OVERRIDE_ICON: "TRUE"
       #ENABLE_RCON: "true"
-      #RCON_PASSWORD: "testing"
+      #RCON_PASSWORD: "minecraft"
+      #RCON_PORT: "25575"   # TCP-Port
       #ENABLE_QUERY: "true"
+      #QUERY_PORT: "25565"  # UDP-Port
       MAX_PLAYERS: "20"
       MAX_WORLD_SIZE: "10000"
       ALLOW_NETHER: "true"
@@ -51,25 +55,25 @@ services:
       HARDCORE: "false"
       SNOOPER_ENABLED: "false"
       MAX_BUILD_HEIGHT: "256"
-      MAX_TICK_TIME: "60000" # set -1 for disable
+      MAX_TICK_TIME: "60000"           # set -1 for disable
       SPAWN_ANIMALS: "true"
       SPAWN_MONSTERS: "true"
       SPAWN_NPCS: "true"
-      SPAWN_PROTECTION: "0" # value 0 = disable, 1 = 3x3, 2 = 5x5, 3 = 7x7
+      SPAWN_PROTECTION: "0"            # value 0 = disable, 1 = 3x3, 2 = 5x5, 3 = 7x7
       #SEED: "1785852800490497919"
-      MODE: "survival"  # creative, survival, adventure, spectator
+      MODE: "survival"                 # creative, survival, adventure, spectator
       PVP: "false"
-      LEVEL_TYPE: "default" # DEFAULT, FLAT, LARGEBIOMES, AMPLIFIED, CUSTOMIZED, BUFFET, BIOMESOP, BIOMESOPLENTY
+      LEVEL_TYPE: "default"            # DEFAULT, FLAT, LARGEBIOMES, AMPLIFIED, CUSTOMIZED, BUFFET, BIOMESOP, BIOMESOPLENTY
       #GENERATOR_SETTINGS: ''
-      ONLINE_MODE: "TRUE" # server checks connecting players against Minecraft's account database
+      ONLINE_MODE: "TRUE"              # server checks connecting players against Minecraft's account database
       ALLOW_FLIGHT: "FALSE"
       SERVER_NAME: "Minecraft Server"
-      #SERVER_PORT: "25565" # default: 25565
+      #SERVER_PORT: "25565"            # default: 25565
       #UID: "1000"
       #GID: "1000"
-      #MEMORY: 2G        # Xms + Xmx
-      INIT_MEMORY: "512M" # Xms
-      MAX_MEMORY: "4G"    # Xmx
+      #MEMORY: 2G                      # Xms + Xmx
+      INIT_MEMORY: "512M"              # Xms
+      MAX_MEMORY: "2G"                 # Xmx
       #EXEC_DIRECTLY: "true"
       ENABLE_ROLLING_LOGS: "true"
       #PROXY: "proxy:3128"
