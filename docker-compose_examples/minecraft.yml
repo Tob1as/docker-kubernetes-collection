@@ -18,8 +18,8 @@ services:
       - ./minecraft-data:/data:rw
     ports:
       - 25565:25565/tcp
-      #- 25565:25565/udp  # Query
-      #- 25575:25575/tcp  # RCON
+      - 127.0.0.1:25565:25565/udp   # Query
+      #- 127.0.0.1:25575:25575/tcp  # RCON
     mem_limit: 3g         # set a higher than MAX_MEMORY (Xmx)
     #mem_reservation: 512m
     #cpus: 1.0
@@ -44,7 +44,7 @@ services:
       #ENABLE_RCON: "true"
       #RCON_PASSWORD: "minecraft"
       #RCON_PORT: "25575"   # TCP-Port
-      #ENABLE_QUERY: "true"
+      ENABLE_QUERY: "true"
       #QUERY_PORT: "25565"  # UDP-Port
       MAX_PLAYERS: "20"
       MAX_WORLD_SIZE: "10000"
