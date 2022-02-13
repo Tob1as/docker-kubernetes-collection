@@ -10,7 +10,10 @@ services:
   # Images Supported architectures: amd64 (for ARM-Arch use "build"-line)
   # after start see logs: "docker logs -f mqtt-client"
   mqtt-client:
-    #build: https://raw.githubusercontent.com/efrecon/docker-images/master/mqtt-client/Dockerfile
+    #build: 
+    #  context: https://raw.githubusercontent.com/efrecon/docker-images/master/mqtt-client/Dockerfile
+    #  args:
+    #    ALPINE_VERSION: "3.14"
     image: efrecon/mqtt-client:latest
     container_name: mqtt-client
     restart: unless-stopped
