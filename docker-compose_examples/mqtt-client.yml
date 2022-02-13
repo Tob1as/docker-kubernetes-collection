@@ -17,6 +17,7 @@ services:
     image: efrecon/mqtt-client:latest
     container_name: mqtt-client
     restart: unless-stopped
+    #user: "1000:1000"  # format: "${UID}:${GID}"
     #volumes:
     #  - ./etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
     environment:
@@ -28,4 +29,4 @@ services:
       MQTT_CLIENTNAME: "mqtt-client-0815"
     entrypoint: [ "/bin/sh", "-c", "--" ]
     #command: [ "while true; do sleep 60; done;" ]  # use this, when you want use inside container a other mosquitto_pub/mosquitto_sub-command
-    command: [ "mosquitto_sub -h $$MQTT_HOSTNAME -p $$MQTT_PORT -u $$MQTT_USERNAME --pw '$$MQTT_PASSWORD' $$MQTT_TOPICS --insecure --cafile /etc/ssl/certs/ca-certificates.crt --tls-version tlsv1.2 -i $$MQTT_CLIENTNAME -F '%I %t %p'" ]
+    command: [ "mosquitto_sub -h $$MQTT_HOSTNAME -p $$MQTT_PORT -u $$MQTT_USERNAME --pw $${MQTT_PASSWORD} $$MQTT_TOPICS --insecure --cafile /etc/ssl/certs/ca-certificates.crt --tls-version tlsv1.2 -i $$MQTT_CLIENTNAME -F '%I %t %p'" ]
