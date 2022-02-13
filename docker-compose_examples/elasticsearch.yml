@@ -10,7 +10,7 @@ services:
   # https://discuss.elastic.co/t/set-password-and-user-with-docker-compose/225075/2
   # gui for the browser: https://elasticvue.com/
   # Supported architectures: arm64v8, amd64
-  # # fix permission problem before startup: "mkdir ./elasticsearch-data/ && chmod 777 ./elasticsearch-data/"
+  # fix permission problem before startup: "mkdir ./elasticsearch-data/ && chmod 777 ./elasticsearch-data/"
   elasticsearch:
     image: elastic/elasticsearch:7.16.3
     container_name: elasticsearch
