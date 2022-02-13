@@ -18,8 +18,9 @@ services:
       - "9000:9000/tcp" # MinIO Buckets API
       - "9001:9001/tcp" # MinIO Console
     volumes:
+      #- minio-data:/data:rw
       - ./minio-data:/data:rw
-      #- ./ssl/ssl.crt:/root/.minio/certs/public.crt:ro  # works only with root/group user and set URLs (and Port)
+      #- ./ssl/ssl.crt:/root/.minio/certs/public.crt:ro  # works only with root user and set URLs (and Port)
       #- ./ssl/ssl.key:/root/.minio/certs/private.key:ro # (https://github.com/Tob1asDocker/minio/issues/1#issuecomment-1003127867)
     environment:
       MINIO_ROOT_USER: minio
@@ -40,3 +41,6 @@ services:
       interval: 60s
       timeout: 10s
       retries: 3
+
+#volumes:
+#  minio-data:

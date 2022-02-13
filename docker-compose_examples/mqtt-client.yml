@@ -1,0 +1,28 @@
+# docker-compose -f mqtt-client.yml up -d
+version: '2.4'
+services:
+  
+  # MQTT-Client based on mosquitto-clients 
+  # (OS: AlpineLinux ; Installed: "apk add --no-cache ca-certificates mosquitto-clients")
+  # https://github.com/efrecon/docker-images/tree/master/mqtt-client
+  # https://hub.docker.com/r/efrecon/mqtt-client
+  # https://mosquitto.org/man/mosquitto_sub-1.html - read for more information about mosquitto_sub-command
+  # Images Supported architectures: amd64 (for ARM-Arch use "build"-line)
+  # after start see logs: "docker logs -f mqtt-client"
+  mqtt-client:
+    #build: https://raw.githubusercontent.com/efrecon/docker-images/master/mqtt-client/Dockerfile
+    image: efrecon/mqtt-client:latest
+    container_name: mqtt-client
+    restart: unless-stopped
+    #volumes:
+    #  - ./etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    environment:
+      MQTT_HOSTNAME: "mqtt.example.com"
+      MQTT_PORT: "8883"               # 1883 for TCP without SSL or 8883 for TCP with SSL
+      MQTT_USERNAME: "user"
+      MQTT_PASSWORD: "passw0rd"
+      MQTT_TOPICS: '-t #'             # example: '-t #' for all topics or '-t topic1/# -t topic2/# -t topic3/#' for specific topic
+      MQTT_CLIENTNAME: "mqtt-client-0815"
+    entrypoint: [ "/bin/sh", "-c", "--" ]
+    #command: [ "while true; do sleep 60; done;" ]  # use this, when you want use inside container a other mosquitto_pub/mosquitto_sub-command
+    command: [ "mosquitto_sub -h $$MQTT_HOSTNAME -p $$MQTT_PORT -u $$MQTT_USERNAME --pw '$$MQTT_PASSWORD' $$MQTT_TOPICS --insecure --cafile /etc/ssl/certs/ca-certificates.crt --tls-version tlsv1.2 -i $$MQTT_CLIENTNAME -F '%I %t %p'" ]
