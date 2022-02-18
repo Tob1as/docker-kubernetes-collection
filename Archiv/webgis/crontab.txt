@@ -1,3 +1,0 @@
-# crontab example for letsencrypt
-# every Monday at 2:30 am
-30 2 * * 1 sudo docker start webgis_letsencrypt_1 && sleep 30 && sudo docker exec webgis_nginx_1 nginx -s reload
