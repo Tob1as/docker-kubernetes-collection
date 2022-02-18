@@ -3,12 +3,13 @@ version: '2.4'
 services:
   
   # Elasticsearch - RESTful search and analytics engine
-  # https://memcached.org/
+  # https://www.elastic.co/elasticsearch/
   # https://github.com/elastic/elasticsearch
   # https://hub.docker.com/_/elasticsearch + https://hub.docker.com/r/elastic/elasticsearch
   # https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
   # https://discuss.elastic.co/t/set-password-and-user-with-docker-compose/225075/2
-  # gui for the browser: https://elasticvue.com/
+  # or use a community open source fork: https://github.com/opensearch-project/OpenSearch
+  # gui (web-browser): https://elasticvue.com/
   # Supported architectures: arm64v8, amd64
   # fix permission problem before startup: "mkdir ./elasticsearch-data/ && chmod 777 ./elasticsearch-data/"
   elasticsearch:
