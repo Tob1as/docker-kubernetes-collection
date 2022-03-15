@@ -3,10 +3,10 @@
 My recommendation for Kubernetes: **Rancher**
 * https://rancher.com/ | https://github.com/rancher (CNCF-certified)
 * [Rancher](https://rancher.com/products/rancher) - GUI for cluster operations, monitoring and more
-* [RKE](https://rancher.com/products/rke) - Rancher Kubernetes Engine (AMD64/x86_64)
-* [k8s](https://rancher.com/products/k3s) - Lightweight Kubernetes - Optimized for both x86 and Arm processors (ARM64 and ARMv7 (example: Raspberry Pi))
+* [RKE](https://rancher.com/products/rke) - Rancher Kubernetes Engine (AMD64/x86_64) for on-premise installation
+* [k8s](https://rancher.com/products/k3s) - Lightweight Kubernetes - Optimized for both x86 and Arm processors (ARM64 and ARMv7, example: Raspberry Pi)
 * [Longhorn](https://rancher.com/products/longhorn) - Persistent Storage (AMD64/x86_64 & ARM64)
-* [local-path-provisioner](https://github.com/rancher/local-path-provisioner) - Persistent Storage (AMD64/x86_64 & ARM64, ARM32)  (when using single node, example: Raspberry Pi)
+* [local-path-provisioner](https://github.com/rancher/local-path-provisioner) - Persistent Storage (AMD64/x86_64 & ARM64, ARM32)  (when local path is needed or single node, example: Raspberry Pi)
 
 and for KVM hypervisor: [Proxmox](https://www.proxmox.com/en/proxmox-ve) based on Debian with CEPH (include RADOS) or ZFS storage support.
 
