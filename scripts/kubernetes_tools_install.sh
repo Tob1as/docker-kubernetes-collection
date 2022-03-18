@@ -4,7 +4,7 @@ set -e
 # Kubernetes Tools install on Debian/Raspbian 11 bullseye!
 # 
 # Source-URL: https://github.com/Tob1asDocker/Collection/blob/master/scripts/kubernetes_tools_install.sh
-# Created: 2022-03-17 ; last Updated: 2022-03-18
+# Created: 2022-03-17 ; last Updated: 2022-03-19
 #
 
 # colors
@@ -76,7 +76,7 @@ kubectl_add_bash_completion () {
 kubectl_set_editor () {
     if command_exists kubectl && [ ! -f "/etc/profile.d/kubeeditor.sh" ] ; then
         echo "${b}>> kubectl: set default editor${n}"
-        echo "export KUBE_EDITOR=nano" >> /etc/profile.d/kubeeditor.sh
+        echo "export KUBE_EDITOR=nano" > /etc/profile.d/kubeeditor.sh
     else
         echo "${y}>> kubectl not found. set editor failed.${n}"
     fi
