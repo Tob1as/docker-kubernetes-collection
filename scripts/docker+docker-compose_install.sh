@@ -27,7 +27,7 @@ command_exists() {
 
 if ! command_exists sudo; then
     echo "${r}>> Please install sudo!${n}"
-	exit 0
+    exit 0
 fi
 
 # Install some required packages
