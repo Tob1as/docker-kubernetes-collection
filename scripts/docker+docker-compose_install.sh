@@ -3,7 +3,7 @@ set -e
 
 # Docker & docker-compose v2 install on Debian/Raspbian 11 bullseye!
 # 
-# Source-URL: https://github.com/Tob1asDocker/Collection/blob/master/docker+docker-compose_install.sh
+# Source-URL: https://github.com/Tob1asDocker/Collection/blob/master/scripts/docker+docker-compose_install.sh
 # Created: 2021-12-19 ; last Updated: 2021-12-19
 # Read more:
 #   * https://docs.docker.com/engine/install/debian/ 
