@@ -16,12 +16,12 @@ b=`tput setaf 4`  # blue
 lb=`tput setaf 6` # lightblue
 
 if [ $(id -u) -ne 0 ]; then
-	echo "${r}Use \"root\"-User or \"sudo ./kubernetes_tools_install.sh\"!${n}";
-	exit 0
+    echo "${r}Use \"root\"-User or \"sudo ./kubernetes_tools_install.sh\"!${n}";
+    exit 0
 fi
 
 command_exists() {
-	command -v "$@" > /dev/null 2>&1
+    command -v "$@" > /dev/null 2>&1
 }
 
 if ! command_exists docker; then
@@ -67,8 +67,8 @@ kubectl_add_bash_completion () {
     if command_exists kubectl; then
         echo "${b}>> kubectl: add bash completion${n}"
         kubectl completion bash | tee /etc/bash_completion.d/kubectl > /dev/null
-	else
-	    echo "${y}>> kubectl not found. bash completion failed.${n}"
+    else
+        echo "${y}>> kubectl not found. bash completion failed.${n}"
     fi
 }
 
@@ -77,8 +77,8 @@ kubectl_set_editor () {
     if command_exists kubectl && [ ! -f "/etc/profile.d/kubeeditor.sh" ] ; then
         echo "${b}>> kubectl: set default editor${n}"
         echo "export KUBE_EDITOR=nano" >> /etc/profile.d/kubeeditor.sh
-	else
-	    echo "${y}>> kubectl not found. set editor failed.${n}"
+    else
+        echo "${y}>> kubectl not found. set editor failed.${n}"
     fi
 }
 
@@ -111,8 +111,8 @@ helm_add_bash_completion () {
     if command_exists helm; then
         echo "${b}>> helm: add bash completion${n}"
         helm completion bash  | tee /etc/bash_completion.d/helm > /dev/null
-	else
-	    echo "${y}>> helm not found. bash completion failed.${n}"
+    else
+        echo "${y}>> helm not found. bash completion failed.${n}"
     fi
 }
 
@@ -257,13 +257,13 @@ ingress:
 #addons_include:
 #  - https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
 EOF
-    
-    echo -e "${b}>> ...Done! cluster.yml was created. \n>> - You can show/edit this and then use \"rke up\" to create the cluster. \n>> - Before add ssh-key to target host! \n>> - Then use \"kube_config_cluster.yml\" as \"~/.kube/config\" to connect with kubectl to cluster.${n}"
-	
-    # when error: "FATA[0023] [[network] Host [****] is not able to connect to the following ports: [****:2379]. Please check network policies and firewall rules]"
-    # then: https://github.com/rancher/rke/issues/955#issuecomment-685571566 (IPv6 ?) (and https://github.com/rancher/rancher/issues/14249#issuecomment-400941075)
-    #
-    # cleanup after cluster remove (rke remove): https://github.com/rancher/rancher/files/2144217/rancher_clean-dirs.sh.txt    
+
+        echo -e "${b}>> ...Done! cluster.yml was created. \n>> - You can show/edit this and then use \"rke up\" to create the cluster. \n>> - Before add ssh-key to target host! \n>> - Then use \"kube_config_cluster.yml\" as \"~/.kube/config\" to connect with kubectl to cluster.${n}"
+        
+        # when error: "FATA[0023] [[network] Host [****] is not able to connect to the following ports: [****:2379]. Please check network policies and firewall rules]"
+        # then: https://github.com/rancher/rke/issues/955#issuecomment-685571566 (IPv6 ?) (and https://github.com/rancher/rancher/issues/14249#issuecomment-400941075)
+        #
+        # cleanup after cluster remove (rke remove): https://github.com/rancher/rancher/files/2144217/rancher_clean-dirs.sh.txt    
 
     else 
         echo "${lb}>> RKE example Cluster.yml is exists or RKE is not exists.${n}"
@@ -323,13 +323,13 @@ install_k3s () {
 main () {
     install_requirements
     install_kubectl
-	kubectl_add_bash_completion
+    kubectl_add_bash_completion
     kubectl_set_editor
     install_helm
     helm_add_bash_completion
     install_rke
-	rke_config
-	#install_k3s  # when use this, rke and rke_config not needed!
+    rke_config
+    #install_k3s  # when use this, rke and rke_config not needed!
     echo "${g}>> install done! (Recommended: Restart you shell session!)${n}"
 }
 
