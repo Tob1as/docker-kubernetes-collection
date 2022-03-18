@@ -10,6 +10,8 @@ My recommendation for Kubernetes: **Rancher**
 
 and for KVM hypervisor: [Proxmox](https://www.proxmox.com/en/proxmox-ve) based on Debian with CEPH (include RADOS) or ZFS storage support.
 
+Help for install Kubernetes Tools? Use my install [Script](https://github.com/Tob1asDocker/Collection/blob/master/scripts/kubernetes_tools_install.sh) for Linux Debian/Raspbian.
+
 ## Links
 
 * Website (NGINX/Apache, PHP, SSH/SFTP) -> [github.com/Tob1asDocker/php](https://github.com/Tob1asDocker/php/blob/master/k8s.yaml)
