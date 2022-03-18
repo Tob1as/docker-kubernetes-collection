@@ -4,7 +4,7 @@ set -e
 # Docker & docker-compose v2 install on Debian/Raspbian 11 bullseye!
 # 
 # Source-URL: https://github.com/Tob1asDocker/Collection/blob/master/scripts/docker+docker-compose_install.sh
-# Created: 2021-12-19 ; last Updated: 2021-12-19
+# Created: 2021-12-19 ; last Updated: 2022-03-19
 # Read more:
 #   * https://docs.docker.com/engine/install/debian/ 
 #   * https://docs.docker.com/engine/install/debian/#install-using-the-convenience-script
@@ -13,13 +13,26 @@ set -e
 #   * https://docs.docker.com/engine/reference/commandline/dockerd/
 #   * https://docs.docker.com/config/daemon/ipv6/
 
-#command_exists() {
-#	command -v "$@" > /dev/null 2>&1
-#}
+# colors
+n=`tput sgr0`     # normal/reset
+r=`tput setaf 1`  # red
+g=`tput setaf 2`  # green
+y=`tput setaf 3`  # yellow
+b=`tput setaf 4`  # blue
+lb=`tput setaf 6` # lightblue
+
+command_exists() {
+	command -v "$@" > /dev/null 2>&1
+}
+
+if ! command_exists sudo; then
+    echo "${r}>> Please install sudo!${n}"
+	exit 0
+fi
 
 # Install some required packages
 install_requirements () {
-    echo ">> Install some required packages"
+    echo "${b}>> Install some required packages${n}"
     sudo apt update
     sudo apt install -y \
         apt-transport-https \
@@ -37,49 +50,54 @@ lsb_dist="$(. /etc/os-release && echo "$ID" | tr '[:upper:]' '[:lower:]')"
 #kernelname="$(uname -s | tr '[:upper:]' '[:lower:]')"
 #arch="$(uname -m | tr '[:upper:]' '[:lower:]')"
 #arch_dpkg=$(dpkg --print-architecture)
+#current_user=$(last -Fwp now | grep 'logged in' | head -n 1 | cut -d' ' -f1) # get last login user
 current_user=$(whoami)
 #current_user=$(echo $USER)
 
 # Install Docker
 install_docker () {
-    echo ">> Install Docker"
-    
-    # Get the Docker signing key for packages
-    curl -fsSL "https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg" | sudo gpg --dearmor --yes -o /usr/share/keyrings/docker-archive-keyring.gpg
-    #sudo apt-key add /usr/share/keyrings/docker-archive-keyring.gpg
-
-    # Add the Docker official repos
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list
-    
-    # Install Docker
-    sudo apt update
-    case "$lsb_dist" in
-        raspbian)
-            sudo apt install -y --no-install-recommends docker-ce-cli docker-ce containerd.io
-            sudo apt install -y docker-ce-rootless-extras
-        ;;
-        *)
-            sudo apt install -y docker-ce-cli docker-ce containerd.io docker-ce-rootless-extras
-        ;;
-    esac
-
-    # add docker permission to user (restart shell session requied)
-    case "$lsb_dist" in
-        raspbian)
-            echo ">>> add user pi to docker group"
-            sudo usermod -aG docker pi
-        ;;
-        *)
-            if [[ "$current_user" != "root" ]]; then
-                sudo usermod -aG docker $current_user
-            else
-                echo ">>> optional: add your user to docker group with: \"sudo usermod -aG docker USER\""
-            fi
-        ;;
-    esac
-
-    # restart docker
-    #sudo systemctl restart docker
+    if ! command_exists docker; then
+        echo "${b}>> Install Docker${n}"
+        
+        # Get the Docker signing key for packages
+        curl -fsSL "https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg" | sudo gpg --dearmor --yes -o /usr/share/keyrings/docker-archive-keyring.gpg
+        #sudo apt-key add /usr/share/keyrings/docker-archive-keyring.gpg
+	    
+        # Add the Docker official repos
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list
+        
+        # Install Docker
+        sudo apt update
+        case "$lsb_dist" in
+            raspbian)
+                sudo apt install -y --no-install-recommends docker-ce-cli docker-ce containerd.io
+                sudo apt install -y docker-ce-rootless-extras
+            ;;
+            *)
+                sudo apt install -y docker-ce-cli docker-ce containerd.io docker-ce-rootless-extras
+            ;;
+        esac
+	    
+        # add docker permission to user (restart shell session requied)
+        case "$lsb_dist" in
+            raspbian)
+                echo "${b}>>> add user pi to docker group${n}"
+                sudo usermod -aG docker pi
+            ;;
+            *)
+                if [[ "$current_user" != "root" ]]; then
+                    sudo usermod -aG docker $current_user
+                else
+                    echo "${b}>>> optional: add your user to docker group with: \"sudo usermod -aG docker USER\"${n}"
+                fi
+            ;;
+        esac
+	    
+        # restart docker
+        #sudo systemctl restart docker
+    else 
+        echo "${lb}>> Docker is exists.${n}"
+    fi
 
     # check version
     #DOCKERD_VERSION_INSTALLED="$(dockerd -v | cut -d ' ' -f3 | cut -d ',' -f1)"
@@ -90,7 +108,7 @@ install_docker () {
 
 # Install docker-compose (v2) (repeat this part if you want to make an update)
 install_docker_compose () {
-    echo ">> Install docker-compose (v2)"
+    echo "${b}>> Install docker-compose (v2)${n}"
 
     # get latest stable docker-compose version
     #DOCKER_COMPOSE_VERSION=`git ls-remote --tags git://github.com/docker/compose.git | awk '{print $2}' | grep -v 'docs\|rc' | awk -F'/' '{print $3}' | sort -V | tail -n1`
@@ -111,22 +129,30 @@ install_docker_compose () {
 
 # docker: enable IPv6 NAT
 enable_docker_ipv6nat () {
-    echo ">> docker: enable IPv6 NAT"
-    sudo sh -c 'cat << EOF > /etc/docker/daemon.json
+    if [ ! -f "/etc/docker/daemon.json" ] ; then
+        echo "${b}>> docker: enable IPv6 NAT${n}"
+        sudo sh -c 'cat << EOF > /etc/docker/daemon.json
 {
   "experimental": true,
   "ip6tables": true,
   "ipv6": true,
   "fixed-cidr-v6": "fd00:dead:beef::/48"
 }'
-    # restart docker
-    sudo systemctl restart docker
+        # restart docker
+        sudo systemctl restart docker
+    else 
+        echo "${y}>> docker: enable IPv6 NAT failed. \"/etc/docker/daemon.json\" is exists.${n}"
+    fi
 }
 
 # docker-compose: set alias for current user
 set_docker_compose_alias () {
-    echo ">> docker-compose: set alias for current user \"$current_user\""
-    echo 'alias docker-compose="docker compose"' >> ~/.bash_aliases
+    if ! grep -q "docker compose" ~/.bash_aliases; then
+        echo "${b}>> docker-compose: set alias for current user \"$current_user\"${n}"
+        echo 'alias docker-compose="docker compose"' >> ~/.bash_aliases
+    else 
+        echo "${y}>> docker-compose: set alias failed. Is alias exists in \"~/.bash_aliases\"?${n}"
+    fi
 }
 
 # Main
@@ -136,7 +162,7 @@ main () {
     install_docker_compose
     #enable_docker_ipv6nat
     set_docker_compose_alias
-    echo ">> install done! (Recommended: Restart you shell session!)"
+    echo "${g}>> install done! (Recommended: Restart you shell session!)${n}"
 }
 
 main
