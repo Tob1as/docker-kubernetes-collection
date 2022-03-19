@@ -118,7 +118,7 @@ helm_add_bash_completion () {
 
 # Install RKE <https://rancher.com/docs/rke/latest/en/installation/>
 install_rke () {
-    if ! command_exists rke; then
+    #if ! command_exists rke; then
     
         echo "${b}>> Install RKE (Rancher Kubernetes Engine)${n}"
         
@@ -158,9 +158,9 @@ install_rke () {
         # info for cluster.yml config
         echo -e "${b}>> Install RKE finish. \n>> RKE Docs: \n>> - https://rancher.com/docs/rke/latest/en/config-options/ \n>> - example: https://rancher.com/docs/rke/latest/en/example-yamls/ ${n}"
         
-    else 
-        echo "${lb}>> RKE is exists.${n}"
-    fi
+    #else 
+    #    echo "${lb}>> RKE is exists.${n}"
+    #fi
 }
 
 # RKE example Cluster.yml <https://rancher.com/docs/rke/latest/en/config-options/> <https://rancher.com/docs/rke/latest/en/example-yamls/>
@@ -272,7 +272,7 @@ EOF
 
 # Install K3s <https://rancher.com/docs/k3s/latest/en/installation/install-options/#options-for-installation-from-binary> <https://k3s.io/>
 install_k3s () {
-    if ! command_exists k3s; then
+    #if ! command_exists k3s; then
     
         echo "${b}>> Install K3s (Lightweight Kubernetes)${n}"
         
@@ -314,9 +314,9 @@ install_k3s () {
         # show version
         k3s --version
     
-    else 
-        echo "${lb}>> K3s is exists.${n}"
-    fi
+    #else 
+    #    echo "${lb}>> K3s is exists.${n}"
+    #fi
 }
 
 # Main
