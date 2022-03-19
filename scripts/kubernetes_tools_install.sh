@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Kubernetes Tools install on Debian/Raspbian 11 bullseye!
+# Kubernetes Tools (kubectl, helm, rke, k3s) install on Debian/Raspbian 11 bullseye!
 # 
 # Source-URL: https://github.com/Tob1asDocker/Collection/blob/master/scripts/kubernetes_tools_install.sh
 # Created: 2022-03-17 ; last Update: 2022-03-19
