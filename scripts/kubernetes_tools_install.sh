@@ -78,7 +78,7 @@ kubectl_set_editor () {
         echo "${b}>> kubectl: set default editor${n}"
         echo "export KUBE_EDITOR=nano" > /etc/profile.d/kubeeditor.sh
     else
-        echo "${y}>> kubectl not found. set editor failed.${n}"
+        echo "${y}>> kubectl not found or file \"/etc/profile.d/kubeeditor.sh\" exists. Set editor failed.${n}"
     fi
 }
 
