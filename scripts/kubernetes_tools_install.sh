@@ -329,6 +329,7 @@ install_k3s_official () {
     
         echo "${b}>> Install K3s (Lightweight Kubernetes)${n}"
         
+        # download and install
         curl -sfL https://get.k3s.io | INSTALL_K3S_CHANNEL=latest INSTALL_K3S_SKIP_ENABLE=true INSTALL_K3S_SKIP_START=true sh -
         
         # show version
