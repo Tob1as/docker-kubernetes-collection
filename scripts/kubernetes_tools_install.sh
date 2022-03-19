@@ -325,7 +325,7 @@ install_k3s () {
 
 # Install K3s with offical script <https://rancher.com/docs/k3s/latest/en/installation/install-options/#options-for-installation-with-script> <https://k3s.io/>
 install_k3s_official () {
-    #if ! command_exists k3s; then
+    if ! command_exists k3s; then
     
         echo "${b}>> Install K3s (Lightweight Kubernetes)${n}"
         
@@ -338,9 +338,9 @@ install_k3s_official () {
         # info
         echo -e "${b}>> Install k3s finish. You can enable k3s-systemd and then start. \n>> k3s Docs: \n>> - https://k3s.io/ \n>> - https://rancher.com/docs/k3s/latest/en/ ${n}"
     
-    #else 
-    #    echo "${lb}>> K3s is exists.${n}"
-    #fi
+    else 
+        echo "${lb}>> K3s is exists.${n}"
+    fi
 }
 
 # Main
