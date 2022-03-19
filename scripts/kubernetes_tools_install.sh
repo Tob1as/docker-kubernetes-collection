@@ -147,10 +147,10 @@ install_rke () {
         esac
         
         # download
-        curl -L https://github.com/rancher/rke/releases/download/${RKE_VERSION}/rke_`uname -s | tr '[:upper:]' '[:lower:]'`-${ARCH} -o /usr/bin/rke
+        curl -L https://github.com/rancher/rke/releases/download/${RKE_VERSION}/rke_`uname -s | tr '[:upper:]' '[:lower:]'`-${ARCH} -o /usr/local/bin/rke
         
         # set file permission
-        chmod +x /usr/bin/rke
+        chmod +x /usr/local/bin/rke
         
         # show version
         rke --version
@@ -262,6 +262,7 @@ EOF
         
         # when error: "FATA[0023] [[network] Host [****] is not able to connect to the following ports: [****:2379]. Please check network policies and firewall rules]"
         # then: https://github.com/rancher/rke/issues/955#issuecomment-685571566 (IPv6 ?) (and https://github.com/rancher/rancher/issues/14249#issuecomment-400941075)
+        # dual stack: https://rancher.com/docs/rke/latest/en/config-options/dual-stack/
         #
         # cleanup after cluster remove (rke remove): https://github.com/rancher/rancher/files/2144217/rancher_clean-dirs.sh.txt    
 
@@ -306,13 +307,35 @@ install_k3s () {
         esac
 		
         # download
-        curl -L https://github.com/k3s-io/k3s/releases/download/${K3S_VERSION}/k3s${SUFFIX} -o /usr/bin/k3s
+        curl -L https://github.com/k3s-io/k3s/releases/download/${K3S_VERSION}/k3s${SUFFIX} -o /usr/local/bin/k3s
         
         # set file permission
-        chmod +x /usr/bin/k3s
+        chmod +x /usr/local/bin/k3s
         
         # show version
         k3s --version
+
+        # info
+        echo -e "${b}>> Install k3s finish. \n>> k3s Docs: \n>> - https://k3s.io/ \n>> - https://rancher.com/docs/k3s/latest/en/ ${n}"
+    
+    #else 
+    #    echo "${lb}>> K3s is exists.${n}"
+    #fi
+}
+
+# Install K3s with offical script <https://rancher.com/docs/k3s/latest/en/installation/install-options/#options-for-installation-with-script> <https://k3s.io/>
+install_k3s_official () {
+    #if ! command_exists k3s; then
+    
+        echo "${b}>> Install K3s (Lightweight Kubernetes)${n}"
+        
+        curl -sfL https://get.k3s.io | INSTALL_K3S_CHANNEL=latest INSTALL_K3S_SKIP_ENABLE=true INSTALL_K3S_SKIP_START=true sh -
+        
+        # show version
+        k3s --version
+
+        # info
+        echo -e "${b}>> Install k3s finish. You can enable k3s-systemd and then start. \n>> k3s Docs: \n>> - https://k3s.io/ \n>> - https://rancher.com/docs/k3s/latest/en/ ${n}"
     
     #else 
     #    echo "${lb}>> K3s is exists.${n}"
@@ -329,7 +352,8 @@ main () {
     helm_add_bash_completion
     install_rke
     rke_config
-    #install_k3s  # when use this, rke and rke_config not needed!
+    #install_k3s          # when use this, rke and rke_config not needed!
+    #install_k3s_official # alternative to install_k3s
     echo "${g}>> install done! (Recommended: Restart you shell session!)${n}"
 }
 
