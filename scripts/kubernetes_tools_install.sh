@@ -272,7 +272,7 @@ EOF
 }
 
 # Install K3s <https://rancher.com/docs/k3s/latest/en/installation/install-options/#options-for-installation-from-binary> <https://k3s.io/>
-install_k3s () {
+install_k3s_binary () {
     #if ! command_exists k3s; then
     
         echo "${b}>> Install K3s (Lightweight Kubernetes)${n}"
@@ -316,7 +316,7 @@ install_k3s () {
         k3s --version
 
         # info
-        echo -e "${b}>> Install k3s finish. \n>> k3s Docs: \n>> - https://k3s.io/ \n>> - https://rancher.com/docs/k3s/latest/en/ ${n}"
+        echo -e "${b}>> Install k3s finish. \n>> k3s Docs: \n>> - https://k3s.io/ \n>> - https://rancher.com/docs/k3s/latest/en/ \n>> - example: \"sudo k3s server --docker &\"${n}"
     
     #else 
     #    echo "${lb}>> K3s is exists.${n}"
@@ -324,23 +324,29 @@ install_k3s () {
 }
 
 # Install K3s with offical script <https://rancher.com/docs/k3s/latest/en/installation/install-options/#options-for-installation-with-script> <https://k3s.io/>
-install_k3s_official () {
-    if ! command_exists k3s; then
+install_k3s_script () {
+    #if ! command_exists k3s; then
     
         echo "${b}>> Install K3s (Lightweight Kubernetes)${n}"
         
+        # https://rancher.com/docs/k3s/latest/en/advanced/#using-docker-as-the-container-runtime & https://github.com/kubernetes/kubernetes/issues/43805#issuecomment-304442290 ?
+        #CMD_K3S_EXEC_OPTION="--docker"
+        CMD_K3S_EXEC_OPTION=""
+
         # download and install
-        curl -sfL https://get.k3s.io | INSTALL_K3S_CHANNEL=latest INSTALL_K3S_SKIP_ENABLE=true INSTALL_K3S_SKIP_START=true sh -
+        curl -sfL https://get.k3s.io | INSTALL_K3S_CHANNEL=latest INSTALL_K3S_SKIP_ENABLE=true INSTALL_K3S_SKIP_START=true sh -s - $CMD_K3S_EXEC_OPTION
         
         # show version
         k3s --version
 
         # info
         echo -e "${b}>> Install k3s finish. You can enable k3s-systemd and then start. \n>> k3s Docs: \n>> - https://k3s.io/ \n>> - https://rancher.com/docs/k3s/latest/en/ ${n}"
+
+        # cluster remove and cleanup: /usr/local/bin/k3s-killall.sh && /usr/local/bin/k3s-uninstall.sh
     
-    else 
-        echo "${lb}>> K3s is exists.${n}"
-    fi
+    #else 
+    #    echo "${lb}>> K3s is exists.${n}"
+    #fi
 }
 
 # Main
@@ -353,8 +359,8 @@ main () {
     helm_add_bash_completion
     install_rke
     rke_config
-    #install_k3s          # when use this, rke and rke_config not needed!
-    #install_k3s_official # alternative to install_k3s
+    #install_k3s_binary # when use this then rke and rke_config not needed! (only k3s binary file)
+    #install_k3s_script # alternative to install_k3s_binary (k3s script with systemd, uninstall-script and more)
     echo "${g}>> install done! (Recommended: Restart you shell session!)${n}"
 }
 
