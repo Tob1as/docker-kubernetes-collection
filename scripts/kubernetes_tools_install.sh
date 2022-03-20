@@ -316,7 +316,7 @@ install_k3s_binary () {
         k3s --version
 
         # info
-        echo -e "${b}>> Install k3s finish. \n>> k3s Docs: \n>> - https://k3s.io/ \n>> - https://rancher.com/docs/k3s/latest/en/ \n>> - example: \"sudo k3s server --docker &\"${n}"
+        echo -e "${b}>> Install k3s finish. \n>> k3s Docs: \n>> - https://k3s.io/ \n>> - https://rancher.com/docs/k3s/latest/en/ \n>> - example: \"sudo k3s server &\"${n}"
     
     #else 
     #    echo "${lb}>> K3s is exists.${n}"
@@ -329,9 +329,10 @@ install_k3s_script () {
     
         echo "${b}>> Install K3s (Lightweight Kubernetes)${n}"
         
-        # https://rancher.com/docs/k3s/latest/en/advanced/#using-docker-as-the-container-runtime & https://github.com/kubernetes/kubernetes/issues/43805#issuecomment-304442290 ?
-        #CMD_K3S_EXEC_OPTION="--docker"
+        # server option
         CMD_K3S_EXEC_OPTION=""
+        #CMD_K3S_EXEC_OPTION+=" --docker"          # https://rancher.com/docs/k3s/latest/en/advanced/#using-docker-as-the-container-runtime & cgroups error https://github.com/kubernetes/kubernetes/issues/43805#issuecomment-304442290 ?
+        #CMD_K3S_EXEC_OPTION+=" --disable traefik" # https://rancher.com/docs/k3s/latest/en/networking/#traefik-ingress-controller
 
         # download and install
         curl -sfL https://get.k3s.io | INSTALL_K3S_CHANNEL=latest INSTALL_K3S_SKIP_ENABLE=true INSTALL_K3S_SKIP_START=true sh -s - $CMD_K3S_EXEC_OPTION
