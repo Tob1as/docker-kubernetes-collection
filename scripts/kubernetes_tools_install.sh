@@ -4,7 +4,7 @@ set -e
 # Kubernetes Tools (kubectl, helm, rke, k3s) install on Debian/Raspbian 11 bullseye!
 # 
 # Source-URL: https://github.com/Tob1asDocker/Collection/blob/master/scripts/kubernetes_tools_install.sh
-# Created: 2022-03-17 ; last Update: 2022-03-19
+# Created: 2022-03-17 ; last Update: 2022-03-21
 #
 
 # colors
@@ -39,7 +39,7 @@ install_requirements () {
         curl
 }
 
-# Install KUBECTL <https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/>
+# Install KUBECTL <https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management>
 install_kubectl () {
     if ! command_exists kubectl; then
     
@@ -59,6 +59,40 @@ install_kubectl () {
         kubectl version --client
     else 
         echo "${lb}>> KUBECTL is exists.${n}"
+    fi
+}
+
+# Install KUBECTL <https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-kubectl-binary-with-curl-on-linux>
+install_kubectl_binary () {
+    #if ! command_exists kubectl; then
+    if [ ! -f "/usr/bin/kubectl" ] ; then
+        
+        echo "${b}>> Install KUBECTL${n}"
+
+        # get latest stable version
+        KUBECTL_VERSION=$(curl -L -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+		
+        ARCH=$(uname -m)
+        case $ARCH in
+            amd64) ARCH=amd64 ;;
+            x86_64) ARCH=amd64 ;;
+            arm64) ARCH=arm64 ;;
+            aarch64) ARCH=arm64 ;;
+            arm*) ARCH=arm ;;
+            *) fatal "${r}Unsupported architecture $ARCH ${n}"
+        esac
+
+        # download
+        curl -L https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/`uname -s | tr '[:upper:]' '[:lower:]'`/${ARCH}/kubectl -o /usr/local/bin/kubectl
+        
+        # set file permission
+        chmod +x /usr/local/bin/kubectl
+
+        # show version
+        kubectl version --client
+	    
+    else 
+        echo "${lb}>> KUBECTL is exists. (Install via apt?)${n}"
     fi
 }
 
@@ -82,7 +116,7 @@ kubectl_set_editor () {
     fi
 }
 
-# Install HELMv3 <https://helm.sh/docs/intro/install/>
+# Install HELMv3 <https://helm.sh/docs/intro/install/#from-apt-debianubuntu>
 install_helm () {
     if ! command_exists helm; then
         
@@ -103,6 +137,40 @@ install_helm () {
 	    
     else 
         echo "${lb}>> HELM is exists.${n}"
+    fi
+}
+
+# Install HELMv3 <https://helm.sh/docs/intro/install/#from-the-binary-releases>
+install_helm_binary () {
+    #if ! command_exists helm; then
+    if [ ! -f "/usr/bin/helm" ] ; then
+        
+        echo "${b}>> Install HELM${n}"
+
+        # get latest stable version
+        HELM_VERSION=$(curl -s https://api.github.com/repos/helm/helm/releases/latest | grep 'tag_name' | cut -d\" -f4)
+		
+        ARCH=$(uname -m)
+        case $ARCH in
+            amd64) ARCH=amd64 ;;
+            x86_64) ARCH=amd64 ;;
+            arm64) ARCH=arm64 ;;
+            aarch64) ARCH=arm64 ;;
+            arm*) ARCH=arm ;;
+            *) fatal "${r}Unsupported architecture $ARCH ${n}"
+        esac
+        
+        # download
+        curl -L https://get.helm.sh/helm-${HELM_VERSION}-`uname -s | tr '[:upper:]' '[:lower:]'`-${ARCH}.tar.gz | tar -zxvf - `uname -s | tr '[:upper:]' '[:lower:]'`-${ARCH}/helm --strip-components=1 -C /usr/local/bin/
+        
+        # set file permission
+        chmod +x /usr/local/bin/helm
+
+        # show version
+        helm version
+	    
+    else 
+        echo "${lb}>> HELM is exists. (Install via apt?)${n}"
     fi
 }
 
@@ -127,23 +195,12 @@ install_rke () {
 		
         ARCH=$(uname -m)
         case $ARCH in
-            amd64)
-                ARCH=amd64
-                ;;
-            x86_64)
-                ARCH=amd64
-                ;;
-            arm64)
-                ARCH=arm64
-                ;;
-            aarch64)
-                ARCH=arm64
-                ;;
-            arm*)
-                ARCH=arm
-                ;;
-            *)
-                fatal "${r}Unsupported architecture $ARCH ${n}"
+            amd64) ARCH=amd64 ;;
+            x86_64) ARCH=amd64 ;;
+            arm64) ARCH=arm64 ;;
+            aarch64) ARCH=arm64 ;;
+            arm*) ARCH=arm ;;
+            *) fatal "${r}Unsupported architecture $ARCH ${n}"
         esac
         
         # download
@@ -353,15 +410,17 @@ install_k3s_script () {
 # Main
 main () {
     install_requirements
-    install_kubectl
+    install_kubectl          # install kubectl via apt
+    #install_kubectl_binary  # install kubectl via binary, alternative to install_kubectl
     kubectl_add_bash_completion
     kubectl_set_editor
-    install_helm
+    install_helm             # install helm via apt
+    #install_helm_binary     # install helm via binary, alternative to install_helm
     helm_add_bash_completion
     install_rke
     rke_config
-    #install_k3s_binary # when use this then rke and rke_config not needed! (only k3s binary file)
-    #install_k3s_script # alternative to install_k3s_binary (k3s script with systemd, uninstall-script and more)
+    #install_k3s_binary      # install k3s via binary, when use this then rke and rke_config not needed!
+    #install_k3s_script      # install k3s via offical script (with systemd, uninstall-script and more), alternative to install_k3s_binary
     echo "${g}>> install done! (Recommended: Restart you shell session!)${n}"
 }
 
