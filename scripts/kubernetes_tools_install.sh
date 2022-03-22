@@ -161,7 +161,7 @@ install_helm_binary () {
         esac
         
         # download
-        curl -L https://get.helm.sh/helm-${HELM_VERSION}-`uname -s | tr '[:upper:]' '[:lower:]'`-${ARCH}.tar.gz | tar -zxvf - `uname -s | tr '[:upper:]' '[:lower:]'`-${ARCH}/helm --strip-components=1 -C /usr/local/bin/
+        curl -L https://get.helm.sh/helm-${HELM_VERSION}-`uname -s | tr '[:upper:]' '[:lower:]'`-${ARCH}.tar.gz | tar -zxvf - --strip-components=1 -C /usr/local/bin/ `uname -s | tr '[:upper:]' '[:lower:]'`-${ARCH}/helm 
         
         # set file permission
         chmod +x /usr/local/bin/helm
@@ -313,6 +313,8 @@ ingress:
   
 #addons_include:
 #  - https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+#  #- https://raw.githubusercontent.com/longhorn/longhorn/v1.2.3/deploy/longhorn.yaml
+#  - https://github.com/cert-manager/cert-manager/releases/download/v1.7.1/cert-manager.yaml
 EOF
 
         echo -e "${b}>> ...Done! cluster.yml was created. \n>> - You can show/edit this and then use \"rke up\" to create the cluster. \n>> - Before add ssh-key to target host! \n>> - Then use \"kube_config_cluster.yml\" as \"~/.kube/config\" to connect with kubectl to cluster.${n}"
@@ -407,6 +409,39 @@ install_k3s_script () {
     #fi
 }
 
+# Install CMCTL (cert-manager ctl) <https://cert-manager.io/docs/usage/cmctl/>
+install_cmctl () {
+    #if ! command_exists cmctl; then
+        
+        echo "${b}>> Install CMCTL${n}"
+
+        # get latest stable version
+        CMCTL_VERSION=$(curl -s https://api.github.com/repos/cert-manager/cert-manager/releases/latest | grep 'tag_name' | cut -d\" -f4)
+		
+        ARCH=$(uname -m)
+        case $ARCH in
+            amd64) ARCH=amd64 ;;
+            x86_64) ARCH=amd64 ;;
+            arm64) ARCH=arm64 ;;
+            aarch64) ARCH=arm64 ;;
+            arm*) ARCH=arm ;;
+            *) fatal "${r}Unsupported architecture $ARCH ${n}"
+        esac
+        
+        # download
+        curl -L https://github.com/cert-manager/cert-manager/releases/download/${CMCTL_VERSION}/cmctl-`uname -s | tr '[:upper:]' '[:lower:]'`-${ARCH}.tar.gz | tar -zxvf - -C /usr/local/bin/ cmctl
+        
+        # set file permission
+        chmod +x /usr/local/bin/cmctl
+
+        # show version
+        cmctl version
+	    
+    #else 
+    #    echo "${lb}>> CMCTL is exists.${n}"
+    #fi
+}
+
 # Main
 main () {
     install_requirements
@@ -421,6 +456,7 @@ main () {
     rke_config
     #install_k3s_binary      # install k3s via binary, when use this then rke and rke_config not needed!
     #install_k3s_script      # install k3s via offical script (with systemd, uninstall-script and more), alternative to install_k3s_binary
+    #install_cmctl
     echo "${g}>> install done! (Recommended: Restart you shell session!)${n}"
 }
 
