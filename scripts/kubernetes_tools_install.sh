@@ -279,6 +279,8 @@ services:
   kubelet:
     cluster_domain: cluster.local
     cluster_dns_server: 10.43.0.10
+    #extra_args:    # https://forums.rancher.com/t/solved-setting-max-pods/11866/6 + https://github.com/rancher/rke/issues/1298
+    #  max-pods: '110'
 
 network:
   plugin: canal
