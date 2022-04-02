@@ -8,9 +8,11 @@ My recommendation for Kubernetes: **Rancher**
 * [Longhorn](https://rancher.com/products/longhorn) - Persistent Storage (AMD64/x86_64 & ARM64)
 * [local-path-provisioner](https://github.com/rancher/local-path-provisioner) - Persistent Storage (AMD64/x86_64 & ARM64, ARM32)  (when local path is needed or single node, example: Raspberry Pi)
 
-and for KVM hypervisor: [Proxmox](https://www.proxmox.com/en/proxmox-ve) based on Debian with CEPH (include RADOS) or ZFS storage support.
+If you don't want use Rancher, then install Kubernetes with [kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/).  
 
-Help for install Kubernetes Tools? Use my install [Script](https://github.com/Tob1asDocker/Collection/blob/master/scripts/kubernetes_tools_install.sh) for Linux Debian/Raspbian.
+KVM hypervisor: [Proxmox](https://www.proxmox.com/en/proxmox-ve) based on [Debian](https://www.debian.org/) with [CEPH](https://ceph.io/en/discover/) and ZFS storage support. If you want use VMs for Kubernetes Nodes.  
+
+Help for install Kubernetes Tools? Use my install [Script](https://github.com/Tob1asDocker/Collection/blob/master/scripts/kubernetes_tools_install.sh) for Linux Debian/Raspbian.  
 
 ## Links
 
