@@ -106,14 +106,31 @@ install_docker () {
     sudo docker -v
 }
 
-# Install docker-compose (v2) (repeat this part if you want to make an update)
+# Install docker-compose (v2)
 install_docker_compose () {
     echo "${b}>> Install docker-compose (v2)${n}"
 
+    if [ ! -f "/usr/libexec/docker/cli-plugins/docker-compose" ] && [ -f "/etc/apt/sources.list.d/docker.list" ] ; then
+
+        # install docker-compose (v2)
+        sudo apt install -y docker-compose-plugin
+
+        # check version
+        #DOCKER_COMPOSE_VERSION_INSTALLED=$(sudo docker compose version | cut -d ' ' -f4)
+        sudo docker compose version
+    else 
+        echo "${y}>> docker: docker-compose install failed. docker repos is'n exists or docker-compose exists.${n}"
+    fi
+}
+
+# Install docker-compose (v2) (repeat this script/part if you want to make an update)
+install_docker_compose_binary () {
+    echo "${b}>> Install docker-compose (v2) binary${n}"
+
     # get latest stable docker-compose version
-    #DOCKER_COMPOSE_VERSION=`git ls-remote --tags git://github.com/docker/compose.git | awk '{print $2}' | grep -v 'docs\|rc' | awk -F'/' '{print $3}' | sort -V | tail -n1`
+    #DOCKER_COMPOSE_VERSION=`git ls-remote --tags https://github.com/docker/compose.git | awk '{print $2}' | grep -v 'docs\|rc' | awk -F'/' '{print $3}' | sort -V | tail -n1`
     DOCKER_COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4)
-    #DOCKER_COMPOSE_VERSION"v2.2.2" # install specific version
+    #DOCKER_COMPOSE_VERSION"v2.4.0" # install specific version
     #DOCKER_COMPOSE_VERSION"1.29.2" # v1 not working on raspbian, use "sudo pip3 install docker-compose --upgrade"
 
     # download docker-compose
@@ -123,7 +140,7 @@ install_docker_compose () {
     sudo chmod +x /usr/libexec/docker/cli-plugins/docker-compose
 
     # check version
-    #DOCKER_COMPOSE_VERSION_INSTALLED=$(docker compose version | cut -d ' ' -f4)
+    #DOCKER_COMPOSE_VERSION_INSTALLED=$(sudo docker compose version | cut -d ' ' -f4)
     sudo docker compose version
 }
 
@@ -159,7 +176,8 @@ set_docker_compose_alias () {
 main () {
     install_requirements
     install_docker
-    install_docker_compose
+    install_docker_compose          # apt from docker mirror
+    #install_docker_compose_binary  # binary from github
     #enable_docker_ipv6nat
     set_docker_compose_alias
     echo "${g}>> install done! (Recommended: Restart you shell session!)${n}"
