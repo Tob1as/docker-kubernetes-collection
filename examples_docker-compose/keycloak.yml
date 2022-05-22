@@ -2,15 +2,13 @@
 version: '2.4'
 services:
 
-  # https://hub.docker.com/_/mariadb
+  # https://hub.docker.com/_/mariadb + https://github.com/MariaDB/mariadb-docker
   db:
     image: mariadb:10.6
     container_name: keycloak-db
     restart: unless-stopped
     volumes:
       - ./keycloak-db:/var/lib/mysql:rw
-      #- /etc/timezone:/etc/timezone:ro
-      #- /etc/localtime:/etc/localtime:ro
     environment:
       TZ: Europe/Berlin
       MARIADB_ROOT_PASSWORD: passw0rd
@@ -40,7 +38,7 @@ services:
     container_name: keycloak
     environment:
       #TZ: Europe/Berlin
-      DB_VENDOR: mariadb # Supported values: h2, postgres, mysql, mariadb, oracle, mssql
+      DB_VENDOR: mariadb                # Supported values: h2, postgres, mysql, mariadb, oracle, mssql
       DB_ADDR: db
       DB_DATABASE: keycloak
       DB_USER: keycloak
@@ -51,17 +49,18 @@ services:
       #ROOT_LOGLEVEL: INFO
       #PROXY_ADDRESS_FORWARDING: "true"  # use behind proxy !
       #KEYCLOAK_FRONTEND_URL: "https://auth.example.com"
-      JAVA_OPTS: "-server -Xms64m -Xmx512m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true"
-      #JAVA_OPTS_APPEND: "-Djavax.net.ssl.trustStore=/etc/x509/https/cacerts.jks -Djavax.net.ssl.trustStorePassword=changeit -Dkeycloak.profile.feature.docker=enabled"
-      KEYCLOAK_STATISTICS: all
+      #JAVA_OPTS: "-server -Xms64m -Xmx512m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true"
+      #JAVA_OPTS_APPEND: "-Dkeycloak.profile.feature.docker=enabled -Dkeycloak.profile.feature.recovery_codes=enabled"
+      #KEYCLOAK_STATISTICS: all          # metrics
       #KEYCLOAK_WELCOME_THEME: ""
       #KEYCLOAK_DEFAULT_THEME: ""
+      #X509_CA_BUNDLE: "/tmp/ca/*.crt"   # import automatically CA certs from this folder in truststore.jks
+      # check truststore: keytool -list -v -keystore ${JBOSS_HOME}/standalone/configuration/keystores/truststore.jks -storepass $(cat $JBOSS_HOME/bin/.jbossclirc | grep truststore_password | sed 's/[^=]*=//')
     restart: unless-stopped
     #volumes:
-      #- /etc/timezone:/etc/timezone:ro
-      #- /etc/localtime:/etc/localtime:ro
-    #  - ssl:/etc/x509/https:ro
-      #- ./keycloak-themes/my-theme:/opt/jboss/keycloak/themes/my-theme:ro
+      #- ./keycloak-config/themes/my-theme:/opt/jboss/keycloak/themes/my-theme:ro
+      #- ./keycloak-config/customprovider:/opt/jboss/keycloak/standalone/deployments:ro
+      #- ./keycloak-config/ca-certs:/tmp/ca:ro
     ports:
       #- 8080/tcp
       - 8080:8080/tcp
