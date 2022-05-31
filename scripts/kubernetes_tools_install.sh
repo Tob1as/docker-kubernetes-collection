@@ -36,7 +36,11 @@ install_requirements () {
     apt install -y \
         apt-transport-https \
         ca-certificates \
-        curl
+        curl \
+        #bash-completion \
+        gnupg2
+
+    #mkdir /etc/bash_completion.d/
 }
 
 # Install KUBECTL <https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management>
@@ -431,8 +435,10 @@ install_cmctl () {
         esac
         
         # download
-        curl -L https://github.com/cert-manager/cert-manager/releases/download/${CMCTL_VERSION}/cmctl-`uname -s | tr '[:upper:]' '[:lower:]'`-${ARCH}.tar.gz | tar -zxvf - -C /usr/local/bin/ cmctl
-        
+        #curl -L https://github.com/cert-manager/cert-manager/releases/download/${CMCTL_VERSION}/cmctl-`uname -s | tr '[:upper:]' '[:lower:]'`-${ARCH}.tar.gz | tar -zxvf - -C /usr/local/bin/ cmctl
+        # download version 1.8 and above?
+        curl -L https://github.com/cert-manager/cert-manager/releases/download/${CMCTL_VERSION}/cmctl-`uname -s | tr '[:upper:]' '[:lower:]'`-${ARCH}.tar.gz | tar -zxvf - -C /usr/local/bin/ ./cmctl
+
         # set file permission
         chmod +x /usr/local/bin/cmctl
 
