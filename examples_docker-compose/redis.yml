@@ -11,7 +11,7 @@ services:
   # https://github.com/docker-library/redis/issues/46
   # fix permission problem before startup: "mkdir ./redis-data/ && chmod 777 ./redis-data/"
   redis:
-    image: redis:latest
+    image: redis:alpine
     container_name: redis
     restart: unless-stopped
     environment:
@@ -30,3 +30,14 @@ services:
       interval: 60s
       timeout: 10s
       retries: 3
+
+#  # P3X Redis UI
+#  # https://hub.docker.com/r/patrikx3/p3x-redis-ui + https://github.com/patrikx3/redis-ui
+#  redis-ui:
+#    image: patrikx3/p3x-redis-ui:latest
+#    container_name: redis-ui
+#    restart: unless-stopped
+#    volumes:
+#      - ./redis-ui-data:/settings:rw
+#    ports:
+#      - 7843:7843/tcp
