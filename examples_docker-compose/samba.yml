@@ -1,0 +1,19 @@
+# docker-compose -f samba.yml up -d
+version: '2.4'
+services:
+
+  # https://www.samba.org/
+  # https://github.com/deftwork/samba + https://hub.docker.com/r/elswork/samba
+  # Supported architectures: amd64, arm64v8, arm32v7, ...
+  samba:
+    image: elswork/samba:latest
+    container_name: samba
+    environment:
+      TZ: 'Europe/Berlin'
+    ports:
+      - "139:139"
+      - "445:445"
+    restart: unless-stopped
+    volumes:
+      - ./samba-data:/share/folder:rw
+    command: '-u "1000:1000:smbuser:smbuser:Passw0rd" -s "share:/share/folder:rw:smbuser"'

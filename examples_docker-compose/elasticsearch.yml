@@ -25,6 +25,9 @@ services:
       - "ES_JAVA_OPTS=-Xms512m -Xmx2g"
       - xpack.security.enabled=true
       - ELASTIC_PASSWORD=passw0rd  # Password for default user "elastic"
+      - http.cors.enabled=true
+      - http.cors.allow-origin=/.*/
+      - http.cors.allow-headers=X-Requested-With,Content-Type,Content-Length,Authorization
     ulimits:
       memlock:
         soft: -1
@@ -42,3 +45,12 @@ services:
         interval: 60s
         timeout: 10s
         retries: 3
+
+#  # elasticsearch GUI: https://github.com/cars10/elasticvue
+#  # Supported architectures: amd64, arm64v8, arm32v7
+#  elasticsearch-ui:
+#    image: cars10/elasticvue:latest
+#    container_name: elasticsearch-ui
+#    restart: unless-stopped
+#    ports:
+#      - 8080:8080/tcp

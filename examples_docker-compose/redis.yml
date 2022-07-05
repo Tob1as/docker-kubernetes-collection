@@ -33,11 +33,13 @@ services:
 
 #  # P3X Redis UI
 #  # https://hub.docker.com/r/patrikx3/p3x-redis-ui + https://github.com/patrikx3/redis-ui
+#  # Supported architectures: amd64
 #  redis-ui:
 #    image: patrikx3/p3x-redis-ui:latest
 #    container_name: redis-ui
 #    restart: unless-stopped
 #    volumes:
 #      - ./redis-ui-data:/settings:rw
+#      #- ./redis-ui-data/.p3xrs-conns.json:/settings/.p3xrs-conns.json:rw  # https://github.com/patrikx3/redis-ui/blob/master/k8s/manifests/configmap.yaml
 #    ports:
 #      - 7843:7843/tcp

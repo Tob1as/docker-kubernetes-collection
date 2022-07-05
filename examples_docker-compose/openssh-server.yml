@@ -1,0 +1,30 @@
+# docker-compose -f openssh-server.yml up -d
+version: '2.4'
+services:
+
+  # https://www.openssh.com/
+  # https://github.com/linuxserver/docker-openssh-server + https://hub.docker.com/r/linuxserver/openssh-server
+  # Supported architectures: amd64, arm64v8, arm32v7
+  openssh-server:
+    #image: ghcr.io/linuxserver/openssh-server:latest
+    image: linuxserver/openssh-server:latest
+    container_name: openssh-server
+    hostname: openssh-server
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+      #- PUBLIC_KEY=ssh-rsa AAAA*******== user@host
+      #- PUBLIC_KEY_FILE=/path/to/file
+      #- PUBLIC_KEY_DIR=/path/to/directory/containing/_only_/pubkeys
+      - SUDO_ACCESS=false
+      - PASSWORD_ACCESS=true
+      - USER_NAME=sshuser
+      - USER_PASSWORD=Passw0rd
+      #- USER_PASSWORD_FILE=/path/to/file
+    volumes:
+      - ./openssh-server-data:/config:rw
+      #- ./openssh-server-config/sshd_portforwarding.sh:/config/custom-cont-init.d/10-sshd_portforwarding.sh:ro  # https://github.com/Tob1asDocker/php/blob/master/k8s.yaml#L356-L362
+    ports:
+      - 2222:2222
+    restart: unless-stopped

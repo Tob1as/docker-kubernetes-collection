@@ -1,0 +1,21 @@
+# docker-compose -f sftp.yml up -d
+version: '2.4'
+services:
+
+  # "internal-sftp" via openssh-server https://www.openssh.com/
+  # https://github.com/atmoz/sftp + https://hub.docker.com/r/atmoz/sftp
+  # Supported architectures: amd64
+  sftp:
+    image: atmoz/sftp:alpine
+    container_name: sftp
+    volumes:
+        #- ./sftp-config/id_rsa.pub:/home/sftp/.ssh/keys/id_rsa.pub
+        #- ./sftp-config/ssh_host_rsa_key:/etc/ssh/ssh_host_rsa_key             # ssh-keygen -t ed25519 -f ssh_host_ed25519_key < /dev/null
+        #- ./sftp-config/ssh_host_ed25519_key:/etc/ssh/ssh_host_ed25519_key     # ssh-keygen -t rsa -b 4096 -f ssh_host_rsa_key < /dev/null
+        - ./sftp-config/users.conf:/etc/sftp/users.conf:ro                     # sftp:Passw0rd:1001:100
+        - ./sftp-config/init.sh:/etc/sftp.d/init.sh:ro                         # https://github.com/atmoz/sftp/issues/16#issuecomment-203876715
+        - ./sftp-data:/home/sftp/share:rw
+    ports:
+        - "2222:22"
+    restart: unless-stopped
+    #command: sftp:Passw0rd:1001:100

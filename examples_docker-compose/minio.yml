@@ -22,6 +22,7 @@ services:
       - ./minio-data:/data:rw
       #- ./ssl/ssl.crt:/root/.minio/certs/public.crt:ro  # works only with root user and set URLs (and Port)
       #- ./ssl/ssl.key:/root/.minio/certs/private.key:ro # (https://github.com/Tob1asDocker/minio/issues/1#issuecomment-1003127867)
+      #- ./ssl/ca.crt:/root/.minio/certs/CAs/ca.crt:ro
     environment:
       MINIO_ROOT_USER: minio
       MINIO_ROOT_PASSWORD: minio123
