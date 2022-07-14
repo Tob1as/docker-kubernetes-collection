@@ -37,10 +37,9 @@ install_requirements () {
         apt-transport-https \
         ca-certificates \
         curl \
-        #bash-completion \
         gnupg2
 
-    #mkdir /etc/bash_completion.d/
+    # apt install -y bash-completion && mkdir /etc/bash_completion.d/
 }
 
 # Install KUBECTL <https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management>
