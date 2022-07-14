@@ -127,10 +127,11 @@ install_helm () {
         echo "${b}>> Install HELM${n}"
         
         # Download the public signing key
-        curl https://baltocdn.com/helm/signing.asc | apt-key add -
+        curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
         
         # Add the Helm apt repository
         echo "deb https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
         
         # Update apt package index with the new repository and install helm
         apt-get update
@@ -436,7 +437,7 @@ install_cmctl () {
         
         # download
         #curl -L https://github.com/cert-manager/cert-manager/releases/download/${CMCTL_VERSION}/cmctl-`uname -s | tr '[:upper:]' '[:lower:]'`-${ARCH}.tar.gz | tar -zxvf - -C /usr/local/bin/ cmctl
-        # download version 1.8 and above?
+        # download version 1.8.x
         curl -L https://github.com/cert-manager/cert-manager/releases/download/${CMCTL_VERSION}/cmctl-`uname -s | tr '[:upper:]' '[:lower:]'`-${ARCH}.tar.gz | tar -zxvf - -C /usr/local/bin/ ./cmctl
 
         # set file permission
