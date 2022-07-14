@@ -297,8 +297,21 @@ network:
 
 ingress:
   provider: nginx
+  # https://rancher.com/docs/rke/latest/en/config-options/add-ons/ingress-controllers/#configuring-network-options
+  #network_mode: none
+  #http_port: 80
+  #https_port: 443
+  #extra_args:
+  #  default-ssl-certificate: "ingress-nginx/ingress-default-cert"
+  #  http-port: 8080
+  #  https-port: 8443
 
 #addons: |-
+#  ---
+#  apiVersion: v1
+#  kind: Namespace
+#  metadata:
+#    name: cattle-system
 #  ---
 #  apiVersion: v1
 #  kind: Pod
@@ -329,7 +342,10 @@ EOF
         # then: https://github.com/rancher/rke/issues/955#issuecomment-685571566 (IPv6 ?) (and https://github.com/rancher/rancher/issues/14249#issuecomment-400941075)
         # dual stack: https://rancher.com/docs/rke/latest/en/config-options/dual-stack/
         #
-        # cleanup after cluster remove (rke remove): https://github.com/rancher/rancher/files/2144217/rancher_clean-dirs.sh.txt    
+        # cleanup after cluster remove (rke remove): https://github.com/rancher/rancher/files/2144217/rancher_clean-dirs.sh.txt 
+
+        # Install Rancher (GUI): https://rancher.com/docs/rancher/v2.6/en/installation/install-rancher-on-k8s/
+        # optional with: https://rancher.com/docs/rancher/v2.6/en/installation/resources/tls-secrets/ and https://rancher.com/docs/rke/latest/en/config-options/add-ons/ingress-controllers/#configuring-an-nginx-default-certificate
 
     else 
         echo "${lb}>> RKE example Cluster.yml is exists or RKE is not exists.${n}"
