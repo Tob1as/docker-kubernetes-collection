@@ -1,0 +1,171 @@
+##  _____                    ____                   _    _____
+## |_   _|__  __ _ _ __ ___ / ___| _ __   ___  __ _| | _|___ /
+##   | |/ _ \/ _` | '_ ` _ \\___ \| '_ \ / _ \/ _` | |/ / |_ \
+##   | |  __/ (_| | | | | | |___) | |_) |  __/ (_| |   < ___) |
+##   |_|\___|\__,_|_| |_| |_|____/| .__/ \___|\__,_|_|\_\____/
+##                                |_|
+
+## Teamspeak - voice communication (free for 32 users)
+## https://www.teamspeak.com/
+## https://hub.docker.com/_/teamspeak
+## https://github.com/TeamSpeak-Systems/teamspeak-linux-docker-images
+## https://support.teamspeak.com/hc/en-us/articles/360002712257-Which-ports-does-the-TeamSpeak-3-server-use-
+## Supported architectures: amd64
+## Requirements: use sqlite or setup MariaDB before start teamspeak!
+## Admin-Token see in teamspeak logs after start (kubectl -n teamspeak logs deployment/ts3)
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: teamspeak
+
+---
+
+## volume for teamspeak data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ts3-data
+  namespace: teamspeak
+  labels:
+    app: ts3
+spec:
+  accessModes:
+  - ReadWriteOnce
+  volumeMode: Filesystem
+  storageClassName: local-path  # https://github.com/rancher/local-path-provisioner
+  resources:
+    requests:
+      storage: 512Mi
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ts3-env-config
+  namespace: teamspeak
+  labels:
+    app: ts3
+data:
+  TS3SERVER_DB_PLUGIN: "ts3db_sqlite3"         # for MariaDB set to: ts3db_mariadb
+  TS3SERVER_DB_SQLCREATEPATH: "create_sqlite"  # for MariaDB set to: create_mariadb
+  #TS3SERVER_DB_HOST: "ts3-db"                 # for MariaDB comment in (delete # in front of line)
+  #TS3SERVER_DB_PORT: "3306"                   # for MariaDB comment in
+  #TS3SERVER_DB_NAME: "teamspeak"              # for MariaDB comment in
+  #TS3SERVER_DB_WAITUNTILREADY: "30"           # for MariaDB comment in
+  TS3SERVER_LICENSE: "accept"
+
+---
+## for MariaDB comment next lines in
+
+#apiVersion: v1
+#kind: Secret
+#metadata:
+#  name: ts3-env-secret
+#  namespace: teamspeak
+#  labels:
+#    app: ts3
+#data:
+#  TS3SERVER_DB_USER: dGVhbXNwZWFr      # Teamspeak
+#  TS3SERVER_DB_PASSWORD: cGFzc3cwcmQ=  # passw0rd
+#
+#---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ts3
+  namespace: teamspeak
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ts3
+  template:
+    metadata:
+      labels:
+        app: ts3
+    spec:
+      containers:
+        - name: ts3
+          image: teamspeak:latest
+          imagePullPolicy: Always
+          envFrom:
+          - configMapRef:
+              name: ts3-env-config
+          #- secretRef:
+          #    name: ts3-env-secret
+          ports:
+          - containerPort: 9987
+            name: voice
+            protocol: UDP
+          - containerPort: 10011
+            name: query
+            protocol: TCP
+          - containerPort: 30033
+            name: file
+            protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: 10011
+            failureThreshold: 4
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 10011
+            failureThreshold: 4
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 10
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "0.1"
+            limits:
+              memory: "1Gi"
+              cpu: "1.0"
+          volumeMounts:
+          - mountPath: /var/ts3server
+            name: ts3-data
+      restartPolicy: Always
+      volumes:
+        - name: ts3-data
+          persistentVolumeClaim:
+            claimName: ts3-data
+
+---
+
+# for nginx-ingress port settings, example: https://gist.github.com/superseb/ba6becd1a5e9c74ca17996aa59bcc67e
+# and: https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/exposing-tcp-udp-services.md
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ts3
+  namespace: teamspeak
+spec:
+  type: ClusterIP
+  ports:
+    - name: "voice"
+      protocol: UDP
+      port: 9987
+      targetPort: 9987
+    - name: "query"
+      protocol: TCP
+      port: 10011
+      targetPort: 10011
+    - name: "file"
+      protocol: TCP
+      port: 30033
+      targetPort: 30033
+  selector:
+    app: ts3
