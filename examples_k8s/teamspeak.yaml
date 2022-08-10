@@ -146,6 +146,7 @@ spec:
 
 # for nginx-ingress port settings, example: https://gist.github.com/superseb/ba6becd1a5e9c74ca17996aa59bcc67e
 # and: https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/exposing-tcp-udp-services.md
+# and: https://github.com/rancher/rancher/issues/14744#issuecomment-1210466472
 
 apiVersion: v1
 kind: Service
