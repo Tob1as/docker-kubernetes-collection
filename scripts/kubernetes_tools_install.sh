@@ -309,11 +309,6 @@ ingress:
 #addons: |-
 #  ---
 #  apiVersion: v1
-#  kind: Namespace
-#  metadata:
-#    name: cattle-system
-#  ---
-#  apiVersion: v1
 #  kind: Pod
 #  metadata:
 #    name: toolbox
