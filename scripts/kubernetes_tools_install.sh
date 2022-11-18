@@ -4,7 +4,7 @@ set -e
 # Kubernetes Tools (kubectl, helm, rke, k3s) install on Debian/Raspbian 11 bullseye!
 # 
 # Source-URL: https://github.com/Tob1asDocker/Collection/blob/master/scripts/kubernetes_tools_install.sh
-# Created: 2022-03-17 ; last Update: 2022-07-14
+# Created: 2022-03-17 ; last Update: 2022-11-18
 #
 
 # colors
@@ -347,6 +347,111 @@ EOF
     fi
 }
 
+# Install RKE2 <https://docs.rke2.io/install/quickstart/>
+install_rke2 () {
+    echo "${b}>> Install RKE2 (Rancher Kubernetes Engine v2)${n}"
+    case ${ARCH:=$(uname -m)} in
+    amd64|x86_64|s390x)
+        curl -sfL https://get.rke2.io | INSTALL_RKE2_CHANNEL="stable" sh -
+        ;;
+    *)
+        fatal "unsupported architecture ${ARCH}"
+        ;;
+    esac
+
+    # enable autostart and start
+    systemctl enable rke2-server.service
+    systemctl start rke2-server.service
+    #journalctl -u rke2-server -f
+
+    # show version
+    rke2 --version
+
+    echo -e "${b}>> Install RKE2 finish. \n>> RKE2 Docs: https://docs.rke2.io/install/quickstart/ \n>> check status: \"sudo journalctl -u rke2-server -f\" ${n}"
+
+}
+
+# RKE2 config example <https://docs.rke2.io/install/install_options/install_options/#configuration-file> <https://docs.rke2.io/install/install_options/server_config/> <https://docs.rke2.io/install/containerd_registry_configuration/>
+rke2_config () {
+    echo "${b}>> RKE2 configs create in \"/etc/rancher/rke2/\"...${n}"
+
+    mkdir -p /etc/rancher/rke2
+
+    cat << EOF > /etc/rancher/rke2/config.yaml
+#write-kubeconfig-mode: "0644"
+#tls-san:
+#  - "foo.local"
+#node-label:
+#  - "foo=bar"
+#  - "something=amazing"
+#cluster-cidr: "10.42.0.0/16"
+#service-cidr: "10.43.0.0/16"
+#cluster-dns: "10.43.0.10"
+#cluster-domain: "cluster.local"
+#cni: "canal"
+#disable:
+#  - "rke2-ingress-nginx"
+kubelet-arg: 
+- "max-pods=220"
+#private-registry: "/etc/rancher/rke2/registries.yaml"
+#system-default-registry: "docker.io"
+EOF
+
+#    cat << EOF > /etc/rancher/rke2/registries.yaml
+#mirrors:
+#  docker.io:
+#    endpoint:
+#      - "https://docker.io"
+#  registry.gitlab.example.com:
+#    endpoint:
+#      - "https://registry.gitlab.example.com"
+#configs:
+#  "docker.io":
+#    auth:
+#      username:              # this is the registry username
+#      password:              # this is the registry password
+#    tls:
+#      #cert_file:            # path to the cert file used to authenticate to the registry
+#      #key_file:             # path to the key file for the certificate used to authenticate to the registry
+#      ca_file: /etc/ssl/certs/ca-certificates.crt  # path to the ca file used to verify the registry's certificate
+#      #insecure_skip_verify: # may be set to true to skip verifying the registry's certificate
+#  "registry.gitlab.example.com":
+#    auth:
+#      username:              # this is the registry username
+#      password:              # this is the registry password
+#    tls:
+#      #cert_file:            # path to the cert file used to authenticate to the registry
+#      #key_file:             # path to the key file for the certificate used to authenticate to the registry
+#      ca_file: /etc/ssl/certs/ca-certificates.crt  # path to the ca file used to verify the registry's certificate
+#      #insecure_skip_verify: # may be set to true to skip verifying the registry's certificate
+#EOF
+
+    echo -e "${b}>> ...Done!"${n}
+
+}
+
+# RKE2 config extended
+rke2_config_extended () {
+    echo "${b}>> RKE2 create symlinks and other config...${n}"
+
+    # kubeconfig
+    mkdir ~/.kube
+    cat /etc/rancher/rke2/rke2.yaml | cat > ~/.kube/config
+
+    # kubectl
+    if [ ! -f "/usr/local/bin/kubectl" && ! -f "/usr/bin/kubectl" ] ; then
+        ln -s /var/lib/rancher/rke2/bin/kubectl /usr/local/bin/kubectl
+        # Test: kubectl get all -A
+    fi
+
+    # CRI-CLI <https://github.com/kubernetes-sigs/cri-tools/blob/master/docs/crictl.md>
+    echo "runtime-endpoint: unix:///run/k3s/containerd/containerd.sock" >> /etc/crictl.yaml
+    ln -s /var/lib/rancher/rke2/bin/crictl /usr/local/bin/crictl
+    # Test: sudo crictl ps -a
+
+    echo -e "${b}>> ...Done!"${n}
+}
+
 # Install K3s <https://rancher.com/docs/k3s/latest/en/installation/install-options/#options-for-installation-from-binary> <https://k3s.io/>
 install_k3s_binary () {
     #if ! command_exists k3s; then
@@ -473,6 +578,9 @@ main () {
     helm_add_bash_completion
     install_rke
     rke_config
+    #rke2_config             # TODO (Do this step before first start.)
+    #install_rke2            # TODO
+    #rke2_config_extended    # TODO
     #install_k3s_binary      # install k3s via binary, when use this then rke and rke_config not needed!
     #install_k3s_script      # install k3s via offical script (with systemd, uninstall-script and more), alternative to install_k3s_binary
     #install_cmctl
