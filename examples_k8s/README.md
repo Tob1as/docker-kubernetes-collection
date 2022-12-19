@@ -18,6 +18,6 @@ Help for install Kubernetes Tools? Use my install [Script](https://github.com/To
 
 ## Links
 
-* Website (NGINX/Apache, PHP, SSH/SFTP) -> [github.com/Tob1asDocker/php](https://github.com/Tob1asDocker/php/blob/master/k8s.yaml)
-* MariaDB -> [github.com/Tob1asDocker/rpi-mariadb](https://github.com/Tob1asDocker/rpi-mariadb/blob/master/k8s.yaml)
-* MinIO -> [github.com/Tob1asDocker/minio](https://github.com/Tob1asDocker/minio/blob/main/k8s.yaml)
+* Website (NGINX/Apache, PHP, SSH/SFTP) -> [github.com/Tob1as/docker-php](https://github.com/Tob1as/docker-php/blob/master/k8s.yaml)
+* MariaDB -> [github.com/Tob1as/docker-mariadb](https://github.com/Tob1as/docker-mariadb/blob/master/k8s.yaml)
+* MinIO -> [github.com/Tob1as/docker-minio](https://github.com/Tob1as/docker-minio/blob/main/k8s.yaml)
