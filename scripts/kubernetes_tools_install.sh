@@ -353,22 +353,23 @@ install_rke2 () {
     case ${ARCH:=$(uname -m)} in
     amd64|x86_64|s390x)
         curl -sfL https://get.rke2.io | INSTALL_RKE2_CHANNEL="stable" sh -
+
+        # enable autostart and start
+        systemctl enable rke2-server.service
+        #systemctl start rke2-server.service
+        #journalctl -u rke2-server -f
+
+        # show version
+        rke2 --version
+
+        echo -e "${b}>> Install RKE2 finish. \n>> RKE2 Docs: https://docs.rke2.io/install/quickstart/ \n>> check status: \"sudo journalctl -u rke2-server -f\" ${n}"
+
+
         ;;
     *)
-        fatal "unsupported architecture ${ARCH}"
+        fatal ">> Install RKE2 finish failed. unsupported architecture ${ARCH}"
         ;;
     esac
-
-    # enable autostart and start
-    systemctl enable rke2-server.service
-    systemctl start rke2-server.service
-    #journalctl -u rke2-server -f
-
-    # show version
-    rke2 --version
-
-    echo -e "${b}>> Install RKE2 finish. \n>> RKE2 Docs: https://docs.rke2.io/install/quickstart/ \n>> check status: \"sudo journalctl -u rke2-server -f\" ${n}"
-
 }
 
 # RKE2 config example <https://docs.rke2.io/install/install_options/install_options/#configuration-file> <https://docs.rke2.io/install/install_options/server_config/> <https://docs.rke2.io/install/containerd_registry_configuration/>
@@ -531,6 +532,42 @@ install_k3s_script () {
     #fi
 }
 
+# Install ETCDCTL (etcd-ctl) <https://github.com/etcd-io/etcd>
+install_etcdctl () {
+    #if ! command_exists etcdctl; then
+        
+        echo "${b}>> Install etcd-ctl${n}"
+
+        # get latest stable version
+        #ETCDCTL_VERSION="v$(curl -s https://api.github.com/repos/etcd-io/etcd/releases/latest | grep 'tag_name' | cut -d\" -f4 | sed 's/[^0-9.]*//g')"
+        ETCDCTL_VERSION="$(curl -s https://api.github.com/repos/etcd-io/etcd/releases/latest | grep 'tag_name' | cut -d\" -f4)"
+        #echo "ETCDCTL_VERSION=${ETCDCTL_VERSION}"
+
+        ARCH=$(uname -m)
+        case $ARCH in
+            amd64) ARCH=amd64 ;;
+            x86_64) ARCH=amd64 ;;
+            arm64) ARCH=arm64 ;;
+            aarch64) ARCH=arm64 ;;
+            *) fatal "${r}Unsupported architecture $ARCH ${n}"
+        esac
+        
+        # download
+        curl -sL  https://github.com/etcd-io/etcd/releases/download/${ETCDCTL_VERSION}/etcd-${ETCDCTL_VERSION}-`uname -s | tr '[:upper:]' '[:lower:]'`-${ARCH}.tar.gz | tar -zxf - --strip-components=1 -C /usr/local/bin/  etcd-${ETCDCTL_VERSION}-`uname -s | tr '[:upper:]' '[:lower:]'`-${ARCH}/etcdctl
+        
+        # set file permission
+        chmod +x /usr/local/bin/etcdctl
+
+        # show version
+        etcdctl version
+
+        # example <https://etcd.io/docs/latest/op-guide/recovery/#snapshotting-the-keyspace>
+	    #ETCDCTL_API=3 etcdctl --endpoints=localhost:2379 --insecure-skip-tls-verify=true snapshot save backup_$(date '+%Y%m%d-%H%M')_etcd.db
+    #else 
+    #    echo "${lb}>> etcd-ctl is exists.${n}"
+    #fi
+}
+
 # Install CMCTL (cert-manager ctl) <https://cert-manager.io/docs/usage/cmctl/>
 install_cmctl () {
     #if ! command_exists cmctl; then
@@ -583,6 +620,7 @@ main () {
     #rke2_config_extended    # TODO
     #install_k3s_binary      # install k3s via binary, when use this then rke and rke_config not needed!
     #install_k3s_script      # install k3s via offical script (with systemd, uninstall-script and more), alternative to install_k3s_binary
+    #install_etcdctl
     #install_cmctl
     echo "${g}>> install done! (Recommended: Restart you shell session!)${n}"
 }
