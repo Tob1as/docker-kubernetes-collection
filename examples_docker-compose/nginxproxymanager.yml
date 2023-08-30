@@ -1,0 +1,49 @@
+# docker-compose -f nginxproxymanager.yml up -d
+version: '2.4'
+services:
+
+  # Nginx Proxy Manager (NPM)
+  # https://nginxproxymanager.com/
+  # https://github.com/NginxProxyManager/nginx-proxy-manager
+  # https://hub.docker.com/r/jc21/nginx-proxy-manager
+  # Supported architectures: arm32v7, arm64v8, amd64
+  # URL: http://localhost:81/ , default Login: Email: admin@example.com , Password: changeme
+  nginxproxymanager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginxproxymanager
+    restart: unless-stopped
+    ports:
+      # These ports are in format <host-port>:<container-port>
+      - '80:80' # Public HTTP Port
+      - '443:443' # Public HTTPS Port
+      - '81:81' # Admin Web Port
+      # Add any other Stream port you want to expose
+      # - '21:21' # FTP
+
+    # Uncomment the next line if you uncomment anything in the section
+    # environment:
+      #PUID: 1000
+      #PGID: 1000
+      #X_FRAME_OPTIONS: "sameorigin"
+      
+      # Uncomment this if you want to change the location of
+      # the SQLite DB file within the container
+      # DB_SQLITE_FILE: "/data/database.sqlite"
+
+      # Uncomment this if IPv6 is not enabled on your host
+      # DISABLE_IPV6: 'true'
+
+    volumes:
+      - ./data:/data:rw
+      - ./letsencrypt:/etc/letsencrypt:rw
+      
+    healthcheck:
+      test: ["CMD", "/bin/check-health"]
+      interval: 10s
+      timeout: 3s
+      
+# docker network create scoobydoo
+networks:
+  default:
+    external: true
+    name: dnet
