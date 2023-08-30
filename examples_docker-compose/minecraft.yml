@@ -10,7 +10,7 @@ services:
   # Supported architectures: arm32v7, arm64v8, amd64
   minecraft:
     image: itzg/minecraft-server:latest
-    container_name: mc
+    container_name: minecraft
     restart: unless-stopped
     tty: true         # docker run -i
     stdin_open: true  # docker run -t

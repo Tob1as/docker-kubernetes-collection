@@ -4,7 +4,7 @@ services:
 
   # https://hub.docker.com/_/mariadb + https://github.com/MariaDB/mariadb-docker
   db:
-    image: mariadb:10.6
+    image: mariadb:10.11
     container_name: keycloak-db
     restart: unless-stopped
     volumes:
@@ -29,12 +29,12 @@ services:
   # https://www.keycloak.org/
   # https://github.com/keycloak/keycloak
   # https://hub.docker.com/r/jboss/keycloak + https://github.com/keycloak/keycloak-containers/tree/main/server
-  # Supported architectures: amd64
+  # Supported architectures: amd64, arm64
   # URL: http://localhost:8080/auth
   # Requirements: setup database (mariadb or other database) before start keycloak!
   keycloak:
-    image: jboss/keycloak:16.1.1
-    #image: quay.io/keycloak/keycloak:16.1.1
+    image: quay.io/keycloak/keycloak:17.0.1-legacy
+    #image: keycloak/keycloak:17.0.1
     container_name: keycloak
     environment:
       #TZ: Europe/Berlin

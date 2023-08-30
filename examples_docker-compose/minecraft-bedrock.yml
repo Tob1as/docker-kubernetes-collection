@@ -10,7 +10,7 @@ services:
   # Supported architectures: amd64
   minecraft-bedrock:
     image: itzg/minecraft-bedrock-server:latest
-    container_name: bds
+    container_name: minecraft-bedrock
     restart: unless-stopped
     tty: true         # docker run -i
     stdin_open: true  # docker run -t

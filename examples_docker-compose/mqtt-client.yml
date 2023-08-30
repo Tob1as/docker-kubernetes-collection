@@ -4,17 +4,13 @@ services:
   
   # MQTT-Client based on mosquitto-clients 
   # (OS: AlpineLinux ; Installed: "apk add --no-cache ca-certificates mosquitto-clients")
-  # https://github.com/efrecon/docker-images/tree/master/mqtt-client
-  # https://hub.docker.com/r/efrecon/mqtt-client
+  # https://github.com/Tob1as/docker-tools
+  # https://hub.docker.com/r/tobi312/tools
   # https://mosquitto.org/man/mosquitto_sub-1.html - read for more information about mosquitto_sub-command
   # Images Supported architectures: amd64 (for ARM-Arch use "build"-line)
   # after start see logs: "docker logs -f mqtt-client"
   mqtt-client:
-    #build: 
-    #  context: https://raw.githubusercontent.com/efrecon/docker-images/master/mqtt-client/Dockerfile
-    #  args:
-    #    ALPINE_VERSION: "3.14"
-    image: efrecon/mqtt-client:latest
+    image: tobi312/tools:mqtt-client
     container_name: mqtt-client
     restart: unless-stopped
     #user: "1000:1000"  # format: "${UID}:${GID}"
