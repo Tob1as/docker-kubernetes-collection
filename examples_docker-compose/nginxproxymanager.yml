@@ -46,4 +46,4 @@ services:
 networks:
   default:
     external: true
-    name: dnet
+    name: scoobydoo
