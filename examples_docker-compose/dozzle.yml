@@ -19,10 +19,15 @@ services:
     environment:
       #- "DOZZLE_ADDR=:8080"
       - "DOZZLE_BASE=/logging"
+      #- "DOZZLE_HOSTNAME="
       #- "DOZZLE_LEVEL=info"
-      #- "DOZZLE_TAILSIZE=300"
       #- "DOZZLE_FILTER="
       - "DOZZLE_USERNAME=dozzle"
       - "DOZZLE_PASSWORD=passw0rd"
-      - "DOZZLE_KEY=dozzle_session_qv9f8r"
       #- "DOZZLE_NO_ANALYTICS=false"
+    healthcheck:
+      test: ["CMD", "/dozzle", "healthcheck"]
+      interval: 3s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
