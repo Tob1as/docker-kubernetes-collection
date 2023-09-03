@@ -22,6 +22,7 @@ services:
 
     # Uncomment the next line if you uncomment anything in the section
     # environment:
+      #TZ: "Europe/Berlin"
       #PUID: 1000
       #PGID: 1000
       #X_FRAME_OPTIONS: "sameorigin"
