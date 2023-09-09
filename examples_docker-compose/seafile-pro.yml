@@ -103,6 +103,24 @@ services:
       timeout: 5s
       retries: 3
       #start_period: 30s
+    #labels:
+    #  - "traefik.enable=true"
+    #  - "traefik.http.services.seafile.loadbalancer.server.port=443"
+    #  - "traefik.http.services.seafile.loadbalancer.server.scheme=https"
+    #  # http
+    #  - "traefik.http.routers.seafile-http.rule=Host(`seafile.example.com`)"
+    #  - "traefik.http.routers.seafile-http.entrypoints=web"
+    #  - "traefik.http.routers.seafile-http.service=seafile"
+    #  # https
+    #  - "traefik.http.routers.seafile-https.tls=true"
+    #  - "traefik.http.routers.seafile-https.rule=Host(`seafile.example.com`)"
+    #  - "traefik.http.routers.seafile-https.entrypoints=websecure"
+    #  - "traefik.http.routers.seafile-https.service=seafile"
+    #  # http to https redirect      
+    #  - "traefik.http.routers.seafile-http.middlewares=seafile-https"
+    #  - "traefik.http.middlewares.seafile-https.redirectscheme.scheme=https"
+    #  #- "traefik.http.middlewares.seafile-https.redirectscheme.permanent=true"
+    #  #- "traefik.http.middlewares.seafile-https.redirectscheme.port=443"
 
 ## optional begin (need more settings, see docu)
 

@@ -1,0 +1,159 @@
+# https://hub.docker.com/_/traefik & https://hub.docker.com/r/traefik/whoami
+# https://doc.traefik.io/traefik/
+# https://medium.com/@clintcolding/use-your-own-certificates-with-traefik-a31d785a6441
+# https://community.traefik.io/t/enable-a-secure-dashboard-using-a-pathprefix/3763/6
+# https://github.com/traefik/traefik/issues/5853
+
+version: '2.4'
+
+services:
+  traefik:
+    # The official Traefik docker image
+    image: traefik:v2.10
+    container_name: traefik
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Berlin
+    command: 
+      - "--accesslog.fields.names.StartUTC=drop" # for TZ
+      - "--log.level=debug"
+      #- " --log.format=json"
+      #- "--accesslog=true"
+      - "--ping=true"
+      - "--api=true"
+      - "--api.dashboard=true"
+      # Traefik will listen on port 8080 by default for API request. Unsecure!
+      #- "--api.insecure=true"
+      # Enabling docker provider
+      - "--providers.docker=true"
+      #- "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      # Do not expose containers unless explicitly told so
+      - "--providers.docker.exposedbydefault=false"
+      # Defines a default docker network to use for connections to all containers.
+      #- "--providers.docker.network=mynetwork"
+      # Defines the client timeout (in seconds) for HTTP connections. If its value is 0, no timeout is set.
+      #- "--providers.docker.httpClientTimeout=300"
+      # Watch Docker events.
+      #- "--providers.docker.watch=false"
+      
+      # Enables the web UI and tells Traefik to listen to docker
+      # Traefik will listen to incoming request on the port 80 (HTTP)
+      - "--entrypoints.web.address=:80"
+      # HTTPS
+      - "--entrypoints.websecure.address=:443"
+      #- "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      #- "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      #- "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      # 
+      - "--providers.file.directory=/etc/traefik/dynamic"
+      #- "--providers.file.filename=/etc/traefik/dynamic/traefik-config.yaml"
+      - "--providers.file.watch=true"
+      
+      #- "--serversTransport.rootCAs=/etc/certs/fullCA.crt"
+      - "--serversTransport.insecureSkipVerify=true"
+      
+      # https://plugins.traefik.io/install
+      # https://plugins.traefik.io/plugins/62947354108ecc83915d778e/block-path
+      #- "--experimental.plugins.block.modulename=github.com/traefik/plugin-blockpath"
+      #- "--experimental.plugins.block.version=v0.2.1"
+      # https://plugins.traefik.io/plugins/62947307108ecc83915d7783/rewrite-body
+      - "--experimental.plugins.rewrite.modulename=github.com/traefik/plugin-rewritebody"
+      - "--experimental.plugins.rewrite.version=v0.3.1"
+    labels:
+      ## Traefik Dashboard/API Secure and with Auth
+      ## https://community.traefik.io/t/enable-a-secure-dashboard-using-a-pathprefix/3763/6
+      ## https://github.com/traefik/traefik/issues/5853
+      - "traefik.enable=true"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+      #- "traefik.http.routers.traefik.rule=Host(`traefik.example.com`) && (PathPrefix(`/traefik`) || PathPrefix(`/api`))"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.example.com`) && PathPrefix(`/traefik`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls=true"
+      #- "traefik.http.routers.traefik.tls.certresolver=******"
+      - "traefik.http.routers.traefik.middlewares=traefikdashboard,auth,traefik-rewrite-api"
+      - "traefik.http.middlewares.traefikdashboard.stripprefix.prefixes=/traefik"
+      ## htpasswd -n <USERNAME> (You may need to escape any $ with another $.) (docker run --rm marcnuri/htpasswd -nb admin passw0rd)
+      - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$lguj5adr$$6mBaCtpj8QppscAtIImf30,traefik:$$apr1$$iobr2kd3$$OuItQaJuOnmkrBXGmYUND/"
+
+      - "traefik.http.middlewares.traefik-rewrite-api.plugin.rewrite.rewrites[0].regex=/api"
+      - "traefik.http.middlewares.traefik-rewrite-api.plugin.rewrite.rewrites[0].replacement=/traefik/api"
+
+      ## set a rule to redirect all http requests to https
+      #- "traefik.http.routers.http-catchall.entrypoints=web"
+      #- "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      #- "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      #- "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+    ports:
+      # The HTTP port
+      - "80:80"
+      # The HTTPS port
+      - "443:443"
+      # The Web UI (enabled by --api.insecure=true)
+      #- "8080:8080"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Mount the dynamic configuration
+      - ./traefik-config.yaml:/etc/traefik/dynamic/traefik-config.yaml
+      # Mount the directory containing the certs
+      - ./ssl/:/etc/certs/:ro
+    healthcheck:
+      test: ["CMD-SHELL", "traefik healthcheck --ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  whoami:
+    # A container that exposes an API to show its IP address
+    image: traefik/whoami
+    container_name: traefik-whoami
+    restart: unless-stopped
+    labels:
+      # Explicitly tell Traefik to expose this container
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      # Tell Traefik to use the port 80 to connect to `my-container` (=whoami)
+      - "traefik.http.services.whoami.loadbalancer.server.port=80"
+      
+      # http
+      #- "traefik.http.routers.whoami.rule=HostRegexp(`{catchall:.*}`)"
+      - "traefik.http.routers.whoami-http.rule=Host(`whoami.example.net`, `whoami.example.com`)"
+      - "traefik.http.routers.whoami-http.rule=PATH(`/whoami`)"
+      # Allow request only from the predefined entry point named "web"
+      - "traefik.http.routers.whoami-http.entrypoints=web"
+      - "traefik.http.routers.whoami-http.service=whoami"
+
+      # https (both http + https (ssl), then create two routers, see https://stackoverflow.com/a/69314734 )
+      - "traefik.http.routers.whoami-https.tls=true"
+      - "traefik.http.routers.whoami-https.rule=Host(`whoami.example.net`, `whoami.example.com`)"
+      - "traefik.http.routers.whoami-https.rule=PATH(`/whoami`)"
+      - "traefik.http.routers.whoami-https.entrypoints=websecure"
+      - "traefik.http.routers.whoami-https.service=whoami"
+      
+      # http to https redirect      
+      #- "traefik.http.routers.whoami-http.middlewares=whoami-https"
+      #- "traefik.http.middlewares.whoami-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.whoami-https.redirectscheme.permanent=false"
+      #- "traefik.http.middlewares.whoami-https.redirectscheme.port=443"
+      
+#networks:
+#  default:
+#    external: true
+#    name: mynetwork
+
+
+## create file "traefik-config.yaml" with content:
+#tls:
+#  stores:
+#    default:
+#      defaultCertificate:
+#        certFile: /etc/certs/example-com.crt
+#        keyFile: /etc/certs/example-com.key
+#  certificates:
+#    # first certificate
+#    - certFile: /etc/certs/example-com.crt
+#      keyFile: /etc/certs/example-com.key
+#    # second certificate
+#    - certFile: /etc/certs/example-net.crt
+#      keyFile: /etc/certs/example-net.key
