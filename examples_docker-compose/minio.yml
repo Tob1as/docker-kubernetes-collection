@@ -33,7 +33,7 @@ services:
       MINIO_GID: 1000
       # use for MinIO Console behind a load balancer, proxy or k8s ingress
       #MINIO_SERVER_URL: "https://minio.example.net"
-      #MINIO_BROWSER_REDIRECT_URL: "https://console.minio.example.net"
+      #MINIO_BROWSER_REDIRECT_URL: "https://minio-console.example.net"
     command:  ["server", "--address", ":9000", "--console-address", ":9001", "/data"]
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:9000/minio/health/live"]
