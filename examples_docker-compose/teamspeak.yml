@@ -37,3 +37,20 @@ services:
       timeout: 5s
       retries: 3
       #start_period: 30s
+    #labels:
+    #  - "traefik.enable=true"
+    #  #- "traefik.docker.network=mynetwork"
+    #  # UDP 9987
+    #  - "traefik.udp.services.teamspeak-udp.loadbalancer.server.port=9987"
+    #  - "traefik.udp.routers.teamspeak-udp.service=teamspeak-udp"
+    #  - "traefik.udp.routers.teamspeak-udp.entrypoints=ts-udp"
+    #  # TCP 10011 serverquery
+    #  - "traefik.tcp.services.teamspeak-tcp-sq.loadbalancer.server.port=10011"
+    #  - "traefik.tcp.routers.teamspeak-tcp-sq.service=teamspeak-tcp-sq"
+    #  - "traefik.tcp.routers.teamspeak-tcp-sq.rule=HostSNI(`*`)"
+    #  - "traefik.tcp.routers.teamspeak-tcp-sq.entrypoints=ts-tcp-sq"
+    #  # TCP 30033 filetransfer
+    #  - "traefik.tcp.services.teamspeak-tcp-ft.loadbalancer.server.port=10011"
+    #  - "traefik.tcp.routers.teamspeak-tcp-ft.service=teamspeak-tcp-ft"
+    #  - "traefik.tcp.routers.teamspeak-tcp-ft.rule=HostSNI(`*`)"
+    #  - "traefik.tcp.routers.teamspeak-tcp-ft.entrypoints=ts-tcp-ft"

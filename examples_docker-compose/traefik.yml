@@ -11,6 +11,7 @@ services:
     image: traefik:v2.10
     container_name: traefik
     restart: unless-stopped
+    #network_mode: "host"
     environment:
       - TZ=Europe/Berlin
     command: 
@@ -43,6 +44,11 @@ services:
       #- "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       #- "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       #- "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      #
+      # Teamspeak3
+      #- "--entrypoints.ts-udp.address=:9987/udp"
+      #- "--entrypoints.ts-tcp-sq.address=:10011"
+      #- "--entrypoints.ts-tcp-ft.address=:30033"
       # 
       - "--providers.file.directory=/etc/traefik/dynamic"
       #- "--providers.file.filename=/etc/traefik/dynamic/traefik-config.yaml"
