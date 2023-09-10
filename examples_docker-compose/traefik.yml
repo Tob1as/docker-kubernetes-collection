@@ -96,6 +96,10 @@ services:
       - "443:443"
       # The Web UI (enabled by --api.insecure=true)
       #- "8080:8080"
+      # OTHER SERVICES 
+      #- "9987:9987/udp"    # TS3
+      #- "10011:10011/tcp"  # TS3 serverquery
+      #- "30033:30033/tcp"  # TS3 filetransfer
     volumes:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock:ro
