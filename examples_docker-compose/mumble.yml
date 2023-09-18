@@ -7,72 +7,68 @@ services:
   # Mumble - voice-chat software
   # https://www.mumble.info/ + https://github.com/mumble-voip/mumble
   # https://hub.docker.com/r/mumblevoip/mumble-server + https://github.com/mumble-voip/mumble-docker
-  # https://github.com/mumble-voip/mumble/blob/master/scripts/murmur.ini
-  # Supported architectures: amd64, arm64, arm32v7
+  # https://github.com/mumble-voip/mumble/blob/master/auxiliary_files/mumble-server.ini
+  # Supported architectures: amd64
   # fix permission problem before startup: mkdir ./mumble-data/ && chmod 777 ./mumble-data/
   # Password: set env or see in logs after start: docker logs mumble-server 2>&1 | grep SUPERUSER_PASSWORD
-  # When login with "Superuser" and Password you have admin permission.
+  # When login with "SuperUser" and Password you have admin permission.
   mumble:
-    image: mumblevoip/mumble-server:latest    # v1.4.230
+    image: mumblevoip/mumble-server:latest    # v1.4.287
     container_name: mumble-server
     restart: unless-stopped
     ports:
       - 64738:64738/tcp
       - 64738:64738/udp
+      #- 6502:6502/tcp # ice
     environment:
       TZ: Europe/Berlin
-      #MUMBLE_ALLOWHTML: true
-      #MUMBLE_ALLOWPING: true
-      #MUMBLE_AUTOBANATTEMPTS: 10
-      #MUMBLE_AUTOBANTIMEFRAME: 120
-      #MUMBLE_AUTOBANTIME: 300
-      #MUMBLE_BANDWIDTH: 7200
-      #MUMBLE_CHANNELNAME: [ \\-=\\w\\#\\[\\]\\{\\}\\(\\)\\@\|]+
-      #MUMBLE_DATABASE: /data/murmur.sqlite
-      #MUMBLE_DB_DRIVER: QSQLITE  # for MariaDB set "QMYSQL"
-      #MUMBLE_DB_USERNAME: ---
-      #MUMBLE_DB_PASSWORD: ---
-      #MUMBLE_DEFAULTCHANNEL: ---
-      #MUMBLE_ENABLESSL: 0
-      #MUMBLE_ICE: tcp -h 127.0.0.1 -p 6502
-      #MUMBLE_ICESECRETREAD: ---
-      #MUMBLE_ICESECRETWRITE: ---
-      #MUMBLE_IMAGEMESSAGELENGTH: 131072
-      #MUMBLE_KDFITERATIONS: -1
-      #MUMBLE_LEGACYPASSWORDHASH: false
-      #MUMBLE_MESSAGEBURST: 5
-      #MUMBLE_MESSAGELIMIT: 1
-      #MUMBLE_OBFUSCATE: false
-      #MUMBLE_OPUSTHRESHOLD: 100
-      #MUMBLE_REGISTERHOSTNAME: ---
-      #MUMBLE_REGISTERNAME: ---
-      #MUMBLE_REGISTERPASSWORD: ---
-      #MUMBLE_REGISTERURL: ---
-      #MUMBLE_REMEMBERCHANNEL: true
-      #MUMBLE_SENDVERSION: false
-      #MUMBLE_SERVERPASSWORD: ---
-      #MUMBLE_SSLCIPHERS: ---
-      #MUMBLE_SSLPASSPHRASE: ---
-      #MUMBLE_SUGGESTPOSITIONAL: ---
-      #MUMBLE_SUGGESTPUSHTOTALK: ---
-      #MUMBLE_SUGGESTVERSION: false
-      #MUMBLE_TEXTMESSAGELENGTH: 5000
-      #MUMBLE_TIMEOUT: 30
-      #MUMBLE_USERNAME: [-=\\w\\[\\]\\{\\}\\(\\)\\@\|\\.]+
-      #MUMBLE_USERS: 100
-      #MUMBLE_USERSPERCHANNEL: 0
-      #MUMBLE_WELCOMETEXT: "<br />Welcome to this server running <b>Murmur</b>.<br />Enjoy your stay!<br />"
-      #SUPERUSER_PASSWORD: passw0rd # If not defined, a password will be auto-generated.
+      #MUMBLE_SUPERUSER_PASSWORD: passw0rd # If not defined, a password will be auto-generated.
+      #MUMBLE_VERBOSE: false
+      #MUMBLE_ACCEPT_UNKNOWN_SETTINGS: false
+      #MUMBLE_CONFIG_ALLOWHTML: true
+      #MUMBLE_CONFIG_ALLOWPING: true
+      #MUMBLE_CONFIG_AUTOBANATTEMPTS: 10
+      #MUMBLE_CONFIG_AUTOBANTIMEFRAME: 120
+      #MUMBLE_CONFIG_AUTOBANTIME: 300
+      #MUMBLE_CONFIG_BANDWIDTH: 7200
+      #MUMBLE_CONFIG_CHANNELNAME: [ \\-=\\w\\#\\[\\]\\{\\}\\(\\)\\@\|]+
+      #MUMBLE_CONFIG_DATABASE: mumble-server.sqlite
+      #MUMBLE_CONFIG_DB_DRIVER: QSQLITE  # for MariaDB set "QMYSQL", for Postgres set "QPSQL"
+      #MUMBLE_CONFIG_DB_USERNAME: ---
+      #MUMBLE_CONFIG_DB_PASSWORD: ---
+      #MUMBLE_CONFIG_DEFAULTCHANNEL: ---
+      #MUMBLE_CONFIG_ENABLESSL: 0
+      #MUMBLE_CONFIG_ICE: tcp -h 127.0.0.1 -p 6502
+      #MUMBLE_CONFIG_ICESECRETREAD: ---
+      #MUMBLE_CONFIG_ICESECRETWRITE: ---
+      #MUMBLE_CONFIG_IMAGEMESSAGELENGTH: 131072
+      #MUMBLE_CONFIG_KDFITERATIONS: -1
+      #MUMBLE_CONFIG_LEGACYPASSWORDHASH: false
+      #MUMBLE_CONFIG_MESSAGEBURST: 5
+      #MUMBLE_CONFIG_MESSAGELIMIT: 1
+      #MUMBLE_CONFIG_OBFUSCATE: false
+      #MUMBLE_CONFIG_OPUSTHRESHOLD: 100
+      #MUMBLE_CONFIG_REGISTERHOSTNAME: ---
+      #MUMBLE_CONFIG_REGISTERNAME: ---
+      #MUMBLE_CONFIG_REGISTERPASSWORD: ---
+      #MUMBLE_CONFIG_REGISTERURL: ---
+      #MUMBLE_CONFIG_REMEMBERCHANNEL: true
+      #MUMBLE_CONFIG_SENDVERSION: false
+      #MUMBLE_CONFIG_SERVER_PASSWORD: ---
+      #MUMBLE_CONFIG_SSLCIPHERS: ---
+      #MUMBLE_CONFIG_SSLPASSPHRASE: ---
+      #MUMBLE_CONFIG_SUGGESTPOSITIONAL: ---
+      #MUMBLE_CONFIG_SUGGESTPUSHTOTALK: ---
+      #MUMBLE_CONFIG_SUGGESTVERSION: false
+      #MUMBLE_CONFIG_TEXTMESSAGELENGTH: 5000
+      #MUMBLE_CONFIG_TIMEOUT: 30
+      #MUMBLE_CONFIG_USERNAME: [-=\\w\\[\\]\\{\\}\\(\\)\\@\|\\.]+
+      #MUMBLE_CONFIG_USERS: 100
+      #MUMBLE_CONFIG_USERSPERCHANNEL: 0
+      #MUMBLE_CONFIG_WELCOMETEXT: "<br />Welcome to this server running <b>Murmur</b>.<br />Enjoy your stay!<br />"
     volumes:
       #- mumble-data:/data:rw
       - ./mumble-data:/data:rw
-      # or single files:
-      #- ./mumble-data/database.sqlite:/data/database.sqlite:rw
-      #- ./mumble-data/murmur.ini:/data/murmur.ini:rw
-      # SSL
-      #- ./mumble-data/cert.pem:/data/cert.pem:ro
-      #- ./mumble-data/intermediate.pem:/data/intermediate.pem:ro
-      #- ./mumble-data/key.pem:/data/key.pem:ro
     healthcheck:
       test:  ["CMD-SHELL", "mumble-server -version || exit 1"]
       interval: 60s
