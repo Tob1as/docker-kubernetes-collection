@@ -1,4 +1,4 @@
-# docker-compose -f teamspeak.yml up -d
+# docker-compose -f traefik.yml up -d
 version: '2.4'
 services:
 
@@ -64,6 +64,16 @@ services:
       # https://plugins.traefik.io/plugins/62947307108ecc83915d7783/rewrite-body
       - "--experimental.plugins.rewrite.modulename=github.com/traefik/plugin-rewritebody"
       - "--experimental.plugins.rewrite.version=v0.3.1"
+
+      ## Metrics https://doc.traefik.io/traefik/observability/metrics/prometheus/
+      #- "--metrics.prometheus=true"
+      #- "--metrics.prometheus.buckets=0.1,0.3,1.2,5.0"
+      #- "--metrics.prometheus.addEntryPointsLabels=true"
+      #- "--metrics.prometheus.addrouterslabels=true"
+      #- "--metrics.prometheus.addServicesLabels=true"
+      #- "--entryPoints.metrics.address=:8082"
+      #- "--metrics.prometheus.entryPoint=metrics"
+
     labels:
       ## Traefik Dashboard/API Secure and with Auth
       ## https://community.traefik.io/t/enable-a-secure-dashboard-using-a-pathprefix/3763/6
@@ -91,11 +101,13 @@ services:
       #- "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
     ports:
       # The HTTP port
-      - "80:80"
+      - "80:80/tcp"
       # The HTTPS port
-      - "443:443"
+      - "443:443/tcp"
       # The Web UI (enabled by --api.insecure=true)
-      #- "8080:8080"
+      #- "127.0.0.1:8080:8080/tcp"
+      # Metrics for Prometheus (enable by --metrics.prometheus=true)
+      #- "127.0.0.1:8082:8082/tcp"
       # OTHER SERVICES 
       #- "9987:9987/udp"    # TS3
       #- "10011:10011/tcp"  # TS3 serverquery
