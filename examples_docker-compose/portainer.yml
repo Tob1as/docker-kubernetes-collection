@@ -2,10 +2,11 @@
 version: '2.4'
 services:
   
-  # Portainer - container service delivery platform
+  # Portainer CE - a lightweight service delivery platform for containerized applications  
   # https://www.portainer.io/
   # https://github.com/portainer/portainer
   # https://hub.docker.com/r/portainer/portainer-ce
+  # https://docs.portainer.io/start/install-ce/server/docker/linux
   # Supported architectures: arm32v7, arm64v8, amd64, ...
   # URL: https://localhost:9443/
   portainer:
@@ -18,9 +19,9 @@ services:
       - ./portainer-data:/data:rw
     #  - ./ssl:/certs:ro
     ports:
-      #- 8000:8000/tcp
       - 9443:9443/tcp  # https (default Portainer generates self-signed SSL certificate, alternatively use your own)
       #- 9000:9000/tcp  # http (legacy)
+      #- 8000:8000/tcp  # TCP tunnel server for edge agents
     #command:
     #  #--ssl
     #  --sslcert /certs/ssl.crt
@@ -31,3 +32,23 @@ services:
       interval: 60s
       timeout: 3s
       retries: 3
+    #labels:
+    #  - "traefik.enable=true"
+    #  #- "traefik.docker.network=mynetwork"
+    #  - "traefik.http.services.portainer.loadbalancer.server.port=9443"
+    #  - "traefik.http.services.portainer.loadbalancer.server.scheme=https"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+    #  # http
+    #  - "traefik.http.routers.portainer-http.rule=Host(`portainer.example.com`)"
+    #  - "traefik.http.routers.portainer-http.entrypoints=web"
+    #  - "traefik.http.routers.portainer-http.service=portainer"
+    #  # https
+    #  - "traefik.http.routers.portainer-https.tls=true"
+    #  - "traefik.http.routers.portainer-https.rule=Host(`portainer.example.com`)"
+    #  - "traefik.http.routers.portainer-https.entrypoints=websecure"
+    #  - "traefik.http.routers.portainer-https.service=portainer"
+    #  # load middlewares for routers
+    #  - "traefik.http.routers.portainer-http.middlewares=portainer-https"
+    #  # http to https redirect      
+    #  - "traefik.http.middlewares.portainer-https.redirectscheme.scheme=https"
+    #  #- "traefik.http.middlewares.portainer-https.redirectscheme.permanent=true"
+    #  #- "traefik.http.middlewares.portainer-https.redirectscheme.port=443"

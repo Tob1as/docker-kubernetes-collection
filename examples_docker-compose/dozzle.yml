@@ -33,7 +33,9 @@ services:
       start_period: 30s
     #labels:
     #  - "traefik.enable=true"
+    #  #- "traefik.docker.network=mynetwork"
     #  - "traefik.http.services.dozzle.loadbalancer.server.port=8080"
+    #  - "traefik.http.services.dozzle.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
     #  # http
     #  - "traefik.http.routers.dozzle-http.rule=Host(`logs.example.com`)"
     #  - "traefik.http.routers.dozzle-http.entrypoints=web"
@@ -43,8 +45,9 @@ services:
     #  - "traefik.http.routers.dozzle-https.rule=Host(`logs.example.com`)"
     #  - "traefik.http.routers.dozzle-https.entrypoints=websecure"
     #  - "traefik.http.routers.dozzle-https.service=dozzle"
-    #  # http to https redirect      
+    #  # load middlewares for routers
     #  - "traefik.http.routers.dozzle-http.middlewares=dozzle-https"
+    #  # http to https redirect
     #  - "traefik.http.middlewares.dozzle-https.redirectscheme.scheme=https"
     #  #- "traefik.http.middlewares.dozzle-https.redirectscheme.permanent=true"
     #  #- "traefik.http.middlewares.dozzle-https.redirectscheme.port=443"

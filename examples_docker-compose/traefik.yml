@@ -80,6 +80,7 @@ services:
       ## https://github.com/traefik/traefik/issues/5853
       - "traefik.enable=true"
       - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+      - "traefik.http.services.traefik.loadbalancer.server.scheme=http"
       #- "traefik.http.routers.traefik.rule=Host(`traefik.example.com`) && (PathPrefix(`/traefik`) || PathPrefix(`/api`))"
       - "traefik.http.routers.traefik.rule=Host(`traefik.example.com`) && PathPrefix(`/traefik`)"
       - "traefik.http.routers.traefik.service=api@internal"
@@ -136,6 +137,7 @@ services:
       #- "traefik.docker.network=mynetwork"
       # Tell Traefik to use the port 80 to connect to `my-container` (=whoami)
       - "traefik.http.services.whoami.loadbalancer.server.port=80"
+      - "traefik.http.services.whoami.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
       
       # http
       #- "traefik.http.routers.whoami.rule=HostRegexp(`{catchall:.*}`)"
@@ -152,8 +154,10 @@ services:
       - "traefik.http.routers.whoami-https.entrypoints=websecure"
       - "traefik.http.routers.whoami-https.service=whoami"
       
-      # http to https redirect      
+      # load middlewares for routers
       #- "traefik.http.routers.whoami-http.middlewares=whoami-https"
+
+      # http to https redirect
       #- "traefik.http.middlewares.whoami-https.redirectscheme.scheme=https"
       #- "traefik.http.middlewares.whoami-https.redirectscheme.permanent=false"
       #- "traefik.http.middlewares.whoami-https.redirectscheme.port=443"
