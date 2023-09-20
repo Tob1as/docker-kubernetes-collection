@@ -26,6 +26,7 @@ services:
       REGISTRY_HEALTH_STORAGEDRIVER_INTERVAL: '10s'
       REGISTRY_HEALTH_STORAGEDRIVER_THRESHOLD: '3'
       # ADDITIONAL / OPTIONAL
+      REGISTRY_STORAGE_DELETE_ENABLED: 'true'
       #REGISTRY_PROXY_REMOTEURL: 'https://registry-1.docker.io'
       #REGISTRY_PROXY_USERNAME: ''
       #REGISTRY_PROXY_PASSWORD: ''
@@ -35,7 +36,6 @@ services:
       REGISTRY_HTTP_DEBUG_PROMETHEUS_ENABLED: 'true'
       REGISTRY_HTTP_DEBUG_PROMETHEUS_PATH: '/metrics'
       REGISTRY_HTTP_SECRET: '6eEQHllcERRlXxrjjoVoXuqkw01DDAKwQ==' # "openssl rand -base64 25 | tr -d '\ n'"
-      REGISTRY_STORAGE_DELETE_ENABLED: 'true'
       REGISTRY_HTTP_HEADERS_Access-Control-Allow-Origin: '[https://docker-registry.example.com]'
       REGISTRY_HTTP_HEADERS_Access-Control-Allow-Methods: '[HEAD,GET,OPTIONS,DELETE]'
       REGISTRY_HTTP_HEADERS_Access-Control-Allow-Credentials: '[true]'
