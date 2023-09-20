@@ -87,8 +87,9 @@ services:
     #  - "traefik.http.routers.seafile-https.rule=Host(`seafile.example.com`)"
     #  - "traefik.http.routers.seafile-https.entrypoints=websecure"
     #  - "traefik.http.routers.seafile-https.service=seafile"
-    #  # http to https redirect      
+    # load middlewares for routers
     #  - "traefik.http.routers.seafile-http.middlewares=seafile-https"
+    #  # http to https redirect
     #  - "traefik.http.middlewares.seafile-https.redirectscheme.scheme=https"
     #  #- "traefik.http.middlewares.seafile-https.redirectscheme.permanent=true"
     #  #- "traefik.http.middlewares.seafile-https.redirectscheme.port=443"

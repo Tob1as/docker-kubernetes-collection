@@ -1,0 +1,199 @@
+# docker-compose -f docker-registry.yml up -d
+# EXAMPLE FOR USE WITH TRAEFIK AS PROXY!
+version: '2.4' 
+services:
+
+  # Docker Registry - for storing and distributing Docker images
+  # https://hub.docker.com/_/registry & https://github.com/distribution/distribution 
+  # https://docs.docker.com/registry/
+  # https://docs.docker.com/registry/configuration/#override-specific-configuration-options
+  # Supported architectures: arm32v6, arm32v7, arm64v8, amd64, ...
+  docker-registry:
+    image: registry:latest # 2.8
+    container_name: docker-registry
+    restart: unless-stopped
+    #ports:
+    #  - "5000:5000/tcp"
+    #  - "127.0.0.1:5001:5001/tcp"
+    environment:
+      # DEFAULT
+      REGISTRY_LOG_FIELDS_SERVICE: 'registry'
+      REGISTRY_STORAGE_CACHE_BLOBDESCRIPTOR: 'inmemory'
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: '/var/lib/registry'      
+      REGISTRY_HTTP_ADDR: ':5000'
+      REGISTRY_HTTP_HEADERS_X-Content-Type-Options: '[nosniff]'
+      REGISTRY_HEALTH_STORAGEDRIVER_ENABLED: 'true'
+      REGISTRY_HEALTH_STORAGEDRIVER_INTERVAL: '10s'
+      REGISTRY_HEALTH_STORAGEDRIVER_THRESHOLD: '3'
+      # ADDITIONAL / OPTIONAL
+      #REGISTRY_PROXY_REMOTEURL: 'https://registry-1.docker.io'
+      #REGISTRY_PROXY_USERNAME: ''
+      #REGISTRY_PROXY_PASSWORD: ''
+      REGISTRY_AUTH_HTPASSWD_REALM: 'basic-realm'
+      REGISTRY_AUTH_HTPASSWD_PATH: '/var/lib/registry/htpasswd'   # "docker run --rm tobi312/tools:htpasswd -Bbn docker passw0rd"
+      REGISTRY_HTTP_DEBUG_ADDR: ':5001'
+      REGISTRY_HTTP_DEBUG_PROMETHEUS_ENABLED: 'true'
+      REGISTRY_HTTP_DEBUG_PROMETHEUS_PATH: '/metrics'
+      REGISTRY_HTTP_SECRET: '6eEQHllcERRlXxrjjoVoXuqkw01DDAKwQ==' # "openssl rand -base64 25 | tr -d '\ n'"
+      REGISTRY_STORAGE_DELETE_ENABLED: 'true'
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Origin: '[https://docker-registry.example.com]'
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Methods: '[HEAD,GET,OPTIONS,DELETE]'
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Credentials: '[true]'
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Headers: '[Authorization,Accept,Cache-Control]'
+      REGISTRY_HTTP_HEADERS_Access-Control-Expose-Headers: '[Docker-Content-Digest]'
+      #REGISTRY_LOG_LEVEL: 'debug'
+    volumes:
+      - docker-registry-data:/var/lib/registry:rw
+      #- ./docker-registry-data:/var/lib/registry:rw
+      ##- ./config.yml:/etc/docker/registry/config.yml:ro  # not need with env vars
+      #- /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    healthcheck:
+      #test:  wget --quiet --tries=1 --spider http://localhost:5000/v2/ || exit 1
+      test:  wget --quiet --tries=1 --spider http://docker:passw0rd@localhost:5000/v2/ || exit 1
+      start_period: 30s
+      interval: 60s
+      timeout: 5s
+      retries: 3
+    labels:
+      # Explicitly tell Traefik to expose this container
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      # Tell Traefik to use the port 5000 to connect to docker-registry container
+      - "traefik.http.services.docker-registry.loadbalancer.server.port=5000"
+      - "traefik.http.services.docker-registry.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.docker-registry-http.rule=(Host(`docker-registry.example.com`) && PathPrefix(`/v2`))"
+      - "traefik.http.routers.docker-registry-http.entrypoints=web"
+      - "traefik.http.routers.docker-registry-http.service=docker-registry"
+      # https
+      - "traefik.http.routers.docker-registry-https.tls=true"
+      - "traefik.http.routers.docker-registry-https.rule=(Host(`docker-registry.example.com`) && PathPrefix(`/v2`))"
+      - "traefik.http.routers.docker-registry-https.entrypoints=websecure"
+      - "traefik.http.routers.docker-registry-https.service=docker-registry"
+      # load middlewares for routes
+      - "traefik.http.routers.docker-registry-http.middlewares=docker-registry-https"
+      # http to https redirect      
+      - "traefik.http.middlewares.docker-registry-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.docker-registry-https.redirectscheme.permanent=false"
+      #- "traefik.http.middlewares.docker-registry-https.redirectscheme.port=443"
+      
+  # docker-registry-browser - Web Interface for the Docker Registry
+  # https://hub.docker.com/r/klausmeyer/docker-registry-browser/
+  # https://github.com/klausmeyer/docker-registry-browser
+  # https://github.com/klausmeyer/docker-registry-browser/blob/master/docs/README.md
+  # Supported architectures: arm32v7, arm64v8, amd64, ...
+  docker-registry-browser:
+    image: klausmeyer/docker-registry-browser:latest
+    container_name: docker-registry-browser
+    restart: unless-stopped
+    environment:
+      - "DOCKER_REGISTRY_URL=http://docker-registry:5000"
+      - "ENABLE_DELETE_IMAGES=true"
+      - "PUBLIC_REGISTRY_URL=docker-registry.example.com"
+      # Subfolder
+      - "SCRIPT_NAME=/browser"
+      - "RAILS_RELATIVE_URL_ROOT=/browser"
+      # docker-registry auth cred.
+      - "BASIC_AUTH_USER=docker"
+      - "BASIC_AUTH_PASSWORD=passw0rd"
+    #ports:
+    #  - "8080:8080/tcp"
+    depends_on:
+      - docker-registry
+    healthcheck:
+      test:  wget --quiet --tries=1 --spider http://127.0.0.1:8080/ping || exit 1
+      interval: 60s
+      timeout: 5s
+      retries: 3
+    labels:
+      # Explicitly tell Traefik to expose this container
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      # Tell Traefik to use the port 8080 to connect to docker-registry-browser container
+      - "traefik.http.services.docker-registry-browser.loadbalancer.server.port=8080"
+      - "traefik.http.services.docker-registry-browser.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.docker-registry-browser-http.rule=(Host(`docker-registry.example.com`) && PathPrefix(`/browser`))"
+      - "traefik.http.routers.docker-registry-browser-http.entrypoints=web"
+      - "traefik.http.routers.docker-registry-browser-http.service=docker-registry-browser"
+      # https
+      - "traefik.http.routers.docker-registry-browser-https.tls=true"
+      - "traefik.http.routers.docker-registry-browser-https.rule=(Host(`docker-registry.example.com`) && PathPrefix(`/browser`))"
+      - "traefik.http.routers.docker-registry-browser-https.entrypoints=websecure"
+      - "traefik.http.routers.docker-registry-browser-https.service=docker-registry-browser"
+      # load middlewares for routes
+      #- "traefik.http.routers.docker-registry-browser-http.middlewares=docker-registry-browser-https,docker-registry-browser-stripprefix"
+      - "traefik.http.routers.docker-registry-browser-http.middlewares=docker-registry-browser-https,docker-registry-browser-stripprefix,docker-registry-browser-auth"
+      #- "traefik.http.routers.docker-registry-browser-https.middlewares=docker-registry-browser-stripprefix"
+      - "traefik.http.routers.docker-registry-browser-https.middlewares=docker-registry-browser-stripprefix,docker-registry-browser-auth"
+      # http to https redirect      
+      - "traefik.http.middlewares.docker-registry-browser-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.docker-registry-browser-https.redirectscheme.permanent=false"
+      #- "traefik.http.middlewares.docker-registry-browser-https.redirectscheme.port=443"
+      # subfolder
+      - "traefik.http.middlewares.docker-registry-browser-stripprefix.stripprefix.prefixes=/browser"
+      # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn docker passw0rd)
+      - "traefik.http.middlewares.docker-registry-browser-auth.basicauth.users=docker:$$apr1$$88iTkAFo$$/xJq34LPgUr4AeKJi1V7D1"
+
+#  # docker-registry-ui - simple UI for your private registry 
+#  # https://hub.docker.com/r/joxit/docker-registry-ui
+#  # https://github.com/Joxit/docker-registry-ui
+#  # https://github.com/Joxit/docker-registry-ui/blob/main/README.md
+#  # Supported architectures: arm32v6, arm32v7, arm64v8, amd64, ...
+#  docker-registry-ui:
+#    image: joxit/docker-registry-ui:latest
+#    container_name: docker-registry-ui
+#    restart: unless-stopped
+#    user: nginx  # start container as nginx-user with port 8080
+#    environment:
+#      - SINGLE_REGISTRY=true
+#      - REGISTRY_TITLE=Docker Registry UI
+#      - DELETE_IMAGES=true
+#      - SHOW_CONTENT_DIGEST=true
+#      - NGINX_PROXY_PASS_URL=http://docker-registry:5000
+#      - REGISTRY_URL=https://docker-registry.example.com
+#      - PULL_URL=docker-registry.example.com
+#      - SHOW_CATALOG_NB_TAGS=true
+#      - CATALOG_MIN_BRANCHES=1
+#      - CATALOG_MAX_BRANCHES=1
+#      - TAGLIST_PAGE_SIZE=100
+#      - REGISTRY_SECURED=false
+#      - CATALOG_ELEMENTS_LIMIT=1000
+#    #ports:
+#    #  - 8080:8080
+#    depends_on:
+#      - docker-registry
+#    healthcheck:
+#       test: ["CMD", "wget", "-q", "--tries=1", "--spider", "http://127.0.0.1:8080"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 3
+#       #start_period: 1m
+#    labels:
+#      # Explicitly tell Traefik to expose this container
+#      - "traefik.enable=true"
+#      #- "traefik.docker.network=mynetwork"
+#      # Tell Traefik to use the port 8080 to connect to docker-registry-ui container
+#      - "traefik.http.services.docker-registry-ui.loadbalancer.server.port=8080"
+#      - "traefik.http.services.docker-registry-ui.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+#      # http
+#      - "traefik.http.routers.docker-registry-ui-http.rule=Host(`docker-registry.example.com`)"
+#      - "traefik.http.routers.docker-registry-ui-http.entrypoints=web"
+#      - "traefik.http.routers.docker-registry-ui-http.service=docker-registry-ui"
+#      # https
+#      - "traefik.http.routers.docker-registry-ui-https.tls=true"
+#      - "traefik.http.routers.docker-registry-ui-https.rule=Host(`docker-registry.example.com`)"
+#      - "traefik.http.routers.docker-registry-ui-https.entrypoints=websecure"
+#      - "traefik.http.routers.docker-registry-ui-https.service=docker-registry-ui"
+#      # load middlewares for routes
+#      - "traefik.http.routers.docker-registry-ui-http.middlewares=docker-registry-ui-https,docker-registry-ui-auth"
+#      - "traefik.http.routers.docker-registry-ui-https.middlewares=docker-registry-ui-auth"
+#      # http to https redirect      
+#      - "traefik.http.middlewares.docker-registry-ui-https.redirectscheme.scheme=https"
+#      #- "traefik.http.middlewares.docker-registry-ui-https.redirectscheme.permanent=false"
+#      #- "traefik.http.middlewares.docker-registry-ui-https.redirectscheme.port=443"
+#      # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn docker passw0rd)
+#      - "traefik.http.middlewares.docker-registry-ui-auth.basicauth.users=docker:$$apr1$$88iTkAFo$$/xJq34LPgUr4AeKJi1V7D1"
+      
+volumes:
+  docker-registry-data:
