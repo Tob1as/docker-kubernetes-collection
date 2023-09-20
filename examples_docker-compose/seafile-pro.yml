@@ -10,6 +10,7 @@ services:
   db:
     image: mariadb:10.11
     container_name: seafile-mysql
+    restart: unless-stopped
     environment:
       - MYSQL_ROOT_PASSWORD=passw0rd    # Requested, set the root's password of MySQL service.
       - MYSQL_LOG_CONSOLE=true
@@ -29,6 +30,7 @@ services:
   memcached:
     image: memcached:1.6.18
     container_name: seafile-memcached
+    restart: unless-stopped
     entrypoint: memcached -m 256
     networks:
       - seafile-net
@@ -43,6 +45,7 @@ services:
   elasticsearch:
     image: elasticsearch:8.6.2
     container_name: seafile-elasticsearch
+    restart: unless-stopped
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
@@ -73,6 +76,7 @@ services:
   seafile:
     image: docker.seafile.top/seafileltd/seafile-pro-mc:latest # 10.x
     container_name: seafile
+    restart: unless-stopped
     ports:
       - "80:80/tcp"
       - "443:443/tcp"  # If https is enabled, cancel the comment.
@@ -129,6 +133,7 @@ services:
 #  av:
 #    image: mkodockx/docker-clamav:alpine
 #    container_name: seafile-clamav
+#    restart: unless-stopped
 #    networks:
 #      - seafile-net
 #    healthcheck:
@@ -141,6 +146,7 @@ services:
 #  oods:
 #    image: onlyoffice/documentserver:latest
 #    container_name: seafile-oods
+#    restart: unless-stopped
 #    volumes:
 #      - ./seafile-oods/logs:/var/log/onlyoffice
 #      - ./seafile-oods/data:/var/www/onlyoffice/Data
