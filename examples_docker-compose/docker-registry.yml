@@ -27,7 +27,7 @@ services:
       REGISTRY_HEALTH_STORAGEDRIVER_THRESHOLD: '3'
       # ADDITIONAL / OPTIONAL
       REGISTRY_STORAGE_DELETE_ENABLED: 'true'
-      #REGISTRY_PROXY_REMOTEURL: 'https://registry-1.docker.io'
+      #REGISTRY_PROXY_REMOTEURL: 'https://registry-1.docker.io'   # docker registries: https://registry-1.docker.io , https://ghcr.io , https://quay.io , https://registry.gitlab.com
       #REGISTRY_PROXY_USERNAME: ''
       #REGISTRY_PROXY_PASSWORD: ''
       REGISTRY_AUTH_HTPASSWD_REALM: 'basic-realm'
