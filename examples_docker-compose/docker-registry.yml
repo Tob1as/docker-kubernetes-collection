@@ -8,6 +8,10 @@ services:
   # https://docs.docker.com/registry/
   # https://docs.docker.com/registry/configuration/#override-specific-configuration-options
   # Supported architectures: arm32v6, arm32v7, arm64v8, amd64, ...
+  # API URLs: 
+  # * https://docker-registry.example.com/v2/_catalog?n=1000 
+  # * https://docker-registry.example.com/v2/<NAMESPACE/IMAGENAME>/tags/list
+  # * https://docker-registry.example.com/v2/<NAMESPACE/IMAGENAME>/manifests/<TAG>
   docker-registry:
     image: registry:latest # 2.8
     container_name: docker-registry
@@ -44,8 +48,8 @@ services:
       #REGISTRY_LOG_LEVEL: 'debug'
     volumes:
       - docker-registry-data:/var/lib/registry:rw
-      #- ./docker-registry-data:/var/lib/registry:rw
-      ##- ./config.yml:/etc/docker/registry/config.yml:ro  # not need with env vars
+      #- ./data_docker-registry:/var/lib/registry:rw
+      ##- ./config_docker-registry/config.yml:/etc/docker/registry/config.yml:ro  # not need with env vars
       #- /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
     healthcheck:
       #test:  wget --quiet --tries=1 --spider http://127.0.0.1:5000/v2/ || exit 1
