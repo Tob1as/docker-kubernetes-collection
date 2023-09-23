@@ -27,7 +27,28 @@ services:
       - ./ssl/ssl.key:/mosquitto/ssl/key.pem:ro
       #- ./log_mosquitto:/mosquitto/log:rw  # default to stdout
     #command: ["/usr/sbin/mosquitto", "-c", "/mosquitto/config/mosquitto.conf"]
-    #command: [ "/usr/sbin/mosquitto", "-c", "/mosquitto-no-auth.conf" ] 
+    #command: [ "/usr/sbin/mosquitto", "-c", "/mosquitto-no-auth.conf" ]
+    healthcheck:
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 1883 || exit 1"]
+      #start_period: 30s
+      interval: 60s
+      timeout: 5s
+      retries: 3
+    #labels:
+    #  - "traefik.enable=true"
+    #  # TCP MQTT
+    #  - "traefik.tcp.services.mosquitto-mqtt.loadbalancer.server.port=1883"
+    #  - "traefik.tcp.routers.mosquitto-mqtt.service=mosquitto-mqtt"
+    #  - "traefik.tcp.routers.mosquitto-mqtt.rule=HostSNI(`*`)"
+    #  - "traefik.tcp.routers.mosquitto-mqtt.entrypoints=mqtt"
+    #  # TCP MQTTS
+    #  - "traefik.tcp.services.mosquitto-mqtts.loadbalancer.server.port=8883"
+    #  - "traefik.tcp.routers.mosquitto-mqtts.service=mosquitto-mqtts"
+    #  - "traefik.tcp.routers.mosquitto-mqtts.rule=HostSNI(`*`)"
+    #  #- "traefik.tcp.routers.mosquitto-mqtts.rule=HostSNI(`mosquitto.example.com`)"
+    #  - "traefik.tcp.routers.mosquitto-mqtts.entrypoints=mqtts"
+    #  - "traefik.tcp.routers.mosquitto-mqtts.tls=true"
+    #  - "traefik.tcp.routers.mosquitto-mqtts.tls.passthrough=true"
 
 networks:
   default:
