@@ -1,0 +1,44 @@
+# docker-compose -f mqtt-board.yml up -d
+version: '2.4'
+services:
+
+  # MQTT-Board: MQTT Web Client Tool (only wss:// connection)
+  # https://github.com/flespi-software/MQTT-Board
+  # https://github.com/Tob1as/docker-tools
+  mqtt-board:
+    image: tobi312/tools:mqtt-board
+    container_name: mqtt-board
+    restart: unless-stopped
+    #environment:
+    #  TZ: "Europe/Berlin"
+    #ports:
+    #  - 8080:80/tcp
+    healthcheck:
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 80 || exit 1"]
+      #start_period: 30s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.mqtt-board.loadbalancer.server.port=80"
+      # http
+      - "traefik.http.routers.mqtt-board-http.rule=Host(`mqtt-board.example.com`)"
+      - "traefik.http.routers.mqtt-board-http.entrypoints=web"
+      - "traefik.http.routers.mqtt-board-http.service=mqtt-board"
+      # https
+      - "traefik.http.routers.mqtt-board-https.tls=true"
+      - "traefik.http.routers.mqtt-board-https.rule=Host(`mqtt-board.example.com`)"
+      - "traefik.http.routers.mqtt-board-https.entrypoints=websecure"
+      - "traefik.http.routers.mqtt-board-https.service=mqtt-board"
+      # load middlewares for routes
+      - "traefik.http.routers.mqtt-board-http.middlewares=mqtt-board-https"
+      # http to https redirect      
+      - "traefik.http.middlewares.mqtt-board-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.mqtt-board-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.mqtt-board-https.redirectscheme.port=443"
+
+networks:
+  default:
+    external: true
+    name: mynetwork

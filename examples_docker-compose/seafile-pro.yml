@@ -16,7 +16,7 @@ services:
       - MYSQL_LOG_CONSOLE=true
       #- MARIADB_AUTO_UPGRADE=true
     volumes:
-      - ./seafile-db:/var/lib/mysql:rw  # Requested, specifies the path to MySQL data persistent store.
+      - ./data_seafile-db:/var/lib/mysql:rw  # Requested, specifies the path to MySQL data persistent store.
     networks:
       - seafile-net
     healthcheck:
@@ -56,11 +56,11 @@ services:
         hard: -1
     mem_limit: 2g
     volumes:
-      - ./seafile-elasticsearch:/usr/share/elasticsearch/data:rw  # Requested, specifies the path to Elasticsearch data persistent store.
+      - ./data_seafile-elasticsearch:/usr/share/elasticsearch/data:rw  # Requested, specifies the path to Elasticsearch data persistent store.
     networks:
       - seafile-net
     healthcheck:
-        test: ["CMD-SHELL", "curl --silent --fail -XGET 'localhost:9200/_cluster/health?pretty' || exit 1"]
+        test: ["CMD-SHELL", "curl --silent --fail -XGET 'http://127.0.0.1:9200/_cluster/health?pretty' || exit 1"]
         #start_period: 30s
         interval: 60s
         timeout: 10s
@@ -77,11 +77,11 @@ services:
     image: docker.seafile.top/seafileltd/seafile-pro-mc:latest # 10.x
     container_name: seafile
     restart: unless-stopped
-    ports:
-      - "80:80/tcp"
-      - "443:443/tcp"  # If https is enabled, cancel the comment.
+    #ports:
+    #  - "80:80/tcp"
+    #  - "443:443/tcp"  # If https is enabled, cancel the comment.
     volumes:
-      - ./seafile-data:/shared   # Requested, specifies the path to Seafile data persistent store.
+      - ./data_seafile:/shared   # Requested, specifies the path to Seafile data persistent store.
     environment:
       - DB_HOST=db
       - DB_ROOT_PASSWD=passw0rd                     # Requested, the value shuold be root's password of MySQL service.
@@ -100,32 +100,34 @@ services:
       #- oods
     networks:
       - seafile-net
+      - mynetwork     # remove when not needed traefik
     healthcheck:
-      test:  ["CMD-SHELL", "[ \"$$(curl -Ss 'http://localhost:80/api2/ping/')\" = '\"pong\"' ] || exit 1"]
-      #test:  ["CMD-SHELL", "[ \"$$(curl -Ssk 'https://localhost:443/api2/ping/')\" = '\"pong\"' ] || exit 1"]
+      test:  ["CMD-SHELL", "[ \"$$(curl -Ss 'http://127.0.0.1:80/api2/ping/')\" = '\"pong\"' ] || exit 1"]
+      #test:  ["CMD-SHELL", "[ \"$$(curl -Ssk 'https://127.0.0.1:443/api2/ping/')\" = '\"pong\"' ] || exit 1"]
       interval: 60s
       timeout: 5s
       retries: 3
       #start_period: 30s
-    #labels:
-    #  - "traefik.enable=true"
-    #  - "traefik.http.services.seafile.loadbalancer.server.port=443"
-    #  - "traefik.http.services.seafile.loadbalancer.server.scheme=https"
-    #  # http
-    #  - "traefik.http.routers.seafile-http.rule=Host(`seafile.example.com`)"
-    #  - "traefik.http.routers.seafile-http.entrypoints=web"
-    #  - "traefik.http.routers.seafile-http.service=seafile"
-    #  # https
-    #  - "traefik.http.routers.seafile-https.tls=true"
-    #  - "traefik.http.routers.seafile-https.rule=Host(`seafile.example.com`)"
-    #  - "traefik.http.routers.seafile-https.entrypoints=websecure"
-    #  - "traefik.http.routers.seafile-https.service=seafile"
-    # load middlewares for routers
-    #  - "traefik.http.routers.seafile-http.middlewares=seafile-https"
-    #  # http to https redirect
-    #  - "traefik.http.middlewares.seafile-https.redirectscheme.scheme=https"
-    #  #- "traefik.http.middlewares.seafile-https.redirectscheme.permanent=true"
-    #  #- "traefik.http.middlewares.seafile-https.redirectscheme.port=443"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=mynetwork"  # set when more then one networks
+      - "traefik.http.services.seafile.loadbalancer.server.port=80"
+      - "traefik.http.services.seafile.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.seafile-http.rule=Host(`seafile.example.com`)"
+      - "traefik.http.routers.seafile-http.entrypoints=web"
+      - "traefik.http.routers.seafile-http.service=seafile"
+      # https
+      - "traefik.http.routers.seafile-https.tls=true"
+      - "traefik.http.routers.seafile-https.rule=Host(`seafile.example.com`)"
+      - "traefik.http.routers.seafile-https.entrypoints=websecure"
+      - "traefik.http.routers.seafile-https.service=seafile"
+      # load middlewares for routers
+      - "traefik.http.routers.seafile-http.middlewares=seafile-https"
+      # http to https redirect
+      - "traefik.http.middlewares.seafile-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.seafile-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.seafile-https.redirectscheme.port=443"
 
 ## optional begin (need more settings, see docu)
 
@@ -148,15 +150,15 @@ services:
 #    container_name: seafile-oods
 #    restart: unless-stopped
 #    volumes:
-#      - ./seafile-oods/logs:/var/log/onlyoffice
-#      - ./seafile-oods/data:/var/www/onlyoffice/Data
-#      - ./seafile-oods/lib:/var/lib/onlyoffice
-#      - ./seafile-oods/local-production-linux.json:/etc/onlyoffice/documentserver/local-production-linux.json
+#      - ./data_seafile-oods/logs:/var/log/onlyoffice
+#      - ./data_seafile-oods/data:/var/www/onlyoffice/Data
+#      - ./data_seafile-oods/lib:/var/lib/onlyoffice
+#      - ./data_seafile-oods/local-production-linux.json:/etc/onlyoffice/documentserver/local-production-linux.json
 #    networks:
 #      - seafile-net
 #    environment:
 #      - JWT_ENABLED=true
-#      - JWT_SECRET=                    # openssl rand -base64 25 | tr -d '\ n'
+#      - JWT_SECRET=                    # "openssl rand -base64 25 | tr -d '\ n'"
 #      - ONLYOFFICE_HTTPS_HSTS_ENABLED=false
 #      - SSL_VERIFY_CLIENT=false
 #      #- USE_UNAUTHORIZED_STORAGE=true # https://github.com/ONLYOFFICE/Docker-DocumentServer/issues/96
@@ -171,3 +173,6 @@ services:
 
 networks:
   seafile-net:
+  mynetwork:
+    external: true
+    name: mynetwork

@@ -17,3 +17,8 @@ services:
     volumes:
       - ./samba-data:/share/folder:rw
     command: '-u "1000:1000:smbuser:smbuser:Passw0rd" -s "share:/share/folder:rw:smbuser"'
+
+networks:
+  default:
+    external: true
+    name: mynetwork

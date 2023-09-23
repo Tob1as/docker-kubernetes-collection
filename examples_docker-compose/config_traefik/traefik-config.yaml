@@ -1,0 +1,13 @@
+tls:
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /etc/certs/example-com.crt
+        keyFile: /etc/certs/example-com.key
+#  certificates:
+#    # first certificate
+#    - certFile: /etc/certs/example-com.crt
+#      keyFile: /etc/certs/example-com.key
+#    # second certificate
+#    - certFile: /etc/certs/example-net.crt
+#      keyFile: /etc/certs/example-net.key

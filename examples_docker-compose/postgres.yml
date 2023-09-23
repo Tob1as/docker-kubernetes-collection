@@ -21,10 +21,8 @@ services:
     #image: tobi312/rpi-postgresql-postgis:15-3.3-alpine-*   # Supported architectures: arm32v7, arm64v8
     container_name: postgres
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data:rw
-      #- ./postgres-init/init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh:ro
-      #- /etc/timezone:/etc/timezone:ro
-      #- /etc/localtime:/etc/localtime:ro
+      - ./data_postgres:/var/lib/postgresql/data:rw
+      #- ./config_postgres/init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh:ro
     environment:
        TZ: Europe/Berlin
        POSTGRES_PASSWORD: passw0rd
@@ -33,10 +31,14 @@ services:
        #PGDATA: /var/lib/postgresql/data/pgdata
     restart: unless-stopped
     ports:
-      - 5432:5432/tcp
-      #- 127.0.0.1:5432:5432/tcp # use this and comment out the other, if you want connect only from localhost
+      - 127.0.0.1:5432:5432/tcp
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 60s
       timeout: 5s
       retries: 5
+
+networks:
+  default:
+    external: true
+    name: mynetwork

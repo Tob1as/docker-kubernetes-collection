@@ -49,6 +49,9 @@ services:
       #- "--entrypoints.ts-udp.address=:9987/udp"
       #- "--entrypoints.ts-tcp-sq.address=:10011"
       #- "--entrypoints.ts-tcp-ft.address=:30033"
+      # MQTT (VerneMQ/Mosquitto)
+      #- "--entrypoints.mqtt.address=:1883"
+      #- "--entrypoints.mqtts.address=:8883"
       # 
       - "--providers.file.directory=/etc/traefik/dynamic"
       #- "--providers.file.filename=/etc/traefik/dynamic/traefik-config.yaml"
@@ -65,14 +68,14 @@ services:
       - "--experimental.plugins.rewrite.modulename=github.com/traefik/plugin-rewritebody"
       - "--experimental.plugins.rewrite.version=v0.3.1"
 
-      ## Metrics https://doc.traefik.io/traefik/observability/metrics/prometheus/
-      #- "--metrics.prometheus=true"
-      #- "--metrics.prometheus.buckets=0.1,0.3,1.2,5.0"
-      #- "--metrics.prometheus.addEntryPointsLabels=true"
-      #- "--metrics.prometheus.addrouterslabels=true"
-      #- "--metrics.prometheus.addServicesLabels=true"
-      #- "--entryPoints.metrics.address=:8082"
-      #- "--metrics.prometheus.entryPoint=metrics"
+      # Metrics https://doc.traefik.io/traefik/observability/metrics/prometheus/
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.buckets=0.1,0.3,1.2,5.0"
+      - "--metrics.prometheus.addEntryPointsLabels=true"
+      - "--metrics.prometheus.addrouterslabels=true"
+      - "--metrics.prometheus.addServicesLabels=true"
+      - "--entryPoints.metrics.address=:8082"
+      - "--metrics.prometheus.entryPoint=metrics"
 
     labels:
       ## Traefik Dashboard/API Secure and with Auth
@@ -113,12 +116,15 @@ services:
       #- "9987:9987/udp"    # TS3
       #- "10011:10011/tcp"  # TS3 serverquery
       #- "30033:30033/tcp"  # TS3 filetransfer
+      #- "1883:1883/tcp" # MQTT
+      #- "8883:8883/tcp" # MQTTS
     volumes:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # Mount the dynamic configuration
-      - ./traefik-config.yaml:/etc/traefik/dynamic/traefik-config.yaml
+      - ./config_traefik/:/etc/traefik/dynamic/
       # Mount the directory containing the certs
+      #- ssl/:/etc/certs/:ro
       - ./ssl/:/etc/certs/:ro
     healthcheck:
       test: ["CMD-SHELL", "traefik healthcheck --ping"]
@@ -134,7 +140,7 @@ services:
     labels:
       # Explicitly tell Traefik to expose this container
       - "traefik.enable=true"
-      #- "traefik.docker.network=mynetwork"
+      #- "traefik.docker.network=mynetwork"  # set when more then one networks
       # Tell Traefik to use the port 80 to connect to `my-container` (=whoami)
       - "traefik.http.services.whoami.loadbalancer.server.port=80"
       - "traefik.http.services.whoami.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
@@ -162,13 +168,21 @@ services:
       #- "traefik.http.middlewares.whoami-https.redirectscheme.permanent=false"
       #- "traefik.http.middlewares.whoami-https.redirectscheme.port=443"
       
-#networks:
-#  default:
-#    external: true
-#    name: mynetwork
+networks:
+  default:
+    external: true
+    name: mynetwork
 
+## before start container copy ssl certs/key and cacert.jks in ./ssl
+#volumes:
+#  ssl:
+#    driver_opts:
+#      type: none
+#      #device: ${PWD}/ssl
+#      device: /data/ssl
+#      o: bind
 
-## create file "traefik-config.yaml" with content:
+## create file "./config_traefik/traefik-config.yaml" with content:
 #tls:
 #  stores:
 #    default:

@@ -22,3 +22,8 @@ services:
       interval: 60s
       timeout: 10s
       retries: 3
+
+networks:
+  default:
+    external: true
+    name: mynetwork

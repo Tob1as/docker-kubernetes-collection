@@ -7,7 +7,7 @@ services:
   # https://github.com/amir20/dozzle
   # https://hub.docker.com/r/amir20/dozzle
   # Supported architectures: arm32v7, arm64v8, amd64
-  # URL: http://localhost:8080/logging
+  # URL: http://localhost:8080/
   dozzle:
     image: amir20/dozzle:latest
     container_name: dozzle
@@ -18,7 +18,8 @@ services:
       - "8080:8080/tcp"
     environment:
       #- "DOZZLE_ADDR=:8080"
-      - "DOZZLE_BASE=/logging"
+      #- "DOZZLE_BASE=/logging"
+      - "DOZZLE_BASE=/"
       #- "DOZZLE_HOSTNAME="
       #- "DOZZLE_LEVEL=info"
       #- "DOZZLE_FILTER="
@@ -31,23 +32,28 @@ services:
       timeout: 30s
       retries: 5
       start_period: 30s
-    #labels:
-    #  - "traefik.enable=true"
-    #  #- "traefik.docker.network=mynetwork"
-    #  - "traefik.http.services.dozzle.loadbalancer.server.port=8080"
-    #  - "traefik.http.services.dozzle.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
-    #  # http
-    #  - "traefik.http.routers.dozzle-http.rule=Host(`logs.example.com`)"
-    #  - "traefik.http.routers.dozzle-http.entrypoints=web"
-    #  - "traefik.http.routers.dozzle-http.service=dozzle"
-    #  # https
-    #  - "traefik.http.routers.dozzle-https.tls=true"
-    #  - "traefik.http.routers.dozzle-https.rule=Host(`logs.example.com`)"
-    #  - "traefik.http.routers.dozzle-https.entrypoints=websecure"
-    #  - "traefik.http.routers.dozzle-https.service=dozzle"
-    #  # load middlewares for routers
-    #  - "traefik.http.routers.dozzle-http.middlewares=dozzle-https"
-    #  # http to https redirect
-    #  - "traefik.http.middlewares.dozzle-https.redirectscheme.scheme=https"
-    #  #- "traefik.http.middlewares.dozzle-https.redirectscheme.permanent=true"
-    #  #- "traefik.http.middlewares.dozzle-https.redirectscheme.port=443"
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.dozzle.loadbalancer.server.port=8080"
+      - "traefik.http.services.dozzle.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.dozzle-http.rule=Host(`logs.example.com`)"
+      - "traefik.http.routers.dozzle-http.entrypoints=web"
+      - "traefik.http.routers.dozzle-http.service=dozzle"
+      # https
+      - "traefik.http.routers.dozzle-https.tls=true"
+      - "traefik.http.routers.dozzle-https.rule=Host(`logs.example.com`)"
+      - "traefik.http.routers.dozzle-https.entrypoints=websecure"
+      - "traefik.http.routers.dozzle-https.service=dozzle"
+      # load middlewares for routers
+      - "traefik.http.routers.dozzle-http.middlewares=dozzle-https"
+      # http to https redirect
+      - "traefik.http.middlewares.dozzle-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.dozzle-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.dozzle-https.redirectscheme.port=443"
+
+networks:
+  default:
+    external: true
+    name: mynetwork

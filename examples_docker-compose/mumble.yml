@@ -9,7 +9,7 @@ services:
   # https://hub.docker.com/r/mumblevoip/mumble-server + https://github.com/mumble-voip/mumble-docker
   # https://github.com/mumble-voip/mumble/blob/master/auxiliary_files/mumble-server.ini
   # Supported architectures: amd64
-  # fix permission problem before startup: mkdir ./mumble-data/ && chmod 777 ./mumble-data/
+  # fix permission problem before startup: mkdir ./data_mumble/ && chmod 777 ./data_mumble/
   # Password: set env or see in logs after start: docker logs mumble-server 2>&1 | grep SUPERUSER_PASSWORD
   # When login with "SuperUser" and Password you have admin permission.
   mumble:
@@ -67,8 +67,7 @@ services:
       #MUMBLE_CONFIG_USERSPERCHANNEL: 0
       #MUMBLE_CONFIG_WELCOMETEXT: "<br />Welcome to this server running <b>Murmur</b>.<br />Enjoy your stay!<br />"
     volumes:
-      #- mumble-data:/data:rw
-      - ./mumble-data:/data:rw
+      - ./data_mumble:/data:rw
     healthcheck:
       test:  ["CMD-SHELL", "mumble-server -version || exit 1"]
       interval: 60s
@@ -76,10 +75,7 @@ services:
       retries: 3
       #start_period: 30s
 
-# before start mumble: mkdir ./mumble-data/    
-#volumes:
-#  mumble-data:
-#    driver_opts:
-#      type: none
-#      device: ${PWD}/mumble-data
-#      o: bind
+networks:
+  default:
+    external: true
+    name: mynetwork

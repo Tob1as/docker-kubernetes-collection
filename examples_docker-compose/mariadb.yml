@@ -20,10 +20,8 @@ services:
     container_name: mariadb
     restart: unless-stopped
     volumes:
-      - ./mariadb-data:/var/lib/mysql:rw
-      #- ./mariadb-init/init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh:ro
-      #- /etc/timezone:/etc/timezone:ro
-      #- /etc/localtime:/etc/localtime:ro
+      - ./data_mariadb:/var/lib/mysql:rw
+      #- ./config_mariadb/init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh:ro
     environment:
       TZ: Europe/Berlin
       MARIADB_ROOT_PASSWORD: passw0rd
@@ -37,8 +35,7 @@ services:
     #    /usr/local/bin/docker-entrypoint.sh --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     #  "
     ports:
-      - 3306:3306/tcp
-      #- 127.0.0.1:3306:3306/tcp # use this and comment out the other, if you want connect only from localhost
+      - 127.0.0.1:3306:3306/tcp
     healthcheck:
       test:  mysqladmin ping -h 127.0.0.1 -u root --password=$$MARIADB_ROOT_PASSWORD || exit 1
       #test:  mysqladmin ping -h 127.0.0.1 -u $$MARIADB_USER --password=$$MARIADB_PASSWORD || exit 1
@@ -46,3 +43,8 @@ services:
       timeout: 5s
       retries: 5
       #start_period: 30s
+
+networks:
+  default:
+    external: true
+    name: mynetwork

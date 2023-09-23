@@ -1,0 +1,13 @@
+{
+    "node_name": "consul-server1",
+	"datacenter": "dc2",
+    "server": true,
+    "bootstrap" : true,
+    "ui_config": {
+        "enabled" : true
+    },
+    "data_dir": "/consul/data",
+    "addresses": {
+        "http" : "0.0.0.0"
+    }
+}

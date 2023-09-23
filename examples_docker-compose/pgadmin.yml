@@ -8,28 +8,54 @@ services:
   # https://hub.docker.com/r/dpage/pgadmin4
   # https://github.com/Tob1asDocker/tools#pgadmin4
   # URL: http://localhost:5050/pgadmin
-  # fix permission problem before startup: "mkdir ./pgadmin-data && chmod 777 ./pgadmin-data"
+  # fix permission problem before startup: "mkdir ./data_pgadmin && chmod 777 ./data_pgadmin"
   pgadmin:
     image: dpage/pgadmin4:latest    # Supported architectures: amd64, arm64
     #image: tobi312/tools:pgadmin4  # Supported architectures: amd64, arm64, arm32v7 (RaspberryPi)
     container_name: pgadmin4
     volumes:
-      - ./pgadmin-data:/var/lib/pgadmin:rw
+      - ./data_pgadmin:/var/lib/pgadmin:rw
     environment:
       - PGADMIN_LISTEN_ADDRESS=0.0.0.0
       - PGADMIN_LISTEN_PORT=5050
-      - SCRIPT_NAME=/pgadmin
+      #- SCRIPT_NAME=/pgadmin
       - PGADMIN_DEFAULT_EMAIL=admin@email.local
       - PGADMIN_DEFAULT_PASSWORD=passw0rd
       # INFO: the PGADMIN_CONFIG_ prefix to any variable name from config.py
       #- PGADMIN_CONFIG_LOGIN_BANNER="\"pgAdmin4 ;-)\""
       #- PGADMIN_CONFIG_CONSOLE_LOG_LEVEL=10
     restart: unless-stopped
-    ports:
-      - 5050:5050/tcp
+    #ports:
+    #  - 5050:5050/tcp
     healthcheck:
-      test:  wget --quiet --tries=1 --spider --no-check-certificate http://localhost:5050/pgadmin/misc/ping || exit 1
+      #test:  wget --quiet --tries=1 --spider --no-check-certificate http://127.0.0.1:5050/pgadmin/misc/ping || exit 1
+      test:  wget --quiet --tries=1 --spider --no-check-certificate http://127.0.0.1:5050/misc/ping || exit 1
       #start_period: 30s
       interval: 60s
       timeout: 5s
       retries: 3
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.pgadmin.loadbalancer.server.port=5050"
+      #- "traefik.http.services.pgadmin.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.pgadmin-http.rule=Host(`pgadmin.example.com`)"
+      - "traefik.http.routers.pgadmin-http.entrypoints=web"
+      - "traefik.http.routers.pgadmin-http.service=pgadmin"
+      # https
+      - "traefik.http.routers.pgadmin-https.tls=true"
+      - "traefik.http.routers.pgadmin-https.rule=Host(`pgadmin.example.com`)"
+      - "traefik.http.routers.pgadmin-https.entrypoints=websecure"
+      - "traefik.http.routers.pgadmin-https.service=pgadmin"
+      # load middlewares for routes
+      - "traefik.http.routers.pgadmin-http.middlewares=pgadmin-https"
+      # http to https redirect      
+      - "traefik.http.middlewares.pgadmin-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.pgadmin-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.pgadmin-https.redirectscheme.port=443"
+
+networks:
+  default:
+    external: true
+    name: mynetwork

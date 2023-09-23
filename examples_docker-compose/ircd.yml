@@ -9,10 +9,10 @@ services:
   # https://github.com/ergochat/ergo/blob/master/distrib/docker/README.md
   # Supported architectures: amd64, arm64, ...
   # Oper Credentials see in logs after first start: docker logs ergo 2>&1 | grep 'Oper username:password'
-  # After first start change settings in config in ./ergo-data/ircd.yaml and "/rehash" in chat or restart container or "docker kill -s SIGHUP ergo".
+  # After first start change settings in config in ./data_ircd/ircd.yaml and "/rehash" in chat or restart container or "docker kill -s SIGHUP ergo".
   ircd:
-    image: ghcr.io/ergochat/ergo:stable  # 2.9.1
-    container_name: ergo
+    image: ghcr.io/ergochat/ergo:stable  # v2.11.1
+    container_name: ircd
     restart: unless-stopped
     ports:
       - 6667:6667/tcp
@@ -20,10 +20,15 @@ services:
       #- 8067:8067/tcp  # Websocket
       #- 8097:8097/tcp  # Websocket TLS
     volumes:
-      - ./ergo-data:/ircd:rw
+      - ./data_ircd:/ircd:rw
     healthcheck:
       test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 6697 || exit 1"]
       interval: 120s
       timeout: 5s
       retries: 3
       #start_period: 30s
+
+networks:
+  default:
+    external: true
+    name: mynetwork

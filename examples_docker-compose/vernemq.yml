@@ -1,0 +1,167 @@
+# docker-compose -f vernemq.yml up -d
+version: '2.4'
+services:
+
+  # VerneMQ - MQTT Broker
+  # https://vernemq.com/
+  # https://github.com/vernemq/vernemq
+  # https://github.com/vernemq/docker-vernemq
+  # https://github.com/Tob1as/docker-vernemq
+  # Help:
+  # * https://docs.vernemq.com/
+  # * https://github.com/vernemq/docker-vernemq#vernemq-configuration
+  # * https://github.com/vernemq/vmq-docs/blob/master/configuration/the-vernemq-conf-file.md
+  # * https://github.com/vernemq/vmq-docs/blob/master/configuration/file-auth.md
+  #   * docker exec -it vernemq vmq-passwd /etc/vernemq/vmq.passwd user
+  #   * ./vernemq_config/vmq.passwd with example users and password=passw0rd 
+  # * https://github.com/vernemq/vernemq/issues/1594#issuecomment-671370692
+  # fix permission problem before startup: "mkdir ./data_vernemq && chmod 777 ./data_vernemq"
+  # after start you can check generated config in folder ./data_vernemq/generated.configs/
+  vernemq:
+    image: vernemq/vernemq:1.13.0-alpine # 1.12.3-alpine
+    container_name: vernemq
+    #hostname: vernemq
+    restart: unless-stopped
+    ports:
+      - '1883:1883/tcp'    # mqtt
+      - '8883:8883/tcp'    # mqtts
+      - '127.0.0.1:8888:9000/tcp'   # http
+      #- '127.0.0.1:8889:8889/tcp'   # https
+      #- '18883:44053/tcp' # Cluster
+      #- '18884:18884/tcp' # Cluster
+      #- '9001:8080/tcp' # ws
+      #- '9002:9002/tcp' # wss
+    volumes:
+      - ./data_vernemq:/vernemq/data:rw
+      - ./config_vernemq/vmq.passwd:/vernemq/etc/vmq.passwd:rw
+      - ./config_vernemq/vmq.acl:/vernemq/etc/vmq.acl:rw
+      - ./ssl/ca.crt:/vernemq/etc/cacerts.pem:ro
+      - ./ssl/ssl.crt:/vernemq/etc/cert.pem:ro
+      - ./ssl/ssl.key:/vernemq/etc/key.pem:ro
+    environment:
+      - "DOCKER_VERNEMQ_ACCEPT_EULA=yes"
+      - "DOCKER_VERNEMQ_log.console.level=debug"
+      - "DOCKER_VERNEMQ_allow_anonymous=off"     # "on" only for testing/development
+      - "DOCKER_VERNEMQ_plugins.vmq_passwd=on"
+      - "DOCKER_VERNEMQ_vmq_passwd.password_file=./etc/vmq.passwd"
+      - "DOCKER_VERNEMQ_vmq_passwd.password_reload_interval=10"
+      - "DOCKER_VERNEMQ_plugins.vmq_acl=on"
+      - "DOCKER_VERNEMQ_vmq_acl.acl_file=./etc/vmq.acl"
+      - "DOCKER_VERNEMQ_vmq_acl.acl_reload_interval=10"
+      # CLUSTER
+      #- "DOCKER_VERNEMQ_nodename=VerneMQ@127.0.0.1" # don't work ?
+      - "DOCKER_VERNEMQ_metadata_plugin=vmq_plumtree" # 'vmq_plumtree' for existing and 'vmq_swc' for new cluster deployments
+      - "DOCKER_VERNEMQ_allow_register_during_netsplit=on"
+      - "DOCKER_VERNEMQ_allow_publish_during_netsplit=on"
+      - "DOCKER_VERNEMQ_allow_subscribe_during_netsplit=on"
+      - "DOCKER_VERNEMQ_allow_unsubscribe_during_netsplit=on"
+      - "DOCKER_VERNEMQ_coordinate_registrations=on"
+      - "DOCKER_VERNEMQ_listener.vmq.clustering=0.0.0.0:44053"
+      #- "DOCKER_VERNEMQ_listener.vmq.clustering=0.0.0.0:18883"
+      - "DOCKER_VERNEMQ_listener.vmqs.clustering=0.0.0.0:18884"
+      - "DOCKER_VERNEMQ_listener.vmqs.cafile=./etc/cacerts.pem"
+      - "DOCKER_VERNEMQ_listener.vmqs.certfile=./etc/cert.pem"
+      - "DOCKER_VERNEMQ_listener.vmqs.keyfile=./etc/key.pem"
+      - "DOCKER_VERNEMQ_listener.vmqs.ciphers=ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
+      #- "DOCKER_VERNEMQ_listener.vmqs.eccs=[brainpoolP384r1,secp384r1,sect283k1]"
+      - "DOCKER_VERNEMQ_listener.vmqs.tls_version=tlsv1.2"
+      #- "DOCKER_VERNEMQ_distributed_cookie=vmq"
+      #- "DOCKER_VERNEMQ_DISCOVERY_NODE=<IP-OF-VERNEMQ1>"
+      # WEBSOCKET
+      - "DOCKER_VERNEMQ_listener.ws.default=0.0.0.0:8080" # default: 8080
+      #- "DOCKER_VERNEMQ_listener.wss.wss_default=0.0.0.0:9002"
+      #- "DOCKER_VERNEMQ_listener.wss.wss_default.cafile=./etc/cacerts.pem"
+      #- "DOCKER_VERNEMQ_listener.wss.wss_default.certfile=./etc/cert.pem"
+      #- "DOCKER_VERNEMQ_listener.wss.wss_default.keyfile=./etc/key.pem"
+      # MQTT
+      - "DOCKER_VERNEMQ_listener.tcp.default=0.0.0.0:1883"
+      - "DOCKER_VERNEMQ_listener.tcp.allowed_protocol_versions=3,4,5,131"
+      # MQTTS
+      - "DOCKER_VERNEMQ_listener.ssl.default=0.0.0.0:8883"
+      - "DOCKER_VERNEMQ_listener.ssl.allowed_protocol_versions=3,4,5,131"
+      - "DOCKER_VERNEMQ_listener.ssl.cafile=./etc/cacerts.pem"
+      - "DOCKER_VERNEMQ_listener.ssl.certfile=./etc/cert.pem"
+      - "DOCKER_VERNEMQ_listener.ssl.keyfile=./etc/key.pem"
+      - "DOCKER_VERNEMQ_listener.ssl.ciphers=ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
+      #- "DOCKER_VERNEMQ_listener.ssl.eccs=[brainpoolP384r1,secp384r1,sect283k1]"
+      - "DOCKER_VERNEMQ_listener.ssl.tls_version=tlsv1.2"
+      # HTTP
+      - "DOCKER_VERNEMQ_listener.http.default=0.0.0.0:9000" # 8888 not working / blocked ?
+      # HTTPS
+      - "DOCKER_VERNEMQ_listener.https.default=0.0.0.0:8889"
+      - "DOCKER_VERNEMQ_listener.https.cafile=./etc/cacerts.pem"
+      - "DOCKER_VERNEMQ_listener.https.certfile=./etc/cert.pem"
+      - "DOCKER_VERNEMQ_listener.https.keyfile=./etc/key.pem"
+      - "DOCKER_VERNEMQ_listener.https.ciphers=ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
+      #- "DOCKER_VERNEMQ_listener.https.eccs=[brainpoolP384r1,secp384r1,sect283k1]"
+      - "DOCKER_VERNEMQ_listener.https.tls_version=tlsv1.2"
+      # BRIDGE MODE (Server and Client) (replace ssl.br0 with tcp.br0 for no ssl connection)
+      - "DOCKER_VERNEMQ_plugins.vmq_bridge=off"
+      #- "DOCKER_VERNEMQ_vmq_bridge.tcp.br0=mqtt.example.com:1883"
+      - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0=mqtt.example.com:8883"
+      - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.cleansession=off"
+      - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.client_id=auto"
+      - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.keepalive_interval=60"
+      - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.username=bridge-user"
+      - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.password=passw0rd"
+      - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.topic.1=* out 1"  # use 'in', 'out' or 'both'
+      - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.mqtt_version=3"
+      - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.max_outgoing_buffered_messages=1000"
+      #- "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.capath=/etc/ssl/certs"
+      - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.cafile=./etc/cacerts.pem"
+      #- "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.certfile=./etc/cert.pem"
+      #- "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.keyfile=./etc/key.pem"
+      - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.insecure=off"
+      - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.tls_version=tlsv1.2"
+    #labels:
+    #  - "traefik.enable=true"
+    #  - "traefik.http.services.vernemq.loadbalancer.server.port=9000"
+    #  #- "traefik.http.services.vernemq.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+    #  # http
+    #  - "traefik.http.routers.vernemq-http.rule=(Host(`vernemq.example.com`) && PathPrefix(`/status`))"
+    #  - "traefik.http.routers.vernemq-http.entrypoints=web"
+    #  - "traefik.http.routers.vernemq-http.service=vernemq"
+    #  # https
+    #  - "traefik.http.routers.vernemq-https.tls=true"
+    #  - "traefik.http.routers.vernemq-https.rule=(Host(`vernemq.example.com`) && PathPrefix(`/status`))"
+    #  - "traefik.http.routers.vernemq-https.entrypoints=websecure"
+    #  - "traefik.http.routers.vernemq-https.service=vernemq"
+    #  - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+    #  # load middlewares for routes
+    #  - "traefik.http.routers.vernemq-http.middlewares=vernemq-https"
+    #  - "traefik.http.routers.vernemq-https.middlewares=sslheader@docker"
+    #  # http to https redirect      
+    #  - "traefik.http.middlewares.vernemq-https.redirectscheme.scheme=https"
+    #  #- "traefik.http.middlewares.vernemq-https.redirectscheme.permanent=true"
+    #  #- "traefik.http.middlewares.vernemq-https.redirectscheme.port=443"
+    #  # TCP MQTT
+    #  - "traefik.tcp.services.vernemq-mqtt.loadbalancer.server.port=1883"
+    #  - "traefik.tcp.routers.vernemq-mqtt.service=vernemq-mqtt"
+    #  - "traefik.tcp.routers.vernemq-mqtt.rule=HostSNI(`*`)"
+    #  - "traefik.tcp.routers.vernemq-mqtt.entrypoints=mqtt"
+    #  # TCP MQTTS
+    #  - "traefik.tcp.services.vernemq-mqtts.loadbalancer.server.port=8883"
+    #  - "traefik.tcp.routers.vernemq-mqtts.service=vernemq-mqtts"
+    #  - "traefik.tcp.routers.vernemq-mqtts.rule=HostSNI(`*`)"
+    #  #- "traefik.tcp.routers.vernemq-mqtts.rule=HostSNI(`vernemq.example.com`)"
+    #  - "traefik.tcp.routers.vernemq-mqtts.entrypoints=mqtts"
+    #  - "traefik.tcp.routers.vernemq-mqtts.tls=true"
+    #  - "traefik.tcp.routers.vernemq-mqtts.tls.passthrough=true"
+    #  # WebSocket Secure (wss) - wss://vernemq.example.com/mqtt on port 443
+    #  - "traefik.http.services.vernemq-wss.loadbalancer.server.port=8080"  # wss port (default: 8080)
+    #  - "traefik.http.routers.vernemq-wss.tls=true"
+    #  - "traefik.http.routers.vernemq-wss.rule=(Host(`vernemq.example.com`) && PathPrefix(`/mqtt`))"
+    #  - "traefik.http.routers.vernemq-wss.entrypoints=websecure"
+    #  - "traefik.http.routers.vernemq-wss.service=vernemq-wss"
+    #  - "traefik.http.routers.vernemq-wss.middlewares=sslheader@docker"
+    #  # WebSockert (ws) - ws://vernemq.example.com on port 8080/9001
+    #  #- "traefik.tcp.services.vernemq-ws.loadbalancer.server.port=8080"
+    #  #- "traefik.tcp.routers.vernemq-ws.service=vernemq-ws"     
+    #  #- "traefik.tcp.routers.vernemq-ws.entrypoints=mqtt-ws"
+    #  #- "traefik.tcp.routers.vernemq-ws.tls=false"
+    #  #- "traefik.tcp.routers.vernemq-ws.rule=HostSNI(`*`)"
+
+networks:
+  default:
+    external: true
+    name: mynetwork

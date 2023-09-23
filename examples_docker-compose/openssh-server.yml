@@ -23,8 +23,13 @@ services:
       - USER_PASSWORD=Passw0rd
       #- USER_PASSWORD_FILE=/path/to/file
     volumes:
-      - ./openssh-server-data:/config:rw
-      #- ./openssh-server-config/sshd_portforwarding.sh:/config/custom-cont-init.d/10-sshd_portforwarding.sh:ro  # https://github.com/Tob1asDocker/php/blob/master/k8s.yaml#L356-L362
+      - ./data_openssh-server:/config:rw
+      #- ./config_openssh-server/sshd_portforwarding.sh:/config/custom-cont-init.d/10-sshd_portforwarding.sh:ro  # https://github.com/Tob1as/docker-php/blob/master/k8s.yaml#L356-L362
     ports:
-      - 2222:2222
+      - 2222:2222/tcp
     restart: unless-stopped
+
+networks:
+  default:
+    external: true
+    name: mynetwork

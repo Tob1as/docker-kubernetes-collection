@@ -9,7 +9,7 @@ services:
   # Supported architectures: arm32v5, arm32v6, arm32v7, arm64v8, amd64, ...
   # https://github.com/docker-library/redis/issues/261#issuecomment-754896333
   # https://github.com/docker-library/redis/issues/46
-  # fix permission problem before startup: "mkdir ./redis-data/ && chmod 777 ./redis-data/"
+  # fix permission problem before startup: "mkdir ./data_redis/ && chmod 777 ./data_redis/"
   redis:
     image: redis:alpine
     container_name: redis
@@ -20,7 +20,7 @@ services:
     #command: ["sh", "-c", "exec redis-server --appendonly yes --save 20 1 --loglevel warning --requirepass $${REDIS_PASSWORD}"]
     command: ["sh", "-c", "exec redis-server --appendonly yes --save 20 1 --loglevel warning"]
     volumes:
-      - ./redis-data:/data:rw
+      - ./data_redis:/data:rw
     #ports:    # Do NOT open port external (without password)! <https://redis.io/topics/acl>
     #  - 127.0.0.1:6379:6379/tcp
     healthcheck:
@@ -31,15 +31,44 @@ services:
       timeout: 10s
       retries: 3
 
-#  # P3X Redis UI
-#  # https://hub.docker.com/r/patrikx3/p3x-redis-ui + https://github.com/patrikx3/redis-ui
-#  # Supported architectures: amd64
-#  redis-ui:
-#    image: patrikx3/p3x-redis-ui:latest
-#    container_name: redis-ui
-#    restart: unless-stopped
-#    volumes:
-#      - ./redis-ui-data:/settings:rw
-#      #- ./redis-ui-data/.p3xrs-conns.json:/settings/.p3xrs-conns.json:rw  # https://github.com/patrikx3/redis-ui/blob/master/k8s/manifests/configmap.yaml
-#    ports:
-#      - 7843:7843/tcp
+  # P3X Redis UI
+  # https://hub.docker.com/r/patrikx3/p3x-redis-ui + https://github.com/patrikx3/redis-ui
+  # Supported architectures: amd64, arm64, arm32v7
+  redis-ui:
+    image: patrikx3/p3x-redis-ui:latest
+    container_name: redis-ui
+    restart: unless-stopped
+    volumes:
+      - ./data_redis-ui:/settings:rw
+    #ports:
+    #  - 7843:7843/tcp
+    #depends_on:
+    #  - redis
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.redis-ui.loadbalancer.server.port=7843"
+      #- "traefik.http.services.redis-ui.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.redis-ui-http.rule=Host(`redis-ui.example.com`)"
+      - "traefik.http.routers.redis-ui-http.entrypoints=web"
+      - "traefik.http.routers.redis-ui-http.service=redis-ui"
+      # https
+      - "traefik.http.routers.redis-ui-https.tls=true"
+      - "traefik.http.routers.redis-ui-https.rule=Host(`redis-ui.example.com`)"
+      - "traefik.http.routers.redis-ui-https.entrypoints=websecure"
+      - "traefik.http.routers.redis-ui-https.service=redis-ui"
+      # load middlewares for routes
+      - "traefik.http.routers.redis-ui-http.middlewares=redis-ui-https,redis-ui-auth"
+      - "traefik.http.routers.redis-ui-https.middlewares=redis-ui-auth"
+      # http to https redirect      
+      - "traefik.http.middlewares.redis-ui-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.redis-ui-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.redis-ui-https.redirectscheme.port=443"
+      # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn redis passw0rd)
+      - "traefik.http.middlewares.redis-ui-auth.basicauth.users=redis:$$apr1$$43aq/XAk$$BnOdOYRbh36GZuo1OZ0Hq/"
+
+networks:
+  default:
+    external: true
+    name: mynetwork

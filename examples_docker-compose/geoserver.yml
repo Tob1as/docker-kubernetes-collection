@@ -8,7 +8,7 @@ services:
   # https://hub.docker.com/r/kartoza/geoserver + https://github.com/kartoza/docker-geoserver
   # Supported architectures: amd64
   # URL: http://localhost:8080/
-  # fix permission problem before startup: "mkdir ./geoserver-data/ && chmod 777 ./geoserver-data/"
+  # fix permission problem before startup: "mkdir ./data_geoserver/ && chmod 777 ./data_geoserver/"
   geoserver:
     image: kartoza/geoserver:2.20.1
     container_name: geoserver
@@ -28,10 +28,15 @@ services:
     ports:
       - 8080:8080/tcp
     volumes:
-      - ./geoserver-data:/opt/geoserver/data:rw
+      - ./data_geoserver:/opt/geoserver/data:rw
     healthcheck:
-      test: curl --fail -s http://localhost:8080/geoserver/web || exit 1
+      test: curl --fail -s http://127.0.0.1:8080/geoserver/web || exit 1
       #start_period: 30s
       interval: 60s
       timeout: 10s
       retries: 3
+
+networks:
+  default:
+    external: true
+    name: mynetwork

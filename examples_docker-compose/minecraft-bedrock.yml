@@ -15,7 +15,7 @@ services:
     tty: true         # docker run -i
     stdin_open: true  # docker run -t
     volumes:
-      - ./minecraft-bedrock-data:/data:rw
+      - ./data_minecraft-bedrock:/data:rw
     ports:
       - 19132:19132/udp
     #mem_limit: 2g
@@ -57,3 +57,8 @@ services:
       OPS: "xuid1,xuid2"    # XUID: https://cxkes.me/xbox/xuid (Decimal)
       #MEMBERS: "xuid3,xuid4"
       #VISITORS: "xuid7,xuid6"
+
+networks:
+  default:
+    external: true
+    name: mynetwork

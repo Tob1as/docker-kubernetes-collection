@@ -15,7 +15,7 @@ services:
     tty: true         # docker run -i
     stdin_open: true  # docker run -t
     volumes:
-      - ./minecraft-data:/data:rw
+      - ./data_minecraft:/data:rw
     ports:
       - 25565:25565/tcp
       - 127.0.0.1:25565:25565/udp   # Query
@@ -78,3 +78,8 @@ services:
       ENABLE_ROLLING_LOGS: "true"
       #PROXY: "proxy:3128"
       #ENABLE_AUTOPAUSE: "TRUE"
+
+networks:
+  default:
+    external: true
+    name: mynetwork

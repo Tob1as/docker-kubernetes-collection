@@ -29,7 +29,7 @@ services:
       #TS3SERVER_DB_WAITUNTILREADY: 30
       TS3SERVER_LICENSE: accept
     volumes:
-      - ./teamspeak-data:/var/ts3server:rw
+      - ./data_teamspeak:/var/ts3server:rw
     healthcheck:
       #test:  ["CMD-SHELL", "[ \"$$(wget -qO- localhost:30033 2>&1)\" = \"wget: error getting response: Connection reset by peer\" ] || exit 1"]
       test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 10011 || exit 1"]
@@ -54,3 +54,8 @@ services:
     #  - "traefik.tcp.routers.teamspeak-tcp-ft.service=teamspeak-tcp-ft"
     #  - "traefik.tcp.routers.teamspeak-tcp-ft.rule=HostSNI(`*`)"
     #  - "traefik.tcp.routers.teamspeak-tcp-ft.entrypoints=ts-tcp-ft"
+
+networks:
+  default:
+    external: true
+    name: mynetwork

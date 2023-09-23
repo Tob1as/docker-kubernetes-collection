@@ -14,7 +14,7 @@ services:
   # Supported architectures: arm64v8, amd64
   # fix permission problem before startup: "mkdir ./elasticsearch-data/ && chmod 777 ./elasticsearch-data/"
   elasticsearch:
-    image: elastic/elasticsearch:7.16.3
+    image: elastic/elasticsearch:8.10.2
     container_name: elasticsearch
     restart: unless-stopped
     environment:
@@ -23,34 +23,97 @@ services:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx2g"
-      - xpack.security.enabled=true
-      - ELASTIC_PASSWORD=passw0rd  # Password for default user "elastic"
+      - http.port=9200
+      - transport.port=9300
       - http.cors.enabled=true
       - http.cors.allow-origin=/.*/
       - http.cors.allow-headers=X-Requested-With,Content-Type,Content-Length,Authorization
+      - ELASTIC_PASSWORD=passw0rd  # Password for default user "elastic"
+      - xpack.security.enabled=true
+      #- xpack.security.http.ssl.enabled=true
+      #- xpack.security.http.ssl.verification_mode=full
+      #- xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/certificates/ca-certificates.crt
+      #- xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certificates/tobias.crt
+      #- xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certificates/tobias.key
+      ##- xpack.security.http.ssl.cipher_suites=
     ulimits:
       memlock:
         soft: -1
         hard: -1
     mem_limit: 2g
+    cpus: 2
     volumes:
-      - ./elasticsearch-data:/usr/share/elasticsearch/data
+      - ./data_elasticsearch:/usr/share/elasticsearch/data:rw
     ports:
-      #- 127.0.0.1:9200:9200/tcp
-      - 9200:9200/tcp
-      #- 9300:9300/tcp
+      - 127.0.0.1:9200:9200/tcp  # API calls over HTTP
+      #- 9300:9300/tcp           # communications between nodes in a cluster
     healthcheck:
-        test: ["CMD-SHELL", "curl --silent --fail -XGET 'localhost:9200/_cluster/health?pretty' --user elastic:$$ELASTIC_PASSWORD || exit 1"]
+        test: ["CMD-SHELL", "curl --silent --fail -XGET 'http://127.0.0.1:9200/_cluster/health?pretty' --user elastic:$$ELASTIC_PASSWORD || exit 1"]
+        #test: ["CMD-SHELL", "curl --silent --insecure --fail -XGET 'https://127.0.0.1:9200/_cluster/health?pretty' --user elastic:$$ELASTIC_PASSWORD || exit 1"]
         #start_period: 30s
         interval: 60s
         timeout: 10s
         retries: 3
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.elasticsearch.loadbalancer.server.port=9200"
+      - "traefik.http.services.elasticsearch.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.elasticsearch-http.rule=Host(`elasticsearch.example.com`)"
+      - "traefik.http.routers.elasticsearch-http.entrypoints=web"
+      - "traefik.http.routers.elasticsearch-http.service=elasticsearch"
+      # https
+      - "traefik.http.routers.elasticsearch-https.tls=true"
+      - "traefik.http.routers.elasticsearch-https.rule=Host(`elasticsearch.example.com`)"
+      - "traefik.http.routers.elasticsearch-https.entrypoints=websecure"
+      - "traefik.http.routers.elasticsearch-https.service=elasticsearch"
+      # load middlewares for routes
+      #- "traefik.http.routers.elasticsearch-http.middlewares=elasticsearch-https"
+      # http to https redirect      
+      #- "traefik.http.middlewares.elasticsearch-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.elasticsearch-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.elasticsearch-https.redirectscheme.port=443"
+ 
+  # elasticvue - Elasticsearch gui for the browser 
+  # https://elasticvue.com/
+  # https://hub.docker.com/r/cars10/elasticvue + https://github.com/cars10/elasticvue
+  elasticsearch-ui:
+    image: cars10/elasticvue:latest
+    container_name: elasticsearch-ui
+    restart: unless-stopped
+    #ports:
+    #  - 8080:8080/tcp
+    healthcheck:
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 8080 || exit 1"]
+      #start_period: 30s
+      interval: 60s
+      timeout: 5s
+      retries: 3
+    #depends_on:
+    #  - elasticsearch
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.elasticsearch-ui.loadbalancer.server.port=8080"
+      - "traefik.http.services.elasticsearch.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.elasticsearch-ui-http.rule=Host(`elasticsearch-ui.example.com`)"
+      - "traefik.http.routers.elasticsearch-ui-http.entrypoints=web"
+      - "traefik.http.routers.elasticsearch-ui-http.service=elasticsearch-ui"
+      # https
+      - "traefik.http.routers.elasticsearch-ui-https.tls=true"
+      - "traefik.http.routers.elasticsearch-ui-https.rule=Host(`elasticsearch-ui.example.com`)"
+      - "traefik.http.routers.elasticsearch-ui-https.entrypoints=websecure"
+      - "traefik.http.routers.elasticsearch-ui-https.service=elasticsearch-ui"
+      # load middlewares for routes
+      - "traefik.http.routers.elasticsearch-ui-http.middlewares=elasticsearch-ui-https"
+      # http to https redirect      
+      - "traefik.http.middlewares.elasticsearch-ui-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.elasticsearch-ui-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.elasticsearch-ui-https.redirectscheme.port=443"
 
-#  # elasticsearch GUI: https://github.com/cars10/elasticvue
-#  # Supported architectures: amd64, arm64v8, arm32v7
-#  elasticsearch-ui:
-#    image: cars10/elasticvue:latest
-#    container_name: elasticsearch-ui
-#    restart: unless-stopped
-#    ports:
-#      - 8080:8080/tcp
+networks:
+  default:
+    external: true
+    name: mynetwork

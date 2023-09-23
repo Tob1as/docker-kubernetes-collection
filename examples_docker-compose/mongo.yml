@@ -12,16 +12,82 @@ services:
     container_name: mongo
     restart: unless-stopped
     volumes:
-      - ./mongo-data:/data/db:rw
+      - ./data_mongo:/data/db:rw
     environment:
-      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: passw0rd
     ports:
-      - 27017:27017/tcp
-      #- 127.0.0.1:27017:27017/tcp # use this and comment out the other, if you want connect only from localhost
+      - 127.0.0.1:27017:27017/tcp
     healthcheck:
       test:  mongo -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval db.adminCommand\(\"ping\"\) || exit 1
       interval: 60s
       timeout: 5s
       retries: 3
       #start_period: 30s
+
+  # mongo-express - Web-based MongoDB admin interface
+  # https://github.com/mongo-express/mongo-express
+  # https://hub.docker.com/_/mongo-express + https://github.com/mongo-express/mongo-express-docker
+  # Supported architectures: arm64v8, amd64
+  # URL: http://localhost:8081/
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    restart: unless-stopped
+    environment:
+      # https://github.com/mongo-express/mongo-express-docker#configuration
+      # https://github.com/mongo-express/mongo-express#usage-docker
+      #ME_CONFIG_MONGODB_URL: "mongodb://mongo:27017"  # if mongo use auth, then comment in and use "ME_CONFIG_MONGODB_URL with auth cred."
+      ME_CONFIG_MONGODB_URL: "mongodb://admin:passw0rd@mongo:27017"
+      ME_CONFIG_OPTIONS_EDITORTHEME: "default"
+      #ME_CONFIG_REQUEST_SIZE: "100kb"
+      #ME_CONFIG_SITE_BASEURL: "/mongo-express/"
+      #ME_CONFIG_SITE_SSL_ENABLED: "false"
+      #ME_CONFIG_SITE_SSL_CRT_PATH: ""
+      #ME_CONFIG_SITE_SSL_KEY_PATH: ""
+      #ME_CONFIG_MONGODB_SSLVALIDATE: "true"
+      #ME_CONFIG_OPTIONS_READONLY: "false"
+      #ME_CONFIG_OPTIONS_NO_DELETE: "false"
+      ME_CONFIG_BASICAUTH_USERNAME: "admin"
+      ME_CONFIG_BASICAUTH_PASSWORD: "passw0rd"
+      #ME_CONFIG_SITE_COOKIESECRET: "cookiesecret"
+      #ME_CONFIG_SITE_SESSIONSECRET: "sessionsecret"
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+      #ME_CONFIG_MONGODB_AUTH_DATABASE: "db"       # only needed if ME_CONFIG_MONGODB_ENABLE_ADMIN is "false"
+      #ME_CONFIG_MONGODB_AUTH_USERNAME: "admin"    # only needed if ME_CONFIG_MONGODB_ENABLE_ADMIN is "false"
+      #ME_CONFIG_MONGODB_AUTH_PASSWORD: "passw0rd" # only needed if ME_CONFIG_MONGODB_ENABLE_ADMIN is "false"
+    #ports:
+    #  - 8081:8081/tcp
+    healthcheck:
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 8081 || exit 1"]
+      #start_period: 30s
+      interval: 60s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      - mongo
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.mongo-express.loadbalancer.server.port=8081"
+      #- "traefik.http.services.mongo-express.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.mongo-express-http.rule=Host(`mongo-express.example.com`)"
+      - "traefik.http.routers.mongo-express-http.entrypoints=web"
+      - "traefik.http.routers.mongo-express-http.service=mongo-express"
+      # https
+      - "traefik.http.routers.mongo-express-https.tls=true"
+      - "traefik.http.routers.mongo-express-https.rule=Host(`mongo-express.example.com`)"
+      - "traefik.http.routers.mongo-express-https.entrypoints=websecure"
+      - "traefik.http.routers.mongo-express-https.service=mongo-express"
+      # load middlewares for routes
+      - "traefik.http.routers.mongo-express-http.middlewares=mongo-express-https"
+      # http to https redirect      
+      - "traefik.http.middlewares.mongo-express-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.mongo-express-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.mongo-express-https.redirectscheme.port=443"
+
+networks:
+  default:
+    external: true
+    name: mynetwork

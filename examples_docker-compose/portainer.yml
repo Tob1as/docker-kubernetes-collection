@@ -16,7 +16,7 @@ services:
     #privileged: true   # if SELinux enabled
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:rw
-      - ./portainer-data:/data:rw
+      - ./data_portainer:/data:rw
     #  - ./ssl:/certs:ro
     ports:
       - 9443:9443/tcp  # https (default Portainer generates self-signed SSL certificate, alternatively use your own)
@@ -26,29 +26,35 @@ services:
     #  #--ssl
     #  --sslcert /certs/ssl.crt
     #  --sslkey /certs/ssl.key
+    #  #--sslcacert /certs/ca.crt
     healthcheck:
       test: ["CMD", "/docker", "container", "top", "portainer"]
       #start_period: 30s
       interval: 60s
       timeout: 3s
       retries: 3
-    #labels:
-    #  - "traefik.enable=true"
-    #  #- "traefik.docker.network=mynetwork"
-    #  - "traefik.http.services.portainer.loadbalancer.server.port=9443"
-    #  - "traefik.http.services.portainer.loadbalancer.server.scheme=https"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
-    #  # http
-    #  - "traefik.http.routers.portainer-http.rule=Host(`portainer.example.com`)"
-    #  - "traefik.http.routers.portainer-http.entrypoints=web"
-    #  - "traefik.http.routers.portainer-http.service=portainer"
-    #  # https
-    #  - "traefik.http.routers.portainer-https.tls=true"
-    #  - "traefik.http.routers.portainer-https.rule=Host(`portainer.example.com`)"
-    #  - "traefik.http.routers.portainer-https.entrypoints=websecure"
-    #  - "traefik.http.routers.portainer-https.service=portainer"
-    #  # load middlewares for routers
-    #  - "traefik.http.routers.portainer-http.middlewares=portainer-https"
-    #  # http to https redirect      
-    #  - "traefik.http.middlewares.portainer-https.redirectscheme.scheme=https"
-    #  #- "traefik.http.middlewares.portainer-https.redirectscheme.permanent=true"
-    #  #- "traefik.http.middlewares.portainer-https.redirectscheme.port=443"
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9443"
+      - "traefik.http.services.portainer.loadbalancer.server.scheme=https"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.portainer-http.rule=Host(`portainer.example.com`)"
+      - "traefik.http.routers.portainer-http.entrypoints=web"
+      - "traefik.http.routers.portainer-http.service=portainer"
+      # https
+      - "traefik.http.routers.portainer-https.tls=true"
+      - "traefik.http.routers.portainer-https.rule=Host(`portainer.example.com`)"
+      - "traefik.http.routers.portainer-https.entrypoints=websecure"
+      - "traefik.http.routers.portainer-https.service=portainer"
+      # load middlewares for routers
+      - "traefik.http.routers.portainer-http.middlewares=portainer-https"
+      # http to https redirect      
+      - "traefik.http.middlewares.portainer-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.portainer-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.portainer-https.redirectscheme.port=443"
+
+networks:
+  default:
+    external: true
+    name: mynetwork

@@ -26,3 +26,8 @@ services:
     entrypoint: [ "/bin/sh", "-c", "--" ]
     #command: [ "while true; do sleep 60; done;" ]  # use this, when you want use inside container a other mosquitto_pub/mosquitto_sub-command
     command: [ "mosquitto_sub -h $$MQTT_HOSTNAME -p $$MQTT_PORT -u $$MQTT_USERNAME --pw $${MQTT_PASSWORD} $$MQTT_TOPICS --insecure --cafile /etc/ssl/certs/ca-certificates.crt --tls-version tlsv1.2 -i $$MQTT_CLIENTNAME -F '%I %t %p'" ]
+
+networks:
+  default:
+    external: true
+    name: mynetwork

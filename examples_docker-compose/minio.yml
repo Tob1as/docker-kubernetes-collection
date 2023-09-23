@@ -8,18 +8,18 @@ services:
   # https://hub.docker.com/r/minio/minio
   # https://github.com/Tob1asDocker/minio
   # URL: http://localhost:9001/
-  # fix permission problem before startup, when use user/group settings: "mkdir ./minio-data && chmod 777 ./minio-data"
+  # fix permission problem before startup, when use user/group settings: "mkdir ./data_minio && chmod 777 ./data_minio"
   minio:
     image: minio/minio:latest     # Supported architectures: amd64, arm64 
     #image: tobi312/minio:latest  # Supported architectures: amd64, arm64, arm32 (RaspberryPi) (based on AlpineLinux)
     container_name: minio
     restart: unless-stopped
-    ports:
-      - "9000:9000/tcp" # MinIO Buckets API
-      - "9001:9001/tcp" # MinIO Console
+    #ports:
+    #  - "9000:9000/tcp" # MinIO Buckets API
+    #  - "9001:9001/tcp" # MinIO Console
     volumes:
       #- minio-data:/data:rw
-      - ./minio-data:/data:rw
+      - ./data_minio:/data:rw
       #- ./ssl/ssl.crt:/root/.minio/certs/public.crt:ro  # works only with root user and set URLs (and Port)
       #- ./ssl/ssl.key:/root/.minio/certs/private.key:ro # (https://github.com/Tob1asDocker/minio/issues/1#issuecomment-1003127867)
       #- ./ssl/ca.crt:/root/.minio/certs/CAs/ca.crt:ro
@@ -31,56 +31,64 @@ services:
       MINIO_GROUPNAME: minio
       MINIO_UID: 1000
       MINIO_GID: 1000
+      # use without proxy (with ports)
+      #MINIO_SERVER_URL: "https://minio.example.net:9000"
+      #MINIO_BROWSER_REDIRECT_URL: "https://minio-console.example.net:9001"
       # use for MinIO Console behind a load balancer, proxy or k8s ingress
-      #MINIO_SERVER_URL: "https://minio.example.net"
-      #MINIO_BROWSER_REDIRECT_URL: "https://minio-console.example.net"
+      MINIO_SERVER_URL: "https://minio.example.net"
+      MINIO_BROWSER_REDIRECT_URL: "https://minio-console.example.net"
     command:  ["server", "--address", ":9000", "--console-address", ":9001", "/data"]
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:9000/minio/health/live"]
-      #test: ["CMD", "curl", "--fail", "--insecure", "https://localhost:9000/minio/health/live"] # when use minio ssl
+      test: ["CMD", "curl", "--fail", "http://127.0.0.1:9000/minio/health/live"]
+      #test: ["CMD", "curl", "--fail", "--insecure", "https://127.0.0.1:9000/minio/health/live"] # when use minio ssl
       #start_period: 30s
       interval: 60s
       timeout: 10s
       retries: 3
-    #labels:
-    #  - "traefik.enable=true"
-    #  #- "traefik.docker.network=mynetwork"
-    #  # MINIO-Console
-    #  - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
-    #  - "traefik.http.services.minio-console.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
-    #  # http
-    #  - "traefik.http.routers.minio-console-http.rule=Host(`minio-console.example.net`)"
-    #  - "traefik.http.routers.minio-console-http.entrypoints=web"
-    #  - "traefik.http.routers.minio-console-http.service=minio-console"
-    #  # https
-    #  - "traefik.http.routers.minio-console-https.tls=true"
-    #  - "traefik.http.routers.minio-console-https.rule=Host(`minio-console.example.net`)"
-    #  - "traefik.http.routers.minio-console-https.entrypoints=websecure"
-    #  - "traefik.http.routers.minio-console-https.service=minio-console"
-    #  # load middlewares for routers
-    #  - "traefik.http.routers.minio-console-http.middlewares=minio-console-https"
-    #  # http to https redirect
-    #  - "traefik.http.middlewares.minio-console-https.redirectscheme.scheme=https"
-    #  #- "traefik.http.middlewares.minio-console-https.redirectscheme.permanent=true"
-    #  #- "traefik.http.middlewares.minio-console-https.redirectscheme.port=443"
-    #  # MINIO API
-    #  - "traefik.http.services.minio.loadbalancer.server.port=9000"
-    #  - "traefik.http.services.minio.loadbalancer.server.scheme=http"          # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
-    #  # http
-    #  - "traefik.http.routers.minio-http.rule=Host(`minio.example.net`)"
-    #  - "traefik.http.routers.minio-http.entrypoints=web"
-    #  - "traefik.http.routers.minio-http.service=minio"
-    #  # https
-    #  - "traefik.http.routers.minio-https.tls=true"
-    #  - "traefik.http.routers.minio-https.rule=Host(`minio.example.net`)"
-    #  - "traefik.http.routers.minio-https.entrypoints=websecure"
-    #  - "traefik.http.routers.minio-https.service=minio"
-    #  # load middlewares for routers
-    #  - "traefik.http.routers.minio-http.middlewares=minio-https"
-    #  # http to https redirect
-    #  - "traefik.http.middlewares.minio-https.redirectscheme.scheme=https"
-    #  #- "traefik.http.middlewares.minio-https.redirectscheme.permanent=true"
-    #  #- "traefik.http.middlewares.minio-https.redirectscheme.port=443"
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      # MINIO-Console
+      - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
+      - "traefik.http.services.minio-console.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.minio-console-http.rule=Host(`minio-console.example.net`)"
+      - "traefik.http.routers.minio-console-http.entrypoints=web"
+      - "traefik.http.routers.minio-console-http.service=minio-console"
+      # https
+      - "traefik.http.routers.minio-console-https.tls=true"
+      - "traefik.http.routers.minio-console-https.rule=Host(`minio-console.example.net`)"
+      - "traefik.http.routers.minio-console-https.entrypoints=websecure"
+      - "traefik.http.routers.minio-console-https.service=minio-console"
+      # load middlewares for routers
+      - "traefik.http.routers.minio-console-http.middlewares=minio-console-https"
+      # http to https redirect
+      - "traefik.http.middlewares.minio-console-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.minio-console-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.minio-console-https.redirectscheme.port=443"
+      # MINIO API
+      - "traefik.http.services.minio.loadbalancer.server.port=9000"
+      - "traefik.http.services.minio.loadbalancer.server.scheme=http"          # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.minio-http.rule=Host(`minio.example.net`)"
+      - "traefik.http.routers.minio-http.entrypoints=web"
+      - "traefik.http.routers.minio-http.service=minio"
+      # https
+      - "traefik.http.routers.minio-https.tls=true"
+      - "traefik.http.routers.minio-https.rule=Host(`minio.example.net`)"
+      - "traefik.http.routers.minio-https.entrypoints=websecure"
+      - "traefik.http.routers.minio-https.service=minio"
+      # load middlewares for routers
+      - "traefik.http.routers.minio-http.middlewares=minio-https"
+      # http to https redirect
+      - "traefik.http.middlewares.minio-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.minio-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.minio-https.redirectscheme.port=443"
 
 #volumes:
 #  minio-data:
+
+networks:
+  default:
+    external: true
+    name: mynetwork

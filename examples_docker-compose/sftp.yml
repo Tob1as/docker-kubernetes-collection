@@ -9,13 +9,18 @@ services:
     image: atmoz/sftp:alpine
     container_name: sftp
     volumes:
-        #- ./sftp-config/id_rsa.pub:/home/sftp/.ssh/keys/id_rsa.pub
-        #- ./sftp-config/ssh_host_rsa_key:/etc/ssh/ssh_host_rsa_key             # ssh-keygen -t ed25519 -f ssh_host_ed25519_key < /dev/null
-        #- ./sftp-config/ssh_host_ed25519_key:/etc/ssh/ssh_host_ed25519_key     # ssh-keygen -t rsa -b 4096 -f ssh_host_rsa_key < /dev/null
-        - ./sftp-config/users.conf:/etc/sftp/users.conf:ro                     # sftp:Passw0rd:1001:100
-        - ./sftp-config/init.sh:/etc/sftp.d/init.sh:ro                         # https://github.com/atmoz/sftp/issues/16#issuecomment-203876715
-        - ./sftp-data:/home/sftp/share:rw
+        #- ./config_sftp/id_rsa.pub:/home/sftp/.ssh/keys/id_rsa.pub
+        #- ./config_sftp/ssh_host_rsa_key:/etc/ssh/ssh_host_rsa_key             # ssh-keygen -t ed25519 -f ssh_host_ed25519_key < /dev/null
+        #- ./config_sftp/ssh_host_ed25519_key:/etc/ssh/ssh_host_ed25519_key     # ssh-keygen -t rsa -b 4096 -f ssh_host_rsa_key < /dev/null
+        - ./config_sftp/users.conf:/etc/sftp/users.conf:ro                     # sftp:Passw0rd:1001:100
+        - ./config_sftp/init.sh:/etc/sftp.d/init.sh:ro                         # https://github.com/atmoz/sftp/issues/16#issuecomment-203876715
+        - ./data_sftp:/home/sftp/share:rw
     ports:
-        - "2222:22"
+        - "2222:22/tcp"
     restart: unless-stopped
     #command: sftp:Passw0rd:1001:100
+
+networks:
+  default:
+    external: true
+    name: mynetwork
