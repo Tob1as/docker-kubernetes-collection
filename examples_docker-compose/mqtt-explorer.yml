@@ -29,7 +29,7 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 4000 || exit 1"]
       #start_period: 30s
-      interval: 10s
+      interval: 60s
       timeout: 5s
       retries: 3
     labels:
