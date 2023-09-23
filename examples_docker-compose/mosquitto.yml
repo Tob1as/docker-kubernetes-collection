@@ -1,0 +1,35 @@
+# docker-compose -f mosquitto.yml up -d
+version: '2.4'
+services:
+
+  # Eclipse Mosquitto - MQTT Broker
+  # https://mosquitto.org/
+  # https://hub.docker.com/_/eclipse-mosquitto + https://github.com/eclipse/mosquitto
+  # Docs: https://mosquitto.org/man/mosquitto-conf-5.html
+  # Config: https://github.com/eclipse/mosquitto/blob/master/mosquitto.conf
+  # ACL example: https://github.com/eclipse/mosquitto/blob/master/aclfile.example
+  # Dockerfile: https://github.com/eclipse/mosquitto/blob/master/docker/2.0-openssl/
+  # Passwd: "mosquitto_passwd -c -b /mosquitto/config/mosquitto.passwd admin passw0rd"
+  mosquitto:
+    image: eclipse-mosquitto:2.0.18-openssl
+    container_name: mosquitto
+    #hostname: mosquitto
+    restart: unless-stopped
+    ports:
+      - '1883:1883/tcp'    # MQTT
+      - '8883:8883/tcp'    # MQTTS
+    volumes:
+      - ./config_mosquitto:/mosquitto/config:rw
+      - ./data_mosquitto:/mosquitto/data:rw
+      #- ./ssl:/mosquitto/ssl:ro
+      - ./ssl/ca.crt:/mosquitto/ssl/cacerts.pem:ro
+      - ./ssl/ssl.crt:/mosquitto/ssl//cert.pem:ro
+      - ./ssl/ssl.key:/mosquitto/ssl/key.pem:ro
+      #- ./log_mosquitto:/mosquitto/log:rw  # default to stdout
+    #command: ["/usr/sbin/mosquitto", "-c", "/mosquitto/config/mosquitto.conf"]
+    #command: [ "/usr/sbin/mosquitto", "-c", "/mosquitto-no-auth.conf" ] 
+
+networks:
+  default:
+    external: true
+    name: mynetwork

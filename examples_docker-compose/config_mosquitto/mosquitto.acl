@@ -1,0 +1,18 @@
+# https://github.com/eclipse/mosquitto/blob/master/aclfile.example
+# https://mosquitto.org/man/mqtt-7.html
+
+# ACL for user 'admin' (write and read all topics)
+user admin
+topic #
+
+# ACL for user 'user' (write and read only topic: usertopic)
+user user
+topic usertopic/#
+
+# ACL for user 'userwrite' (write only topic: usertopic)
+user userwrite
+topic write usertopic/#
+
+# ACL for user 'userread' (read only topic: usertopic)
+user userread
+topic read usertopic/#

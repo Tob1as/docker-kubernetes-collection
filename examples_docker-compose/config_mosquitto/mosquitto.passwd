@@ -1,0 +1,5 @@
+# https://mosquitto.org/man/mosquitto_passwd-1.html
+admin:$7$101$+kf2Jjmot8L2XtYN$CYBEWak0RECo62YoqQUQiL8sJnm26fl8hn34OGMc739R8iBKnpddQfCL3gdy/if3t6U0qRhuFBi4imllxUcShA==
+user:$7$101$7uPLYJNFtrA0x7zO$+K9hhYdtc+Shbmg6JDvZJns+9kkgkRSoYrlL9rzjl5+pzi6KrwwfqWFuSO0CACUbN5g2lT47mQ9TZrT56HRMLA==
+userread:$7$101$ZsxKTmkCELMyJoNU$nCCvudm2EqcESAGRowR2Y5CNtF/4lNYRvpk50AIgub11hdDYG98KWG3wflrkB+GLW2r7LOzglb9WjnVW+x8Blw==
+userwrite:$7$101$/nBifC7fdNJ3AZfw$tGkWl5hcQIb923p2SWevKBtSW/3ayUWg7U5y88B+HbuhBoz6JwwGVO2SDD8n6p2QeRBAPAvEI/40c7b8wZclLw==
