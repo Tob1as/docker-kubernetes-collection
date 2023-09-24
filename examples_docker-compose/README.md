@@ -11,7 +11,7 @@ In this folder or in my other [Projects](https://github.com/Tob1as) beginn with 
 
 ### Network
 
-When you want use my examples with network `mynetwork`, you can create it with sh-script `docker_network_create.sh`. When not, then delete it from yml files.
+When you want use my examples with network `mynetwork`, you can create it with sh-script [docker_network_create.sh](https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/docker_network_create.sh). When not, then delete it from yml files.
 
 ### Traefik
 
