@@ -121,19 +121,21 @@ services:
     #  - "traefik.http.routers.vernemq-http.rule=(Host(`vernemq.example.com`) && PathPrefix(`/status`))"
     #  - "traefik.http.routers.vernemq-http.entrypoints=web"
     #  - "traefik.http.routers.vernemq-http.service=vernemq"
-    #  # https
+    #  # https - Status Site https://vernemq.example.com/status
     #  - "traefik.http.routers.vernemq-https.tls=true"
     #  - "traefik.http.routers.vernemq-https.rule=(Host(`vernemq.example.com`) && PathPrefix(`/status`))"
     #  - "traefik.http.routers.vernemq-https.entrypoints=websecure"
     #  - "traefik.http.routers.vernemq-https.service=vernemq"
     #  - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
     #  # load middlewares for routes
-    #  - "traefik.http.routers.vernemq-http.middlewares=vernemq-https"
-    #  - "traefik.http.routers.vernemq-https.middlewares=sslheader@docker"
+    #  - "traefik.http.routers.vernemq-http.middlewares=vernemq-https,vernemq-status-auth"
+    #  - "traefik.http.routers.vernemq-https.middlewares=sslheader@docker,vernemq-status-auth"
     #  # http to https redirect      
     #  - "traefik.http.middlewares.vernemq-https.redirectscheme.scheme=https"
     #  #- "traefik.http.middlewares.vernemq-https.redirectscheme.permanent=true"
     #  #- "traefik.http.middlewares.vernemq-https.redirectscheme.port=443"
+    #  # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn admin passw0rd)
+    #  - "traefik.http.middlewares.vernemq-status-auth.basicauth.users=admin:$$apr1$$p1RLwNUN$$6pZOOUmjvVDqzP5yQkZYf0"
     #  # TCP MQTT
     #  - "traefik.tcp.services.vernemq-mqtt.loadbalancer.server.port=1883"
     #  - "traefik.tcp.routers.vernemq-mqtt.service=vernemq-mqtt"
@@ -148,14 +150,14 @@ services:
     #  - "traefik.tcp.routers.vernemq-mqtts.tls=true"
     #  - "traefik.tcp.routers.vernemq-mqtts.tls.passthrough=true"
     #  # WebSocket Secure (wss) - wss://vernemq.example.com/mqtt on port 443
-    #  - "traefik.http.services.vernemq-wss.loadbalancer.server.port=8080"  # wss port (default: 8080)
+    #  - "traefik.http.services.vernemq-wss.loadbalancer.server.port=8080"  # ws port (default: 8080)
     #  - "traefik.http.routers.vernemq-wss.tls=true"
     #  - "traefik.http.routers.vernemq-wss.rule=(Host(`vernemq.example.com`) && PathPrefix(`/mqtt`))"
     #  - "traefik.http.routers.vernemq-wss.entrypoints=websecure"
     #  - "traefik.http.routers.vernemq-wss.service=vernemq-wss"
     #  - "traefik.http.routers.vernemq-wss.middlewares=sslheader@docker"
     #  # WebSockert (ws) - ws://vernemq.example.com on port 8080/9001
-    #  #- "traefik.tcp.services.vernemq-ws.loadbalancer.server.port=8080"
+    #  #- "traefik.tcp.services.vernemq-ws.loadbalancer.server.port=8080"  # ws port
     #  #- "traefik.tcp.routers.vernemq-ws.service=vernemq-ws"     
     #  #- "traefik.tcp.routers.vernemq-ws.entrypoints=mqtt-ws"
     #  #- "traefik.tcp.routers.vernemq-ws.tls=false"
