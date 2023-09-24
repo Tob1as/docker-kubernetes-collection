@@ -88,8 +88,6 @@ services:
 
     labels:
       ## Traefik Dashboard/API Secure and with Auth
-      ## https://community.traefik.io/t/enable-a-secure-dashboard-using-a-pathprefix/3763/6
-      ## https://github.com/traefik/traefik/issues/5853
       - "traefik.enable=true"
       - "traefik.http.services.traefik.loadbalancer.server.port=8080"
       - "traefik.http.services.traefik.loadbalancer.server.scheme=http"
@@ -104,6 +102,8 @@ services:
       - "traefik.http.routers.traefik.rule=Host(`traefik.example.com`)"
 
       ## (2) Traefik under main domain and subpath (need Plugin: plugin-rewritebody)  OR choose option (1)
+      ## https://community.traefik.io/t/enable-a-secure-dashboard-using-a-pathprefix/3763/6
+      ## https://github.com/traefik/traefik/issues/5853
       #- "traefik.http.routers.traefik.middlewares=traefikdashboard,auth,traefik-rewrite-api"
       ##- "traefik.http.routers.traefik.rule=Host(`example.com`) && (PathPrefix(`/traefik`) || PathPrefix(`/api`))"
       #- "traefik.http.routers.traefik.rule=Host(`example.com`) && PathPrefix(`/traefik`)"
