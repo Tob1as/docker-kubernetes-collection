@@ -19,6 +19,7 @@ services:
       #- ./config_nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       #- ./config_nginx/conf.d/:/etc/nginx/conf.d/:rw
       #- ./ssl:/etc/nginx/ssl:ro
+      #- ./ssl/letsencrypt-webroot:/var/tmp/letsencrypt-webroot:rw
       - ./html:/usr/share/nginx/html:rw
     environment:
       TZ: Europe/Berlin
