@@ -44,7 +44,7 @@ services:
       #- "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       #- "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       #- "--entrypoints.web.http.redirections.entrypoint.permanent=true"
-      #
+      # 
       # Teamspeak3
       #- "--entrypoints.ts-udp.address=:9987/udp"
       #- "--entrypoints.ts-tcp-sq.address=:10011"
@@ -52,11 +52,20 @@ services:
       # MQTT (VerneMQ/Mosquitto)
       #- "--entrypoints.mqtt.address=:1883"
       #- "--entrypoints.mqtts.address=:8883"
-      # 
+      
+      # Dynamic Config File(s)
       - "--providers.file.directory=/etc/traefik/dynamic"
       #- "--providers.file.filename=/etc/traefik/dynamic/traefik-config.yaml"
       - "--providers.file.watch=true"
+
+      # Certificates from Letsencrypt (https://doc.traefik.io/traefik/https/acme/) OR/AND use dynamic file
+      ##- "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web" # HTTP-01 OR use TLS-ALPN-01
+      #- "--certificatesresolvers.myresolver.acme.tlschallenge=true"             # TLS-ALPN-01 OR use HTTP-01
+      #- "--certificatesresolvers.myresolver.acme.caserver=https://acme-v02.api.letsencrypt.org/directory" # Staging/Test URL: https://acme-staging-v02.api.letsencrypt.org/directory
+      #- "--certificatesresolvers.myresolver.acme.email=postmaster@example.com"
+      #- "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
       
+      # SSL backend Cert
       #- "--serversTransport.rootCAs=/etc/certs/fullCA.crt"
       - "--serversTransport.insecureSkipVerify=true"
       
@@ -84,25 +93,34 @@ services:
       - "traefik.enable=true"
       - "traefik.http.services.traefik.loadbalancer.server.port=8080"
       - "traefik.http.services.traefik.loadbalancer.server.scheme=http"
-      #- "traefik.http.routers.traefik.rule=Host(`traefik.example.com`) && (PathPrefix(`/traefik`) || PathPrefix(`/api`))"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.example.com`) && PathPrefix(`/traefik`)"
+
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.tls=true"
-      #- "traefik.http.routers.traefik.tls.certresolver=******"
-      - "traefik.http.routers.traefik.middlewares=traefikdashboard,auth,traefik-rewrite-api"
-      - "traefik.http.middlewares.traefikdashboard.stripprefix.prefixes=/traefik"
-      ## htpasswd -n <USERNAME> (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn admin passw0rd)
-      - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$6Yq5UCPq$$ZmXnIrJwqH0qfKRurLAiR1,traefik:$$apr1$$zIohxmBm$$TVYfYKcqYXOdONsU93L8w0"
+      #- "traefik.http.routers.traefik.tls.certresolver=myresolver"
 
-      - "traefik.http.middlewares.traefik-rewrite-api.plugin.rewrite.rewrites[0].regex=/api"
-      - "traefik.http.middlewares.traefik-rewrite-api.plugin.rewrite.rewrites[0].replacement=/traefik/api"
+      ## (1) Traefik under sub domain OR choose option (2)
+      - "traefik.http.routers.traefik.middlewares=auth"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.example.com`)"
+
+      ## (2) Traefik under main domain and subpath (need Plugin: plugin-rewritebody)  OR choose option (1)
+      #- "traefik.http.routers.traefik.middlewares=traefikdashboard,auth,traefik-rewrite-api"
+      ##- "traefik.http.routers.traefik.rule=Host(`example.com`) && (PathPrefix(`/traefik`) || PathPrefix(`/api`))"
+      #- "traefik.http.routers.traefik.rule=Host(`example.com`) && PathPrefix(`/traefik`)"
+      #- "traefik.http.middlewares.traefikdashboard.stripprefix.prefixes=/traefik"
+      #- "traefik.http.middlewares.traefik-rewrite-api.plugin.rewrite.rewrites[0].regex=/api"
+      #- "traefik.http.middlewares.traefik-rewrite-api.plugin.rewrite.rewrites[0].replacement=/traefik/api"
+
+      # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn admin passw0rd)
+      - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$6Yq5UCPq$$ZmXnIrJwqH0qfKRurLAiR1,traefik:$$apr1$$zIohxmBm$$TVYfYKcqYXOdONsU93L8w0"
 
       ## set a rule to redirect all http requests to https
       #- "traefik.http.routers.http-catchall.entrypoints=web"
       #- "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
       #- "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
       #- "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.redirect-to-https.redirectscheme.port=443"
+    
     ports:
       # The HTTP port
       - "80:80/tcp"
@@ -116,8 +134,8 @@ services:
       #- "9987:9987/udp"    # TS3
       #- "10011:10011/tcp"  # TS3 serverquery
       #- "30033:30033/tcp"  # TS3 filetransfer
-      #- "1883:1883/tcp" # MQTT
-      #- "8883:8883/tcp" # MQTTS
+      #- "1883:1883/tcp"    # MQTT
+      #- "8883:8883/tcp"    # MQTTS
     volumes:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -159,6 +177,9 @@ services:
       - "traefik.http.routers.whoami-https.rule=PATH(`/whoami`)"
       - "traefik.http.routers.whoami-https.entrypoints=websecure"
       - "traefik.http.routers.whoami-https.service=whoami"
+      #- "traefik.http.routers.whoami.tls.certresolver=myresolver"
+      ##- traefik.http.routers.blog.tls.domains[0].main=whoami.example.net
+      ##- traefik.http.routers.blog.tls.domains[0].sans=whoami.example.com
       
       # load middlewares for routers
       #- "traefik.http.routers.whoami-http.middlewares=whoami-https"
