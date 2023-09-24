@@ -9,6 +9,7 @@ services:
   # Config: https://github.com/eclipse/mosquitto/blob/master/mosquitto.conf
   # ACL example: https://github.com/eclipse/mosquitto/blob/master/aclfile.example
   # Dockerfile: https://github.com/eclipse/mosquitto/blob/master/docker/2.0-openssl/
+  # fix permission: chmod 0700 ./config_mosquitto/mosquitto.acl && chmod 0700 ./config_mosquitto/mosquitto.passwd
   # Passwd: "mosquitto_passwd -c -b /mosquitto/config/mosquitto.passwd admin passw0rd"
   mosquitto:
     image: eclipse-mosquitto:2.0.18-openssl
@@ -18,6 +19,8 @@ services:
     ports:
       - '1883:1883/tcp'    # MQTT
       - '8883:8883/tcp'    # MQTTS
+    #  - '9001:8080/tcp'    # ws
+    #  - '9002:9002/tcp'    # wss
     volumes:
       - ./config_mosquitto:/mosquitto/config:rw
       - ./data_mosquitto:/mosquitto/data:rw
@@ -34,21 +37,35 @@ services:
       interval: 60s
       timeout: 5s
       retries: 3
-    #labels:
-    #  - "traefik.enable=true"
-    #  # TCP MQTT
-    #  - "traefik.tcp.services.mosquitto-mqtt.loadbalancer.server.port=1883"
-    #  - "traefik.tcp.routers.mosquitto-mqtt.service=mosquitto-mqtt"
-    #  - "traefik.tcp.routers.mosquitto-mqtt.rule=HostSNI(`*`)"
-    #  - "traefik.tcp.routers.mosquitto-mqtt.entrypoints=mqtt"
-    #  # TCP MQTTS
-    #  - "traefik.tcp.services.mosquitto-mqtts.loadbalancer.server.port=8883"
-    #  - "traefik.tcp.routers.mosquitto-mqtts.service=mosquitto-mqtts"
-    #  - "traefik.tcp.routers.mosquitto-mqtts.rule=HostSNI(`*`)"
-    #  #- "traefik.tcp.routers.mosquitto-mqtts.rule=HostSNI(`mosquitto.example.com`)"
-    #  - "traefik.tcp.routers.mosquitto-mqtts.entrypoints=mqtts"
-    #  - "traefik.tcp.routers.mosquitto-mqtts.tls=true"
-    #  - "traefik.tcp.routers.mosquitto-mqtts.tls.passthrough=true"
+    labels:
+      - "traefik.enable=true"
+      # TCP MQTT
+      - "traefik.tcp.services.mosquitto-mqtt.loadbalancer.server.port=1883"
+      - "traefik.tcp.routers.mosquitto-mqtt.service=mosquitto-mqtt"
+      - "traefik.tcp.routers.mosquitto-mqtt.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.mosquitto-mqtt.entrypoints=mqtt"
+      # TCP MQTTS
+      - "traefik.tcp.services.mosquitto-mqtts.loadbalancer.server.port=8883"
+      - "traefik.tcp.routers.mosquitto-mqtts.service=mosquitto-mqtts"
+      - "traefik.tcp.routers.mosquitto-mqtts.rule=HostSNI(`*`)"
+      #- "traefik.tcp.routers.mosquitto-mqtts.rule=HostSNI(`mosquitto.example.com`)"
+      - "traefik.tcp.routers.mosquitto-mqtts.entrypoints=mqtts"
+      - "traefik.tcp.routers.mosquitto-mqtts.tls=true"
+      - "traefik.tcp.routers.mosquitto-mqtts.tls.passthrough=true"
+      # WebSocket Secure (wss) - wss://mosquitto.example.com on port 443
+      - "traefik.http.services.mosquitto-wss.loadbalancer.server.port=8080"  # ws port (default: 8080)
+      - "traefik.http.routers.mosquitto-wss.tls=true"
+      - "traefik.http.routers.mosquitto-wss.rule=Host(`mosquitto.example.com`)"
+      - "traefik.http.routers.mosquitto-wss.entrypoints=websecure"
+      - "traefik.http.routers.mosquitto-wss.service=mosquitto-wss"
+      - "traefik.http.routers.mosquitto-wss.middlewares=sslheader@docker"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      # WebSockert (ws) - ws://mosquitto.example.com on port 8080/9001
+      #- "traefik.tcp.services.mosquitto-ws.loadbalancer.server.port=8080"  # ws port
+      #- "traefik.tcp.routers.mosquitto-ws.service=mosquitto-ws"     
+      #- "traefik.tcp.routers.mosquitto-ws.entrypoints=mqtt-ws"
+      #- "traefik.tcp.routers.mosquitto-ws.tls=false"
+      #- "traefik.tcp.routers.mosquitto-ws.rule=HostSNI(`*`)"
 
 networks:
   default:
