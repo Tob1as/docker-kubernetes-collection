@@ -152,7 +152,7 @@ services:
 
   # A container that exposes an API to show its IP address
   whoami:
-    image: traefik/whoami
+    image: traefik/whoami:latest
     container_name: traefik-whoami
     restart: unless-stopped
     labels:
@@ -165,6 +165,8 @@ services:
       
       # http
       #- "traefik.http.routers.whoami.rule=HostRegexp(`{catchall:.*}`)"
+      #- "traefik.http.routers.whoami-http.rule=Host(`example.net`, `example.com`) && PathPrefix(`/whoami`)"
+      #- "traefik.http.routers.whoami-http.rule=Host(`whoami.example.net`, `whoami.example.com`) && PathPrefix(`/whoami`)"
       - "traefik.http.routers.whoami-http.rule=Host(`whoami.example.net`, `whoami.example.com`)"
       - "traefik.http.routers.whoami-http.rule=PATH(`/whoami`)"
       # Allow request only from the predefined entry point named "web"
@@ -173,6 +175,8 @@ services:
 
       # https (both http + https (ssl), then create two routers, see https://stackoverflow.com/a/69314734 )
       - "traefik.http.routers.whoami-https.tls=true"
+      #- "traefik.http.routers.whoami-https.rule=Host(`example.net`, `example.com`) && PathPrefix(`/whoami`)"
+      #- "traefik.http.routers.whoami-https.rule=Host(`whoami.example.net`, `whoami.example.com`) && PathPrefix(`/whoami`)"
       - "traefik.http.routers.whoami-https.rule=Host(`whoami.example.net`, `whoami.example.com`)"
       - "traefik.http.routers.whoami-https.rule=PATH(`/whoami`)"
       - "traefik.http.routers.whoami-https.entrypoints=websecure"
