@@ -7,6 +7,7 @@ services:
   # https://github.com/rabbitmq/rabbitmq-server
   # https://hub.docker.com/_/rabbitmq + https://github.com/docker-library/rabbitmq
   # Supported architectures: arm32v6, arm32v7, arm64v8, amd64, ...
+  # Docs: https://rabbitmq.com/admin-guide.html
   # URL: http://localhost:15672/
   rabbitmq:
     image: rabbitmq:management-alpine
@@ -20,12 +21,24 @@ services:
       RABBITMQ_NODENAME: "rabbit@localhost"  # default: "rabbit@$HOSTNAME"
     volumes:
       - ./data_rabbitmq:/var/lib/rabbitmq/mnesia:rw
-      #- ./config_rabbitmq/enabled_plugins.erl:/etc/rabbitmq/enabled_plugins:rw
+      #- ./config_rabbitmq/enabled_plugins.erl:/etc/rabbitmq/enabled_plugins:ro
+      ##- ./config_rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      #- ./config_rabbitmq/conf.d/20-ssl.conf:/etc/rabbitmq/conf.d/20-ssl.conf:ro
+      #- ./config_rabbitmq/conf.d/30-management.conf:/etc/rabbitmq/conf.d/30-management.conf:ro
+      #- ./config_rabbitmq/conf.d/40-mqtt.conf:/etc/rabbitmq/conf.d/40-mqtt.conf:ro
+      #- ./config_rabbitmq/conf.d/41-mqtt-ws.conf:/etc/rabbitmq/conf.d/41-mqtt-ws.conf:ro
+      #- ./ssl/:/ssl/:ro
     ports:
       # https://www.rabbitmq.com/networking.html#ports
       - "5672:5672/tcp"   # amqp
+      #- "5671:5671/tcp"   # amqp ssl
       - "15672:15672/tcp" # HTTP API & Web UI
+      #- "15671:15671/tcp" # HTTPS API & Web UI
       #- "15692:15692/tcp" # exporter
+      #- "1883:1883/tcp"   # MQTT
+      #- "8883:8883/tcp"   # MQTTS
+      #- "15675:15675/tcp" # MQTT WS 
+      #- "15676:15676/tcp" # MQTT WSS
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       #start_period: 60s
@@ -38,20 +51,50 @@ services:
       - "traefik.http.services.rabbitmq.loadbalancer.server.port=15672"
       #- "traefik.http.services.rabbitmq.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
       # http
+      #- "traefik.http.routers.rabbitmq-http.rule=(Host(`rabbitmq.example.com`) && PathPrefix(`/ui`))"
       - "traefik.http.routers.rabbitmq-http.rule=Host(`rabbitmq.example.com`)"
       - "traefik.http.routers.rabbitmq-http.entrypoints=web"
       - "traefik.http.routers.rabbitmq-http.service=rabbitmq"
       # https
       - "traefik.http.routers.rabbitmq-https.tls=true"
+      #- "traefik.http.routers.rabbitmq-https.rule=(Host(`rabbitmq.example.com`) && PathPrefix(`/ui`)"
       - "traefik.http.routers.rabbitmq-https.rule=Host(`rabbitmq.example.com`)"
       - "traefik.http.routers.rabbitmq-https.entrypoints=websecure"
       - "traefik.http.routers.rabbitmq-https.service=rabbitmq"
+      #- "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
       # load middlewares for routes
-      - "traefik.http.routers.rabbitmq-http.middlewares=rabbitmq-https"
+      #- "traefik.http.routers.rabbitmq-http.middlewares=rabbitmq-https"
+      #- "traefik.http.routers.rabbitmq-https.middlewares=sslheader@docker"
       # http to https redirect      
-      - "traefik.http.middlewares.rabbitmq-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.rabbitmq-https.redirectscheme.scheme=https"
       #- "traefik.http.middlewares.rabbitmq-https.redirectscheme.permanent=true"
       #- "traefik.http.middlewares.rabbitmq-https.redirectscheme.port=443"
+      # TCP MQTT
+      - "traefik.tcp.services.rabbitmq-mqtt.loadbalancer.server.port=1883"
+      - "traefik.tcp.routers.rabbitmq-mqtt.service=rabbitmq-mqtt"
+      - "traefik.tcp.routers.rabbitmq-mqtt.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.rabbitmq-mqtt.entrypoints=mqtt"
+      # TCP MQTTS
+      - "traefik.tcp.services.rabbitmq-mqtts.loadbalancer.server.port=8883"
+      - "traefik.tcp.routers.rabbitmq-mqtts.service=rabbitmq-mqtts"
+      - "traefik.tcp.routers.rabbitmq-mqtts.rule=HostSNI(`*`)"
+      #- "traefik.tcp.routers.rabbitmq-mqtts.rule=HostSNI(`rabbitmq.example.com`)"
+      - "traefik.tcp.routers.rabbitmq-mqtts.entrypoints=mqtts"
+      - "traefik.tcp.routers.rabbitmq-mqtts.tls=true"
+      - "traefik.tcp.routers.rabbitmq-mqtts.tls.passthrough=true"
+      # WebSocket Secure (wss) - wss://rabbitmq.example.com/ws on port 443
+      - "traefik.http.services.rabbitmq-wss.loadbalancer.server.port=15675"  # mqtt ws port
+      - "traefik.http.routers.rabbitmq-wss.tls=true"
+      - "traefik.http.routers.rabbitmq-wss.rule=(Host(`rabbitmq.example.com`) && PathPrefix(`/ws`))"
+      - "traefik.http.routers.rabbitmq-wss.entrypoints=websecure"
+      - "traefik.http.routers.rabbitmq-wss.service=rabbitmq-wss"
+      #- "traefik.http.routers.rabbitmq-wss.middlewares=sslheader@docker"
+      # WebSockert (ws) - ws://rabbitmq.example.com/ws on port 15675
+      #- "traefik.tcp.services.rabbitmq-ws.loadbalancer.server.port=15675"
+      #- "traefik.tcp.routers.rabbitmq-ws.service=rabbitmq-ws"     
+      #- "traefik.tcp.routers.rabbitmq-ws.entrypoints=mqtt-ws"
+      #- "traefik.tcp.routers.rabbitmq-ws.tls=false"
+      #- "traefik.tcp.routers.rabbitmq-ws.rule=HostSNI(`*`)"
 
 networks:
   default:
