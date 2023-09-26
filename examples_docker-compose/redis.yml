@@ -124,7 +124,6 @@ services:
 #      # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn redis passw0rd)
 #      #- "traefik.http.middlewares.redis-commander-auth.basicauth.users=redis:$$apr1$$43aq/XAk$$BnOdOYRbh36GZuo1OZ0Hq/"   
 
-
 networks:
   default:
     external: true
