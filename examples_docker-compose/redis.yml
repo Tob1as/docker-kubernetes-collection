@@ -17,8 +17,8 @@ services:
     environment:
       TZ: Europe/Berlin
     #  REDIS_PASSWORD: passw0rd
-    #command: ["sh", "-c", "exec redis-server --appendonly yes --save 20 1 --loglevel warning --requirepass $${REDIS_PASSWORD}"]
-    command: ["sh", "-c", "exec redis-server --appendonly yes --save 20 1 --loglevel warning"]
+    #command: ["sh", "-c", "exec redis-server --appendonly no --save 60 1000 --loglevel warning --requirepass $${REDIS_PASSWORD}"]
+    command: ["sh", "-c", "exec redis-server --appendonly no --save 60 1000 --loglevel warning"]
     volumes:
       - ./data_redis:/data:rw
     #ports:    # Do NOT open port external (without password)! <https://redis.io/topics/acl>
@@ -67,6 +67,63 @@ services:
       #- "traefik.http.middlewares.redis-ui-https.redirectscheme.port=443"
       # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn redis passw0rd)
       - "traefik.http.middlewares.redis-ui-auth.basicauth.users=redis:$$apr1$$43aq/XAk$$BnOdOYRbh36GZuo1OZ0Hq/"
+
+#  # Redis-Commander -  Redis management tool
+#  # https://joeferner.github.io/redis-commander/
+#  # https://github.com/joeferner/redis-commander
+#  # fix permission: mkdir ./data_redis-commander && touch ./data_redis-commander/local-production.json && chmod 777 ./data_redis-commander/local-production.json
+#  redis-commander:
+#    image: ghcr.io/joeferner/redis-commander:latest
+#    container_name: redis-commander
+#    restart: unless-stopped
+#    #hostname: redis-commander
+#    #volumes:
+#    #  - ./data_redis-commander/local-production.json:/redis-commander/config/local-production.json:rw
+#    environment:
+#      - HTTP_USER=admin
+#      - HTTP_PASSWORD=passw0rd
+#      #- URL_PREFIX=''
+#      #- PORT=8081
+#      - REDIS_CONNECTION_NAME=redis-commander
+#      # Redis connection:
+#      - REDIS_HOSTS=local:redis:6379:0
+#      #- REDIS_HOSTS=local:redis:6379:0:passw0rd   # label:hostname:port:dbIndex:password
+#      #- REDIS_HOSTS=local:redis:6379:0:passw0rd,remote:192.168.1.100:6379:5:passw0rd
+#      # or: 
+#      #- REDIS_LABEL=local
+#      #- REDIS_PORT=redis
+#      #- REDIS_HOST=6379
+#      #- REDIS_DB=0
+#      #- REDIS_PASSWORD=passw0rd
+#    #ports:
+#    #  - "8081:8081"
+#    #depends_on:
+#    #  - redis
+#    labels:
+#      - "traefik.enable=true"
+#      #- "traefik.docker.network=mynetwork"
+#      - "traefik.http.services.redis-commander.loadbalancer.server.port=8081"
+#      #- "traefik.http.services.redis-commander.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+#      # http
+#      - "traefik.http.routers.redis-commander-http.rule=Host(`redis-commander.example.com`)"
+#      - "traefik.http.routers.redis-commander-http.entrypoints=web"
+#      - "traefik.http.routers.redis-commander-http.service=redis-commander"
+#      # https
+#      - "traefik.http.routers.redis-commander-https.tls=true"
+#      - "traefik.http.routers.redis-commander-https.rule=Host(`redis-commander.example.com`)"
+#      - "traefik.http.routers.redis-commander-https.entrypoints=websecure"
+#      - "traefik.http.routers.redis-commander-https.service=redis-commander"
+#      # load middlewares for routes
+#      - "traefik.http.routers.redis-commander-http.middlewares=redis-commander-https"
+#      #- "traefik.http.routers.redis-commander-http.middlewares=redis-commander-https,redis-commander-auth"
+#      #- "traefik.http.routers.redis-commander-https.middlewares=redis-commander-auth"
+#      # http to https redirect      
+#      - "traefik.http.middlewares.redis-commander-https.redirectscheme.scheme=https"
+#      #- "traefik.http.middlewares.redis-commander-https.redirectscheme.permanent=true"
+#      #- "traefik.http.middlewares.redis-commander-https.redirectscheme.port=443"
+#      # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn redis passw0rd)
+#      #- "traefik.http.middlewares.redis-commander-auth.basicauth.users=redis:$$apr1$$43aq/XAk$$BnOdOYRbh36GZuo1OZ0Hq/"   
+
 
 networks:
   default:

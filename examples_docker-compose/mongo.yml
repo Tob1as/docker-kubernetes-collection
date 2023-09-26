@@ -87,6 +87,83 @@ services:
       #- "traefik.http.middlewares.mongo-express-https.redirectscheme.permanent=true"
       #- "traefik.http.middlewares.mongo-express-https.redirectscheme.port=443"
 
+#  # https://github.com/SamuelTallet/MongoDB-PHP-GUI
+#  mongo-php-gui:
+#    image: samueltallet/mongodb-php-gui:latest
+#    container_name: mongo-php-gui
+#    restart: unless-stopped
+#    #ports:
+#    #  - 5000:5000/tcp
+#    healthcheck:
+#      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 5000 || exit 1"]
+#      #start_period: 60s
+#      interval: 60s
+#      timeout: 5s
+#      retries: 3
+#    #depends_on:
+#    #  - mongo
+#    labels:
+#      - "traefik.enable=true"
+#      #- "traefik.docker.network=mynetwork"
+#      - "traefik.http.services.mongo-php-gui.loadbalancer.server.port=5000"
+#      - "traefik.http.services.mongo-php-gui.loadbalancer.server.scheme=http"
+#      # http
+#      - "traefik.http.routers.mongo-php-gui-http.rule=Host(`mongo-php-gui.example.com`)"
+#      - "traefik.http.routers.mongo-php-gui-http.entrypoints=web"
+#      - "traefik.http.routers.mongo-php-gui-http.service=mongo-php-gui"
+#      # https
+#      - "traefik.http.routers.mongo-php-gui-https.tls=true"
+#      - "traefik.http.routers.mongo-php-gui-https.rule=Host(`mongo-php-gui.example.com`)"
+#      - "traefik.http.routers.mongo-php-gui-https.entrypoints=websecure"
+#      - "traefik.http.routers.mongo-php-gui-https.service=mongo-php-gui"
+#      # load middlewares for routes
+#      - "traefik.http.routers.mongo-php-gui-http.middlewares=mongo-php-gui-https"
+#      # http to https redirect      
+#      - "traefik.http.middlewares.mongo-php-gui-https.redirectscheme.scheme=https"
+#      #- "traefik.http.middlewares.mongo-php-gui-https.redirectscheme.permanent=true"
+#      #- "traefik.http.middlewares.mongo-php-gui-https.redirectscheme.port=443"
+      
+#  # https://github.com/arunbandari/mongo-gui
+#  mongo-gui:
+#    image: ugleiton/mongo-gui:latest
+#    build:
+#      context: https://github.com/arunbandari/mongo-gui.git#:/
+#      dockerfile: Dockerfile
+#    container_name: mongo-gui
+#    restart: unless-stopped
+#    environment:
+#      - MONGO_URL=mongodb://admin:passw0rd@mongo:27017
+#      - OPENAI_API_KEY=YOUR_API_KEY_HERE
+#      #- USERNAME=admin
+#      #- PASSWORD="passw0rd"
+#    #ports:
+#    #  - 4321:4321/tcp
+#    depends_on:
+#      - mongo
+#    labels:
+#      - "traefik.enable=true"
+#      #- "traefik.docker.network=mynetwork"
+#      - "traefik.http.services.mongo-gui.loadbalancer.server.port=4321"
+#      - "traefik.http.services.mongo-gui.loadbalancer.server.scheme=http"
+#      # http
+#      - "traefik.http.routers.mongo-gui-http.rule=Host(`mongo-gui.example.com`)"
+#      - "traefik.http.routers.mongo-gui-http.entrypoints=web"
+#      - "traefik.http.routers.mongo-gui-http.service=mongo-gui"
+#      # https
+#      - "traefik.http.routers.mongo-gui-https.tls=true"
+#      - "traefik.http.routers.mongo-gui-https.rule=Host(`mongo-gui.example.com`)"
+#      - "traefik.http.routers.mongo-gui-https.entrypoints=websecure"
+#      - "traefik.http.routers.mongo-gui-https.service=mongo-gui"
+#      # load middlewares for routes
+#      - "traefik.http.routers.mongo-gui-http.middlewares=mongo-gui-https,mongo-gui-auth"
+#      - "traefik.http.routers.mongo-gui-https.middlewares=mongo-gui-auth"
+#      # http to https redirect      
+#      - "traefik.http.middlewares.mongo-gui-https.redirectscheme.scheme=https"
+#      #- "traefik.http.middlewares.mongo-gui-https.redirectscheme.permanent=true"
+#      #- "traefik.http.middlewares.mongo-gui-https.redirectscheme.port=443"
+#      # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn redis passw0rd)
+#      - "traefik.http.middlewares.mongo-gui-auth.basicauth.users=admin:$$apr1$$S19kucpw$$YssXd6k23MIOOEn6hLVMf."
+
 networks:
   default:
     external: true
