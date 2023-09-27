@@ -8,7 +8,7 @@ services:
   # https://github.com/MariaDB/mariadb-docker
   # https://github.com/Tob1asDocker/rpi-mariadb/
   # Optional: additional user without admin permission
-  # * with init script (init-user-db.sh): https://github.com/docker-library/docs/tree/master/mariadb#initializing-a-fresh-instance
+  # * with init script: https://github.com/docker-library/docs/tree/master/mariadb#initializing-a-fresh-instance
   # * with docker command when container running: docker exec -it mariadb sh -c 'mysql -u root --password=$MARIADB_ROOT_PASSWORD'
   #   CREATE USER IF NOT EXISTS 'user_name'@'%' IDENTIFIED BY 'user_password' WITH MAX_USER_CONNECTIONS 0;
   #   CREATE DATABASE IF NOT EXISTS database_name CHARACTER SET='utf8' COLLATE='utf8_general_ci';
@@ -20,18 +20,19 @@ services:
     container_name: mariadb
     restart: unless-stopped
     volumes:
+      #- ./config_mariadb/10_user.sh:/docker-entrypoint-initdb.d/10_user.sh:ro
+      #- ./config_mariadb/20_exporter-user.sh:/docker-entrypoint-initdb.d/20_exporter-user.sh:ro
       - ./data_mariadb:/var/lib/mysql:rw
-      #- ./config_mariadb/init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh:ro
     environment:
       TZ: Europe/Berlin
       MARIADB_ROOT_PASSWORD: passw0rd
       #MARIADB_DATABASE: db
       #MARIADB_USER: user
       #MARIADB_PASSWORD: passw0rd
-    #  MARIADB_EXPORTER_PASSWORD: passw0rd
+    #  EXPORTER_PASSWORD: passw0rd
     #entrypoint:
     #  sh -c "
-    #    echo \"SET GLOBAL time_zone = '$$TZ'; SET time_zone = '$$TZ'; SELECT CURRENT_TIME; CREATE USER IF NOT EXISTS 'exporter'@'%' IDENTIFIED BY '$$MARIADB_EXPORTER_PASSWORD' WITH MAX_USER_CONNECTIONS 3; GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO 'exporter'@'%'; \" > /docker-entrypoint-initdb.d/init.sql;
+    #    echo \"SET GLOBAL time_zone = '$$TZ'; SET time_zone = '$$TZ'; SELECT CURRENT_TIME; CREATE USER IF NOT EXISTS 'exporter'@'%' IDENTIFIED BY '$$EXPORTER_PASSWORD' WITH MAX_USER_CONNECTIONS 3; GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO 'exporter'@'%'; \" > /docker-entrypoint-initdb.d/init.sql;
     #    /usr/local/bin/docker-entrypoint.sh --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     #  "
     ports:
@@ -43,6 +44,20 @@ services:
       timeout: 5s
       retries: 5
       #start_period: 30s
+
+#  # https://github.com/prometheus/mysqld_exporter
+#  mariadb-exporter:
+#    image: prom/mysqld-exporter:latest  # quay.io/prometheus/mysqld-exporter:latest
+#    container_name: mariadb-exporter
+#    restart: unless-stopped
+#    ports:
+#      - 127.0.0.1:9104:9104/tcp
+#    command:
+#      - "--mysqld.username=root:passw0rd"
+#      #- "--mysqld.username=exporter:Exp0rt3r!"
+#      - "--mysqld.address=mariadb:3306"
+#      #- "--web.listen-address=:9104"
+#      #- "--web.telemetry-path=/metrics"
 
 networks:
   default:

@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+: "${MARIADB_NON_SUPERUSER_USER:="myuser"}"
+: "${MARIADB_NON_SUPERUSER_PASSWORD:="pa55w0rd"}"
+: "${MARIADB_NON_SUPERUSER_DB:="${MARIADB_NON_SUPERUSER_USER}"}"
+: "${MARIADB_NON_SUPERUSER_MAXUSERCONNECTIONS:="0"}"
+
+mariadb -h localhost -u root --password="${MARIADB_ROOT_PASSWORD}" -sNe \
+"SELECT user FROM mysql.user WHERE user = '${MARIADB_NON_SUPERUSER_USER}' GROUP BY user;" \
+| grep -q ${MARIADB_NON_SUPERUSER_USER}} \
+|| mariadb -h localhost -u root --password="${MARIADB_ROOT_PASSWORD}" -sN <<EOSQL
+	CREATE USER IF NOT EXISTS '${MARIADB_NON_SUPERUSER_USER}'@'%' IDENTIFIED BY '${MARIADB_NON_SUPERUSER_PASSWORD}' WITH MAX_USER_CONNECTIONS ${MARIADB_NON_SUPERUSER_MAXUSERCONNECTIONS};\
+	CREATE DATABASE IF NOT EXISTS ${MARIADB_NON_SUPERUSER_DB} CHARACTER SET='utf8' COLLATE='utf8_general_ci';\
+	GRANT ALL PRIVILEGES ON ${MARIADB_NON_SUPERUSER_DB}.* TO '${MARIADB_NON_SUPERUSER_USER}'@'%';\
+	FLUSH PRIVILEGES;
+EOSQL
+
+#mariadb -h localhost -u root --password=${MARIADB_ROOT_PASSWORD} -e "SELECT user, host, max_user_connections FROM mysql.user;"
+#mariadb -h localhost -u root --password=${MARIADB_ROOT_PASSWORD} -e "SELECT user, db, host from mysql.db;"
