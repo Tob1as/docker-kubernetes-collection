@@ -10,7 +10,7 @@ services:
   # https://hub.docker.com/r/postgis/postgis + https://github.com/postgis/docker-postgis
   # https://github.com/Tob1asDocker/rpi-postgresql-postgis
   # Optional: additional user without admin permission
-  # * with init script (init-user-db.sh): https://github.com/docker-library/docs/tree/master/postgres#initialization-scripts
+  # * with init script: https://github.com/docker-library/docs/tree/master/postgres#initialization-scripts
   # * with docker command when container running: docker exec -it postgres psql 
   #   CREATE ROLE user_name WITH LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOREPLICATION CONNECTION LIMIT -1 PASSWORD 'user_password';
   #   CREATE DATABASE database_name WITH OWNER = user_name ENCODING = 'UTF8' CONNECTION LIMIT = -1;
@@ -21,8 +21,9 @@ services:
     #image: tobi312/rpi-postgresql-postgis:15-3.3-alpine-*   # Supported architectures: arm32v7, arm64v8
     container_name: postgres
     volumes:
+      #- ./config_postgres/10_user.sh:/docker-entrypoint-initdb.d/10_user.sh:ro
+      #- ./config_postgres/20_exporter-user.sh:/docker-entrypoint-initdb.d/20_exporter-user.sh:ro
       - ./data_postgres:/var/lib/postgresql/data:rw
-      #- ./config_postgres/init-user-db.sh:/docker-entrypoint-initdb.d/init-user-db.sh:ro
     environment:
        TZ: Europe/Berlin
        POSTGRES_PASSWORD: passw0rd
@@ -37,6 +38,21 @@ services:
       interval: 60s
       timeout: 5s
       retries: 5
+
+#  # https://github.com/prometheus-community/postgres_exporter 
+#  postgres-exporter:
+#    image: quay.io/prometheuscommunity/postgres-exporter:latest
+#    container_name: postgres-exporter
+#    restart: unless-stopped
+#    environment:
+#       DATA_SOURCE_NAME: 'postgresql://postgres:passw0rd@postgres:5432/postgres?sslmode=disable'
+#       #DATA_SOURCE_NAME: 'postgresql://postgres_exporter:Exp0rt3r!@postgres:5432/postgres?sslmode=disable'
+#       #PG_EXPORTER_METRIC_PREFIX: 'pg'
+#       #PG_EXPORTER_WEB_LISTEN_ADDRESS: ':9187'
+#       #PG_EXPORTER_WEB_TELEMETRY_PATH: '/metrics'
+#    ports:
+#      - 127.0.0.1:9187:9187/tcp
+#    #command: ["--web.listen-address", ":9187", "--web.telemetry-path", "/metrics"]
 
 networks:
   default:
