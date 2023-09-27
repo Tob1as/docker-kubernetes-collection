@@ -53,6 +53,8 @@ services:
 #    ports:
 #      - 127.0.0.1:9187:9187/tcp
 #    #command: ["--web.listen-address", ":9187", "--web.telemetry-path", "/metrics"]
+#    #depends_on:
+#    #  - postgres
 
 networks:
   default:

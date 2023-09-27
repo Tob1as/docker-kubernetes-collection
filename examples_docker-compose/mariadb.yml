@@ -58,6 +58,8 @@ services:
 #      - "--mysqld.address=mariadb:3306"
 #      #- "--web.listen-address=:9104"
 #      #- "--web.telemetry-path=/metrics"
+#    #depends_on:
+#    #  - mariadb
 
 networks:
   default:
