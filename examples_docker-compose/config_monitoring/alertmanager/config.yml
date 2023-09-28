@@ -46,26 +46,6 @@ route:
   # All the above attributes are inherited by all child routes and can
   # overwritten on each.
 
-  # The child route trees.
-  routes:
-  # This routes performs a regular expression match on alert labels to
-  # catch alerts that are related to a list of services.
-  - match:
-      severity: 'fatal'
-    receiver: 'monitoring-team'
-
-# Inhibition rules allow to mute a set of alerts given that another alert is
-# firing.
-# We use this to mute any warning-level notifications if the same alert is
-# already critical.
-inhibit_rules:
-- source_matchers:
-    - severity="fatal"
-  target_matchers:
-    - severity="warning"
-  equal: ['alertname']
-
-
 receivers:
 - name: 'monitoring-team'
   email_configs:

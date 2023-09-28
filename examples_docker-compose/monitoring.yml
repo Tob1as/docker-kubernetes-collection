@@ -4,7 +4,7 @@ services:
 
   # MONITORING: Prometheus, Alertmanager, Grafana
   # folder:
-  # mkdir -p ./config_monitoring/{prometheus,grafana,alertmanager}
+  # mkdir -p ./config_monitoring/{prometheus,alertmanager}
   # mkdir -p ./data_monitoring/{prometheus,grafana,alertmanager} && chmod 777 ./data_monitoring/{prometheus,grafana,alertmanager}
 
   # https://github.com/prometheus/node_exporter
@@ -42,12 +42,13 @@ services:
     volumes:
       - ./config_monitoring/prometheus/:/etc/prometheus/:ro
       - ./data_monitoring/prometheus/:/prometheus/:rw
-    command:
+    command:   # https://prometheus.io/docs/prometheus/latest/command-line/prometheus/
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       #- '--web.console.libraries=/usr/share/prometheus/console_libraries'
       #- '--web.console.templates=/usr/share/prometheus/consoles'
       #- '--web.listen-address=0.0.0.0:9090'
+      #- '--web.external-url=https://prometheus.example.org'
       #- '--web.route-prefix=/'
     ports:
       - 127.0.0.1:9090:9090/tcp
@@ -87,6 +88,8 @@ services:
       - '--config.file=/etc/alertmanager/config.yml'
       - '--storage.path=/alertmanager'
       #- '--cluster.advertise-address=0.0.0.0:9093'
+      - '--web.external-url=https://alertmanager.example.org'
+      #- '--web.route-prefix=/'
     ports:
       - 127.0.0.1:9093:9093/tcp
     healthcheck:
@@ -95,6 +98,29 @@ services:
       timeout: 3s
       retries: 3
       #start_period: 30s
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.alertmanager.loadbalancer.server.port=9093"
+      - "traefik.http.services.alertmanager.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.alertmanager-http.rule=Host(`alertmanager.example.org`)"
+      - "traefik.http.routers.alertmanager-http.entrypoints=web"
+      - "traefik.http.routers.alertmanager-http.service=alertmanager"
+      # https
+      - "traefik.http.routers.alertmanager-https.tls=true"
+      - "traefik.http.routers.alertmanager-https.rule=Host(`alertmanager.example.org`)"
+      - "traefik.http.routers.alertmanager-https.entrypoints=websecure"
+      - "traefik.http.routers.alertmanager-https.service=alertmanager"
+      # load middlewares for routers
+      - "traefik.http.routers.alertmanager-http.middlewares=alertmanager-https,alertmanager-auth"
+      - "traefik.http.routers.alertmanager-https.middlewares=alertmanager-auth"
+      # http to https redirect
+      - "traefik.http.middlewares.alertmanager-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.alertmanager-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.alertmanager-https.redirectscheme.port=443"
+      # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn prom passw0rd)
+      - "traefik.http.middlewares.alertmanager-auth.basicauth.users=prom:$$apr1$$GCTy.Ynl$$BlJK/eqDMHz.WQtlZ.uxX/"
       
   # https://github.com/grafana/grafana
   grafana:
@@ -156,9 +182,18 @@ services:
     restart: unless-stopped
     volumes:
       - /:/rootfs:ro
-      - /var/run:/var/run:rw
+      - /var/run:/var/run:ro  # rw
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    #privileged: true
+    #environment:
+    #  - CADVISOR_HEALTHCHECK_URL=http://localhost:8080/cadvisor/healthz
+    #command:
+    #  - '-port=8080'
+    #  - '-url_base_prefix=/cadvisor'
     #ports:
     #  - 127.0.0.1:8088:8080/tcp
     labels:
