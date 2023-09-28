@@ -62,6 +62,21 @@ services:
       #- "traefik.http.middlewares.nginx-https.redirectscheme.permanent=true"
       #- "traefik.http.middlewares.nginx-https.redirectscheme.port=443"
 
+#  # https://github.com/nginxinc/nginx-prometheus-exporter
+#  nginx-exporter:
+#    image: nginx/nginx-prometheus-exporter:latest
+#    container_name: nginx-exporter
+#    restart: unless-stopped
+#    #ports:
+#    #  - "127.0.0.1:9113:9113/tcp"
+#    command:
+#      - '-nginx.scrape-uri=http://nginx:80/nginx_status'  # need stub_status page
+#      #- '-nginx.ssl-verify=false'
+#      #- '-web.listen-address=:9113'
+#      #- '-web.telemetry-path=/metrics'
+#    depends_on:
+#      - nginx
+
 networks:
   default:
     external: true

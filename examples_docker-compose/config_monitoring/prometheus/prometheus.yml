@@ -27,13 +27,13 @@ scrape_configs:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
 
   - job_name: 'prometheus'
-    # Override the global default and scrape targets from this job every 5 seconds.
+    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     static_configs:
          - targets: ['localhost:9090']
 
   - job_name: 'cadvisor'
-    # Override the global default and scrape targets from this job every 5 seconds.
+    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     #metrics_path: /metrics
     #scheme: http
@@ -41,25 +41,35 @@ scrape_configs:
       - targets: ['cadvisor:8080']
 
   - job_name: 'node-exporter'
-    # Override the global default and scrape targets from this job every 5 seconds.
+    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     static_configs:
       - targets: ['node-exporter:9100']
 
+  # -------------------------------------
+
   - job_name: 'traefik'
-    # Override the global default and scrape targets from this job every 5 seconds.
+    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     static_configs:
       - targets: ['traefik:8082']
 
+  # -------------------------------------
+      
+  - job_name: 'nginx'
+    # Override the global default and scrape targets from this job every 15 seconds.
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+
   - job_name: 'mariadb-exporter'
-    # Override the global default and scrape targets from this job every 5 seconds.
+    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     static_configs:
       - targets: ['mariadb-exporter:9104']
       
   - job_name: 'postgres-exporter'
-    # Override the global default and scrape targets from this job every 5 seconds.
+    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     static_configs:
       - targets: ['postgres-exporter:9187']
