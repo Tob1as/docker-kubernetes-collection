@@ -7,7 +7,7 @@ groups:
     expr: absent(container_last_seen{name="node-exporter"}) or on (name) (time() - container_last_seen{name="node-exporter"} > 60)
     for: 1m
     labels:
-      severity: warn
+      severity: warning
       service: node-exporter
     annotations:
       summary: "{{ $labels.name }} down (for {{ $value }}s)"
@@ -43,4 +43,4 @@ groups:
       summary: "{{ $labels.name }} down (for {{ $value }}s)"
       description: "{{ $labels.name }} (container #{{ $labels.container_label_com_docker_compose_container_number }}) on {{ $labels.instance }} went down {{ $value }}s ago"
 
-    # copy alert for other Services "docker ps --format "{{.Names}}" | tr ' ' '\n' | sort"
+    # copy alert for other Services: "docker ps --format "{{.Names}}" | tr ' ' '\n' | sort"
