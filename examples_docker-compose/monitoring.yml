@@ -4,7 +4,7 @@ services:
 
   # MONITORING: Prometheus, Alertmanager, Grafana
   # folder:
-  # mkdir -p ./config_monitoring/{prometheus,alertmanager}
+  # mkdir -p ./config_monitoring/{prometheus,grafana,alertmanager}
   # mkdir -p ./data_monitoring/{prometheus,grafana,alertmanager} && chmod 777 ./data_monitoring/{prometheus,grafana,alertmanager}
 
   # https://github.com/prometheus/node_exporter
@@ -219,6 +219,8 @@ services:
       #- "traefik.http.middlewares.cadvisor-https.redirectscheme.port=443"
       # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn prom passw0rd)
       - "traefik.http.middlewares.cadvisor-auth.basicauth.users=prom:$$apr1$$GCTy.Ynl$$BlJK/eqDMHz.WQtlZ.uxX/"
+
+  # optional: LOKI for Logs: https://grafana.com/docs/loki/latest/send-data/docker-driver/
 
 networks:
   default:

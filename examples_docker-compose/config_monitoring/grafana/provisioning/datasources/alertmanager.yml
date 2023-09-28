@@ -1,0 +1,25 @@
+# https://grafana.com/docs/grafana/latest/administration/provisioning/
+# https://grafana.com/docs/grafana/latest/datasources/alertmanager/
+
+# config file version
+apiVersion: 1
+
+# list of datasources that should be deleted from the database
+deleteDatasources:
+  - name: Alertmanager
+    orgId: 1
+
+# list of datasources to insert/update depending
+# whats available in the database
+datasources:
+- name: Alertmanager
+  type: alertmanager
+  url: http://localhost:9093
+  access: proxy
+  orgId: 1
+  jsonData:
+    # Valid options for implementation include mimir, cortex and prometheus
+    implementation: prometheus
+    # Whether or not Grafana should send alert instances to this Alertmanager
+    handleGrafanaManagedAlerts: false
+  editable: true
