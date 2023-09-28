@@ -1,0 +1,191 @@
+# docker-compose -f monitoring.yml up -d
+version: '2.4'
+services:
+
+  # MONITORING: Prometheus, Alertmanager, Grafana
+  # folder:
+  # mkdir -p ./config_monitoring/{prometheus,grafana,alertmanager}
+  # mkdir -p ./data_monitoring/{prometheus,grafana,alertmanager} && chmod 777 ./data_monitoring/{prometheus,grafana,alertmanager}
+
+  # https://github.com/prometheus/node_exporter
+  node-exporter:
+    image: prom/node-exporter:latest  # quay.io/prometheus/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command: 
+      - '--path.rootfs=/rootfs'
+      - '--path.procfs=/host/proc' 
+      - '--path.sysfs=/host/sys'
+      - --collector.filesystem.ignored-mount-points
+      - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
+      - '--web.listen-address=:9100'
+      - '--web.telemetry-path=/metrics'
+    ports:
+      - 127.0.0.1:9100:9100/tcp
+    healthcheck:
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 9100 || exit 1"]
+      #test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://127.0.0.1:9100/metrics || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      #start_period: 30s
+  
+  # https://github.com/prometheus/prometheus
+  prometheus:
+    image: prom/prometheus:latest  # quay.io/prometheus/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./config_monitoring/prometheus/:/etc/prometheus/:ro
+      - ./data_monitoring/prometheus/:/prometheus/:rw
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      #- '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      #- '--web.console.templates=/usr/share/prometheus/consoles'
+      #- '--web.listen-address=0.0.0.0:9090'
+      #- '--web.route-prefix=/'
+    ports:
+      - 127.0.0.1:9090:9090/tcp
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+      - "traefik.http.services.prometheus.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.prometheus-http.rule=Host(`prometheus.example.org`)"
+      - "traefik.http.routers.prometheus-http.entrypoints=web"
+      - "traefik.http.routers.prometheus-http.service=prometheus"
+      # https
+      - "traefik.http.routers.prometheus-https.tls=true"
+      - "traefik.http.routers.prometheus-https.rule=Host(`prometheus.example.org`)"
+      - "traefik.http.routers.prometheus-https.entrypoints=websecure"
+      - "traefik.http.routers.prometheus-https.service=prometheus"
+      # load middlewares for routers
+      - "traefik.http.routers.prometheus-http.middlewares=prometheus-https,prometheus-auth"
+      - "traefik.http.routers.prometheus-https.middlewares=prometheus-auth"
+      # http to https redirect
+      - "traefik.http.middlewares.prometheus-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.prometheus-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.prometheus-https.redirectscheme.port=443"
+      # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn prom passw0rd)
+      - "traefik.http.middlewares.prometheus-auth.basicauth.users=prom:$$apr1$$GCTy.Ynl$$BlJK/eqDMHz.WQtlZ.uxX/"
+  
+  # https://github.com/prometheus/alertmanager
+  alertmanager:
+    image: prom/alertmanager:latest  # quay.io/prometheus/alertmanager:latest
+    container_name: alertmanager
+    restart: unless-stopped
+    volumes:
+      - ./config_monitoring/alertmanager/:/etc/alertmanager/:ro
+      - ./data_monitoring/alertmanager/:/alertmanager/:rw
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+      #- '--cluster.advertise-address=0.0.0.0:9093'
+    ports:
+      - 127.0.0.1:9093:9093/tcp
+    healthcheck:
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 9093 || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      #start_period: 30s
+      
+  # https://github.com/grafana/grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    volumes:
+      - ./data_monitoring/grafana/:/var/lib/grafana/:rw
+    environment: # https://grafana.com/docs/grafana/latest/administration/configuration/#configure-with-environment-variables
+      - GF_DATABASE_TYPE=sqlite3
+      #- GF_DATABASE_TYPE=postgres
+      #- GF_DATABASE_HOST=postgres:5432
+      #- GF_DATABASE_NAME=grafana
+      #- GF_DATABASE_USER=grafana
+      #- GF_DATABASE_PASSWORD=passw0rd
+      #- GF_DATABASE_SSL_MODE=disable
+      #- GF_SECURITY_ADMIN_USER=admin         # default: admin
+      - GF_SECURITY_ADMIN_PASSWORD=passw0rd   # reset with: docker exec -ti grafana grafana-cli admin reset-admin-password <PASSWORD>
+      #- GF_SECURITY_ADMIN_EMAIL=admin@localhost
+      #- GF_USERS_ALLOW_SIGN_UP=false
+      #- GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,jdbranham-diagram-panel,fzakaria-simple-annotations-datasource
+      - GF_SERVER_DOMAIN=grafana.example.org
+      - GF_SERVER_ROOT_URL=http://%(domain)s/grafana/   # %(protocol)s://%(domain)s:%(http_port)s/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    #ports:
+    #  - 127.0.0.1:3000:3000/tcp
+    healthcheck:
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 3000 || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      #start_period: 30s
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+      - "traefik.http.services.grafana.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.grafana-http.rule=Host(`grafana.example.org`) && (PathPrefix(`/grafana`) || PathPrefix(`/connections`))"
+      - "traefik.http.routers.grafana-http.entrypoints=web"
+      - "traefik.http.routers.grafana-http.service=grafana"
+      # https
+      - "traefik.http.routers.grafana-https.tls=true"
+      - "traefik.http.routers.grafana-https.rule=Host(`grafana.example.org`) && (PathPrefix(`/grafana`) || PathPrefix(`/connections`))"
+      - "traefik.http.routers.grafana-https.entrypoints=websecure"
+      - "traefik.http.routers.grafana-https.service=grafana"
+      # load middlewares for routers
+      - "traefik.http.routers.grafana-http.middlewares=grafana-https"
+      #- "traefik.http.routers.grafana-https.middlewares="
+      # http to https redirect
+      - "traefik.http.middlewares.grafana-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.grafana-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.grafana-https.redirectscheme.port=443"
+
+  # https://github.com/google/cadvisor
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    restart: unless-stopped
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    #ports:
+    #  - 127.0.0.1:8088:8080/tcp
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.cadvisor.loadbalancer.server.port=8080"
+      - "traefik.http.services.cadvisor.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.cadvisor-http.rule=Host(`cadvisor.example.org`)"
+      - "traefik.http.routers.cadvisor-http.entrypoints=web"
+      - "traefik.http.routers.cadvisor-http.service=cadvisor"
+      # https
+      - "traefik.http.routers.cadvisor-https.tls=true"
+      - "traefik.http.routers.cadvisor-https.rule=Host(`cadvisor.example.org`)"
+      - "traefik.http.routers.cadvisor-https.entrypoints=websecure"
+      - "traefik.http.routers.cadvisor-https.service=cadvisor"
+      # load middlewares for routers
+      - "traefik.http.routers.cadvisor-http.middlewares=cadvisor-https,cadvisor-auth"
+      - "traefik.http.routers.cadvisor-https.middlewares=cadvisor-auth"
+      # http to https redirect
+      - "traefik.http.middlewares.cadvisor-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.cadvisor-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.cadvisor-https.redirectscheme.port=443"
+      # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn prom passw0rd)
+      - "traefik.http.middlewares.cadvisor-auth.basicauth.users=prom:$$apr1$$GCTy.Ynl$$BlJK/eqDMHz.WQtlZ.uxX/"
+
+networks:
+  default:
+    external: true
+    name: mynetwork
