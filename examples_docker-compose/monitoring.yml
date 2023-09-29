@@ -2,7 +2,8 @@
 version: '2.4'
 services:
 
-  # MONITORING: Prometheus, Alertmanager, Grafana
+  # MONITORING: Prometheus, Alertmanager, Grafana, cAdvisor
+
   # folder:
   # mkdir -p ./config_monitoring/{prometheus,grafana,alertmanager}
   # mkdir -p ./data_monitoring/{prometheus,grafana,alertmanager} && chmod 777 ./data_monitoring/{prometheus,grafana,alertmanager}
@@ -48,7 +49,7 @@ services:
       #- '--web.console.libraries=/usr/share/prometheus/console_libraries'
       #- '--web.console.templates=/usr/share/prometheus/consoles'
       #- '--web.listen-address=0.0.0.0:9090'
-      #- '--web.external-url=https://prometheus.example.org'
+      - '--web.external-url=https://prometheus.example.org'
       #- '--web.route-prefix=/'
     ports:
       - 127.0.0.1:9090:9090/tcp
@@ -138,9 +139,9 @@ services:
       #- GF_DATABASE_USER=grafana
       #- GF_DATABASE_PASSWORD=passw0rd
       #- GF_DATABASE_SSL_MODE=disable
-      #- GF_SECURITY_ADMIN_USER=admin         # default: admin
-      - GF_SECURITY_ADMIN_PASSWORD=passw0rd   # reset with: docker exec -ti grafana grafana-cli admin reset-admin-password <PASSWORD>
-      #- GF_SECURITY_ADMIN_EMAIL=admin@localhost
+      #- GF_SECURITY_ADMIN_USER=admin            # default: admin
+      - GF_SECURITY_ADMIN_PASSWORD=passw0rd      # reset with: docker exec -ti grafana grafana-cli admin reset-admin-password <PASSWORD>
+      #- GF_SECURITY_ADMIN_EMAIL=admin@localhost # default: admin@localhost
       #- GF_USERS_ALLOW_SIGN_UP=false
       #- GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,jdbranham-diagram-panel,fzakaria-simple-annotations-datasource
       - GF_SERVER_DOMAIN=grafana.example.org
@@ -191,10 +192,10 @@ services:
       - /dev/kmsg
     #privileged: true
     #environment:
-    #  - CADVISOR_HEALTHCHECK_URL=http://localhost:8080/cadvisor/healthz
+    #  - CADVISOR_HEALTHCHECK_URL=http://localhost:8080/healthz
     #command:
     #  - '-port=8080'
-    #  - '-url_base_prefix=/cadvisor'
+    #  - '-url_base_prefix=/'
     #ports:
     #  - 127.0.0.1:8088:8080/tcp
     labels:

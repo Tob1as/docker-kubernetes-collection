@@ -45,21 +45,21 @@ services:
       retries: 5
       #start_period: 30s
 
-#  # https://github.com/prometheus/mysqld_exporter
-#  mariadb-exporter:
-#    image: prom/mysqld-exporter:latest  # quay.io/prometheus/mysqld-exporter:latest
-#    container_name: mariadb-exporter
-#    restart: unless-stopped
-#    #ports:
-#    #  - 127.0.0.1:9104:9104/tcp
-#    command:
-#      - "--mysqld.username=root:passw0rd"
-#      #- "--mysqld.username=exporter:Exp0rt3r!"
-#      - "--mysqld.address=mariadb:3306"
-#      #- "--web.listen-address=:9104"
-#      #- "--web.telemetry-path=/metrics"
-#    depends_on:
-#      - mariadb
+  # https://github.com/prometheus/mysqld_exporter
+  mariadb-exporter:
+    image: prom/mysqld-exporter:latest  # quay.io/prometheus/mysqld-exporter:latest
+    container_name: mariadb-exporter
+    restart: unless-stopped
+    #ports:
+    #  - 127.0.0.1:9104:9104/tcp
+    command:
+      - "--mysqld.username=root:passw0rd"
+      #- "--mysqld.username=exporter:Exp0rt3r!"
+      - "--mysqld.address=mariadb:3306"
+      #- "--web.listen-address=:9104"
+      #- "--web.telemetry-path=/metrics"
+    depends_on:
+      - mariadb
 
 networks:
   default:

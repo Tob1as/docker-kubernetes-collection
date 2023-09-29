@@ -39,22 +39,22 @@ services:
       timeout: 5s
       retries: 5
 
-#  # https://github.com/prometheus-community/postgres_exporter 
-#  postgres-exporter:
-#    image: quay.io/prometheuscommunity/postgres-exporter:latest
-#    container_name: postgres-exporter
-#    restart: unless-stopped
-#    environment:
-#       DATA_SOURCE_NAME: 'postgresql://postgres:passw0rd@postgres:5432/postgres?sslmode=disable'
-#       #DATA_SOURCE_NAME: 'postgresql://postgres_exporter:Exp0rt3r!@postgres:5432/postgres?sslmode=disable'
-#       #PG_EXPORTER_METRIC_PREFIX: 'pg'
-#       #PG_EXPORTER_WEB_LISTEN_ADDRESS: ':9187'
-#       #PG_EXPORTER_WEB_TELEMETRY_PATH: '/metrics'
-#    #ports:
-#    #  - 127.0.0.1:9187:9187/tcp
-#    #command: ["--web.listen-address", ":9187", "--web.telemetry-path", "/metrics"]
-#    depends_on:
-#      - postgres
+  # https://github.com/prometheus-community/postgres_exporter 
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:latest
+    container_name: postgres-exporter
+    restart: unless-stopped
+    environment:
+       DATA_SOURCE_NAME: 'postgresql://postgres:passw0rd@postgres:5432/postgres?sslmode=disable'
+       #DATA_SOURCE_NAME: 'postgresql://postgres_exporter:Exp0rt3r!@postgres:5432/postgres?sslmode=disable'
+       #PG_EXPORTER_METRIC_PREFIX: 'pg'
+       #PG_EXPORTER_WEB_LISTEN_ADDRESS: ':9187'
+       #PG_EXPORTER_WEB_TELEMETRY_PATH: '/metrics'
+    #ports:
+    #  - 127.0.0.1:9187:9187/tcp
+    #command: ["--web.listen-address", ":9187", "--web.telemetry-path", "/metrics"]
+    depends_on:
+      - postgres
 
 networks:
   default:
