@@ -21,7 +21,7 @@ services:
       #- minio-data:/data:rw
       - ./data_minio:/data:rw
       #- ./ssl/ssl.crt:/root/.minio/certs/public.crt:ro  # works only with root user and set URLs (and Port)
-      #- ./ssl/ssl.key:/root/.minio/certs/private.key:ro # (https://github.com/Tob1asDocker/minio/issues/1#issuecomment-1003127867)
+      #- ./ssl/ssl.key:/root/.minio/certs/private.key:ro # (https://github.com/Tob1as/docker-minio/issues/1#issuecomment-1003127867)
       #- ./ssl/ca.crt:/root/.minio/certs/CAs/ca.crt:ro
     environment:
       MINIO_ROOT_USER: minio
@@ -37,6 +37,10 @@ services:
       # use for MinIO Console behind a load balancer, proxy or k8s ingress
       MINIO_SERVER_URL: "https://minio.example.net"
       MINIO_BROWSER_REDIRECT_URL: "https://minio-console.example.net"
+      # Metrics <https://min.io/docs/minio/container/operations/monitoring/collect-minio-metrics-using-prometheus.html#>
+      #MINIO_PROMETHEUS_AUTH_TYPE: "public" # use not recommended, please use TOKEN for Auth
+      #MINIO_PROMETHEUS_URL: "http://prometheus:9090"
+      #MINIO_PROMETHEUS_JOB_ID: "minio-job"
     command:  ["server", "--address", ":9000", "--console-address", ":9001", "/data"]
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://127.0.0.1:9000/minio/health/live"]
