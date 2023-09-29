@@ -151,7 +151,7 @@ services:
       retries: 3
 
   # A container that exposes an API to show its IP address
-  whoami:
+  traefik-whoami:
     image: traefik/whoami:latest
     container_name: traefik-whoami
     restart: unless-stopped
