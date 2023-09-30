@@ -1,8 +1,8 @@
-# my global config
+# https://prometheus.io/docs/prometheus/latest/configuration/configuration/
 global:
-  scrape_interval:     15s # By default, scrape targets every 15 seconds.
-  evaluation_interval: 15s # By default, scrape targets every 15 seconds.
-  # scrape_timeout is set to the global default (10s).
+  scrape_interval:     15s # How frequently to scrape targets by default. default: 1m
+  scrape_timeout: 10s      # How long until a scrape request times out. default: 10s
+  evaluation_interval: 15s # How frequently to evaluate rules. default: 1m
 
   # Attach these labels to any time series or alerts when communicating with
   # external systems (federation, remote storage, Alertmanager).
@@ -24,41 +24,53 @@ alerting:
 scrape_configs:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
 
-#  - job_name: 'example'
+#  - job_name: 'example-exporter'
 #    # Override the global default and scrape targets from this job every 15 seconds.
 #    scrape_interval: 15s
+#    scrape_timeout: 10s
 #    static_configs:
 #         - targets: ['example:8080']
 #    metrics_path: /metrics
 #    scheme: http # or https
 #    tls_config:
-#      #ca_file: /path/to/ca.crt
+#      #ca_file: /ssl/ca.crt
 #      insecure_skip_verify: true
+#    basic_auth:
+#      username: 'metrics'
+#      password: 'passw0rd'
+#    follow_redirects: true
 
   # A scrape configuration containing exactly one endpoint to scrape:
   # Here it's Prometheus itself.
   - job_name: 'prometheus'
-    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     static_configs:
          - targets: ['localhost:9090']
 
   - job_name: 'cadvisor'
-    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     static_configs:
       - targets: ['cadvisor:8080']
 
   - job_name: 'node-exporter'
-    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     static_configs:
       - targets: ['node-exporter:9100']
 
+  - job_name: 'grafana'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['grafana:3000']
+    metrics_path: /grafana/metrics  # default: /metrics
+    scheme: http
+    basic_auth:
+      username: 'metrics'
+      password: 'passw0rd'
+    follow_redirects: false
+
   # -------------------------------------
 
   - job_name: 'traefik'
-    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     static_configs:
       - targets: ['traefik:8082']
@@ -66,54 +78,67 @@ scrape_configs:
   # -------------------------------------
       
   - job_name: 'nginx'
-    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     static_configs:
       - targets: ['nginx-exporter:9113']
 
   # -------------------------------------
 
+  # Databases
+
   - job_name: 'mariadb-exporter'
-    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     static_configs:
       - targets: ['mariadb-exporter:9104']
       
   - job_name: 'postgres-exporter'
-    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     static_configs:
       - targets: ['postgres-exporter:9187']
 
   - job_name: 'elasticsearch-exporter'
-    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     static_configs:
       - targets: ['elasticsearch-exporter:9114']
 
   - job_name: 'memcached-exporter'
-    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     static_configs:
       - targets: ['memcached-exporter:9150']
 
   - job_name: 'mongo-exporter'
-    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     static_configs:
       - targets: ['memcached-exporter:9216']
 
   - job_name: 'rabbitmq-exporter'
-    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     static_configs:
       - targets: ['rabbitmq:15692']
 
   - job_name: 'redis-exporter'
-    # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
     static_configs:
       - targets: ['redis-exporter:9121']
+
+  # -------------------------------------
+
+  # VerneMQ
+  # https://docs.vernemq.com/monitoring/prometheus
+  - job_name: 'vernemq'
+    scrape_interval: 15s
+    #scrape_timeout: 5s
+    static_configs:
+      - targets: ['vernemq:9000']  # default port: 8888
+
+  # -------------------------------------
+
+  # Docker-Registry
+  # https://docs.docker.com/registry/configuration/#prometheus
+  - job_name: 'docker-registry'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['docker-registry:5001']
 
   # -------------------------------------
 
@@ -127,15 +152,5 @@ scrape_configs:
 #    scheme: http
 #    static_configs:
 #    - targets: ['minio:9000']
-
-  # -------------------------------------
-
-  # Docker-Registry
-  # https://docs.docker.com/registry/configuration/#prometheus
-#  - job_name: 'docker-registry'
-#    # Override the global default and scrape targets from this job every 15 seconds.
-#    scrape_interval: 15s
-#    static_configs:
-#      - targets: ['docker-registry:5001']
 
   # -------------------------------------

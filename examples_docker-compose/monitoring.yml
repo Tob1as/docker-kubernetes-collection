@@ -148,6 +148,11 @@ services:
       - GF_SERVER_DOMAIN=grafana.example.org
       - GF_SERVER_ROOT_URL=http://%(domain)s/grafana/   # %(protocol)s://%(domain)s:%(http_port)s/grafana/
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      # Grafana internal Metrics <https://grafana.com/docs/grafana/latest/setup-grafana/set-up-grafana-monitoring/#view-grafana-internal-metrics>
+      - GF_METRICS_ENABLED=true  # default: true
+      - GF_METRICS_DISABLE_TOTAL_STATS=false
+      - GF_METRICS_BASIC_AUTH_USERNAME=metrics
+      - GF_METRICS_BASIC_AUTH_PASSWORD=passw0rd
     #ports:
     #  - 127.0.0.1:3000:3000/tcp
     healthcheck:
