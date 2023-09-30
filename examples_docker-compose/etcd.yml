@@ -33,14 +33,22 @@ services:
 
 # EXAMPLES:
 
+# docker exec etcd /usr/local/bin/etcd --help
+# docker exec etcd /usr/local/bin/etcd --version
+
+# docker exec etcd /usr/local/bin/etcdctl --help
+# docker exec etcd /usr/local/bin/etcdctl version
+# docker exec etcd /usr/local/bin/etcdctl --endpoints=localhost:2379 endpoint health
+# docker exec etcd /usr/local/bin/etcdctl endpoint health
+# docker exec etcd /usr/local/bin/etcdctl endpoint status
+# docker exec etcd /usr/local/bin/etcdctl put foo bar
+# docker exec etcd /usr/local/bin/etcdctl get foo
+
 # "ETCDCTL_API=3 ./etcdctl --endpoints=localhost:2379 endpoint health"
 
-# docker exec etcd  /usr/local/bin/etcd --version
-# docker exec etcd  /usr/local/bin/etcdctl version
-# docker exec etcd  /usr/local/bin/etcdctl --endpoints=localhost:2379 endpoint health
-# docker exec etcd  /usr/local/bin/etcdctl endpoint health
-# docker exec etcd  /usr/local/bin/etcdctl endpoint status
-# docker exec etcd  /usr/local/bin/etcdctl put foo bar
-# docker exec etcd  /usr/local/bin/etcdctl get foo
-
 # Prometheus Metrics: http://localhost:2379/metrics
+
+networks:
+  default:
+    external: true
+    name: mynetwork
