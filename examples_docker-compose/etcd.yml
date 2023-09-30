@@ -1,0 +1,46 @@
+# docker-compose -f etcd.yml up -d
+version: '2.4'
+services:
+
+  # etcd - key-value store
+  # https://etcd.io/
+  # https://github.com/etcd-io/etcd
+  # Supported architectures: amd64
+  etcd:
+    image: quay.io/coreos/etcd:v3.4.27 # gcr.io/etcd-development/etcd:v3.4.27
+    container_name: etcd
+    restart: unless-stopped
+    volumes:
+      - ./data_etcd:/etcd-data:rw
+    ports:
+      - "127.0.0.1:2379:2379/tcp" # API endpoint
+      - "127.0.0.1:2380:2380/tcp" # Cluster
+    command:
+      - "/usr/local/bin/etcd"
+      # https://github.com/etcd-io/etcd/blob/main/etcd.conf.yml.sample
+      - "--name=s1"
+      - "--data-dir=/etcd-data"
+      - "--listen-client-urls=http://0.0.0.0:2379"
+      - "--advertise-client-urls=http://0.0.0.0:2379"
+      - "--listen-peer-urls=http://0.0.0.0:2380"
+      - "--initial-advertise-peer-urls=http://0.0.0.0:2380"
+      - "--initial-cluster=s1=http://0.0.0.0:2380"
+      - "--initial-cluster-token=tkn"
+      - "--initial-cluster-state=new"
+      - "--log-level=info"
+      - "--logger=zap"
+      - "--log-outputs=stderr"
+
+# EXAMPLES:
+
+# "ETCDCTL_API=3 ./etcdctl --endpoints=localhost:2379 endpoint health"
+
+# docker exec etcd  /usr/local/bin/etcd --version
+# docker exec etcd  /usr/local/bin/etcdctl version
+# docker exec etcd  /usr/local/bin/etcdctl --endpoints=localhost:2379 endpoint health
+# docker exec etcd  /usr/local/bin/etcdctl endpoint health
+# docker exec etcd  /usr/local/bin/etcdctl endpoint status
+# docker exec etcd  /usr/local/bin/etcdctl put foo bar
+# docker exec etcd  /usr/local/bin/etcdctl get foo
+
+# Prometheus Metrics: http://localhost:2379/metrics
