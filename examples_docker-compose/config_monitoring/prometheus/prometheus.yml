@@ -71,6 +71,8 @@ scrape_configs:
     static_configs:
       - targets: ['nginx-exporter:9113']
 
+  # -------------------------------------
+
   - job_name: 'mariadb-exporter'
     # Override the global default and scrape targets from this job every 15 seconds.
     scrape_interval: 15s
@@ -83,17 +85,57 @@ scrape_configs:
     static_configs:
       - targets: ['postgres-exporter:9187']
 
+  - job_name: 'elasticsearch-exporter'
+    # Override the global default and scrape targets from this job every 15 seconds.
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['elasticsearch-exporter:9114']
+
+  - job_name: 'memcached-exporter'
+    # Override the global default and scrape targets from this job every 15 seconds.
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['memcached-exporter:9150']
+
+  - job_name: 'mongo-exporter'
+    # Override the global default and scrape targets from this job every 15 seconds.
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['memcached-exporter:9216']
+
+  - job_name: 'rabbitmq-exporter'
+    # Override the global default and scrape targets from this job every 15 seconds.
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['rabbitmq:15692']
+
+  - job_name: 'redis-exporter'
+    # Override the global default and scrape targets from this job every 15 seconds.
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['redis-exporter:9121']
+
   # -------------------------------------
 
   # MinIO 
   # https://min.io/docs/minio/container/operations/monitoring/collect-minio-metrics-using-prometheus.html#
   # docker exec -it minio mc alias list
   # docker exec -it minio mc admin prometheus generate <alias> cluster|bucket|node
-#  - job_name: minio-job
+#  - job_name: 'minio-job'
 #    bearer_token: TOKEN
 #    metrics_path: /minio/v2/metrics/cluster
 #    scheme: http
 #    static_configs:
 #    - targets: ['minio:9000']
+
+  # -------------------------------------
+
+  # Docker-Registry
+  # https://docs.docker.com/registry/configuration/#prometheus
+#  - job_name: 'docker-registry'
+#    # Override the global default and scrape targets from this job every 15 seconds.
+#    scrape_interval: 15s
+#    static_configs:
+#      - targets: ['docker-registry:5001']
 
   # -------------------------------------

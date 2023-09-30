@@ -2,17 +2,23 @@
 version: '2.4'
 services:
 
+  # This CONSUL config only for Tests!
+
+  # CONSUL
+  # https://www.consul.io/
+  # https://hub.docker.com/r/hashicorp/consul
+  # https://github.com/hashicorp/consul
   consul-server0:
-    image: hashicorp/consul:1.16
+    image: hashicorp/consul:latest
     container_name: consul-server0
-    #restart: unless-stopped
+    restart: unless-stopped
     volumes:
      - ./config_consul/server0.json:/consul/config/server.json:ro
      - ./data_consul-server/server-0:/consul/data:rw
     ports:
-      - "8500:8500/tcp" # HTTP API
-      #- "8600:8600/tcp" # DNS
-      #- "8600:8600/udp" # DNS
+      - "127.0.0.1:8500:8500/tcp" # HTTP API
+      #- "127.0.0.1:8600:8600/tcp" # DNS
+      #- "127.0.0.1:8600:8600/udp" # DNS
     command: "agent"
     healthcheck:
       test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 8500 || exit 1"]
@@ -42,16 +48,16 @@ services:
       #- "traefik.http.middlewares.consul-https.redirectscheme.port=443"
       
   consul-server1:
-    image: hashicorp/consul:1.16
+    image: hashicorp/consul:latest
     container_name: consul-server1
-    #restart: unless-stopped
+    restart: unless-stopped
     volumes:
      - ./config_consul/server1.json:/consul/config/server.json:ro
      - ./data_consul-server/server-1:/consul/data:rw
     #ports:
-    #  - "8500:8500"
-    #  - "8600:8600/tcp"
-    #  - "8600:8600/udp"
+    #  - "127.0.0.1:8500:8500/tcp"
+    #  - "127.0.0.1:8600:8600/tcp"
+    #  - "127.0.0.1:8600:8600/udp"
     command: "agent"
     healthcheck:
       test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 8500 || exit 1"]
@@ -61,13 +67,33 @@ services:
       retries: 3
     
   consul-client:
-    image: hashicorp/consul:1.16
+    image: hashicorp/consul:latest
     container_name: consul-client
-    #restart: unless-stopped
+    restart: unless-stopped
     volumes:
      - ./config_consul/client.json:/consul/config/client.json:ro
      - ./data_consul-server/client:/consul/data:rw
     command: "agent"
+
+  # https://github.com/prometheus/consul_exporter
+  consul-exporter:
+    image: prom/consul-exporter:latest
+    container_name: consul-exporter
+    restart: unless-stopped
+    #ports:
+    #  - "127.0.0.1:9107:9107/tcp"
+    command:
+      - "--consul.server=consul-server0:8500"
+      #- "--web.listen-address=:9107"
+      #- "--web.telemetry-path=/metrics"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 9107 || exit 1"]
+      #start_period: 30s
+      interval: 60s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      - consul-server0
 
 networks:
   default:

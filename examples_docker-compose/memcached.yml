@@ -4,7 +4,7 @@ services:
   
   # Memcached - memory object caching system
   # https://memcached.org/
-  # https://github.com/redis/redis
+  # https://github.com/memcached/memcached
   # https://hub.docker.com/_/memcached + https://github.com/docker-library/memcached
   # Supported architectures: arm32v5, arm32v6, arm32v7, arm64v8, amd64, ...
   memcached:
@@ -22,6 +22,20 @@ services:
       interval: 60s
       timeout: 10s
       retries: 3
+
+  # https://github.com/prometheus/memcached_exporter
+  memcached-exporter:
+    image: quay.io/prometheus/memcached-exporter:latest
+    container_name: memcached-exporter
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:9150:9150/tcp
+    command:
+      - "--memcached.address=memcached:11211"
+      #- "--web.listen-address=:9150"
+      #- "--web.telemetry-path=/metrics"
+    depends_on:
+      - memcached
 
 networks:
   default:

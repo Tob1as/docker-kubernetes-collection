@@ -25,6 +25,20 @@ services:
       retries: 3
       #start_period: 30s
 
+  # https://github.com/percona/mongodb_exporter
+  mongo-exporter:
+    image: percona/mongodb_exporter:0.20
+    container_name: mongo-exporter
+    restart: unless-stopped
+    #ports:
+    #  - 127.0.0.1:9216:9216/tcp
+    command:
+      - "--mongodb.uri=mongodb://admin:passw0rd@mongo:27017"
+      #- "--web.listen-address=:9216"
+      #- "--web.telemetry-path=/metrics"
+    depends_on:
+      - mongo
+
   # mongo-express - Web-based MongoDB admin interface
   # https://github.com/mongo-express/mongo-express
   # https://hub.docker.com/_/mongo-express + https://github.com/mongo-express/mongo-express-docker

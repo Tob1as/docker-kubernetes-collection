@@ -8,6 +8,7 @@ services:
   # mkdir -p ./config_monitoring/{prometheus,grafana,alertmanager}
   # mkdir -p ./data_monitoring/{prometheus,grafana,alertmanager} && chmod 777 ./data_monitoring/{prometheus,grafana,alertmanager}
 
+  # https://prometheus.io/docs/instrumenting/exporters/
   # https://github.com/prometheus/node_exporter
   node-exporter:
     image: prom/node-exporter:latest  # quay.io/prometheus/node-exporter:latest

@@ -48,12 +48,12 @@ services:
       - 127.0.0.1:9200:9200/tcp  # API calls over HTTP
       #- 9300:9300/tcp           # communications between nodes in a cluster
     healthcheck:
-        test: ["CMD-SHELL", "curl --silent --fail -XGET 'http://127.0.0.1:9200/_cluster/health?pretty' --user elastic:$$ELASTIC_PASSWORD || exit 1"]
-        #test: ["CMD-SHELL", "curl --silent --insecure --fail -XGET 'https://127.0.0.1:9200/_cluster/health?pretty' --user elastic:$$ELASTIC_PASSWORD || exit 1"]
-        #start_period: 30s
-        interval: 60s
-        timeout: 10s
-        retries: 3
+      test: ["CMD-SHELL", "curl --silent --fail -XGET 'http://127.0.0.1:9200/_cluster/health?pretty' --user elastic:$$ELASTIC_PASSWORD || exit 1"]
+      #test: ["CMD-SHELL", "curl --silent --insecure --fail -XGET 'https://127.0.0.1:9200/_cluster/health?pretty' --user elastic:$$ELASTIC_PASSWORD || exit 1"]
+      #start_period: 30s
+      interval: 60s
+      timeout: 10s
+      retries: 3
     labels:
       - "traefik.enable=true"
       #- "traefik.docker.network=mynetwork"
@@ -75,6 +75,30 @@ services:
       #- "traefik.http.middlewares.elasticsearch-https.redirectscheme.permanent=true"
       #- "traefik.http.middlewares.elasticsearch-https.redirectscheme.port=443"
  
+  # https://github.com/prometheus-community/elasticsearch_exporter
+  elasticsearch-exporter:
+    image: quay.io/prometheuscommunity/elasticsearch-exporter:latest
+    container_name: elasticsearch-exporter
+    restart: unless-stopped
+    #volumes:
+    #  - ./ssl:/ssl:ro
+    #ports:
+    #  - "127.0.0.1:9114:9114/tcp"
+    command:
+      - '--es.uri=http://elastic:passw0rd@elasticsearch:9200'
+      #- '--es.ssl-skip-verify=false'
+      #- '--es.ca=/ssl/ca.crt'
+      #- "--web.listen-address=:9114"
+      #- "--web.telemetry-path=/metrics"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 9114 || exit 1"]
+      #start_period: 30s
+      interval: 60s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      - elasticsearch
+
   # elasticvue - Elasticsearch gui for the browser 
   # https://elasticvue.com/
   # https://hub.docker.com/r/cars10/elasticvue + https://github.com/cars10/elasticvue
