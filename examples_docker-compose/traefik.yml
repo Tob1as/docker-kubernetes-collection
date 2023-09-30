@@ -74,8 +74,8 @@ services:
       - "--experimental.plugins.plugin-rewritebody.modulename=github.com/traefik/plugin-rewritebody"
       - "--experimental.plugins.plugin-rewritebody.version=v0.3.1"
       # https://plugins.traefik.io/plugins/62947354108ecc83915d778e/block-path
-      - "--experimental.plugins.plugin-blockpath.modulename=github.com/traefik/plugin-blockpath"
-      - "--experimental.plugins.plugin-blockpath.version=v0.2.1"
+      - "--experimental.plugins.blockpath.modulename=github.com/traefik/plugin-blockpath"
+      - "--experimental.plugins.blockpath.version=v0.2.1" 
 
       # Metrics https://doc.traefik.io/traefik/observability/metrics/prometheus/
       - "--metrics.prometheus=true"
