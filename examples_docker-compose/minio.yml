@@ -38,7 +38,7 @@ services:
       MINIO_SERVER_URL: "https://minio.example.net"
       MINIO_BROWSER_REDIRECT_URL: "https://minio-console.example.net"
       # Metrics <https://min.io/docs/minio/container/operations/monitoring/collect-minio-metrics-using-prometheus.html#>
-      #MINIO_PROMETHEUS_AUTH_TYPE: "public" # use not recommended, please use TOKEN for Auth
+      #MINIO_PROMETHEUS_AUTH_TYPE: "public" # use not recommended, please use TOKEN for Auth or Traefik blockpath-plugin
       #MINIO_PROMETHEUS_URL: "http://prometheus:9090"
       #MINIO_PROMETHEUS_JOB_ID: "minio-job"
     command:  ["server", "--address", ":9000", "--console-address", ":9001", "/data"]
@@ -83,11 +83,15 @@ services:
       - "traefik.http.routers.minio-https.entrypoints=websecure"
       - "traefik.http.routers.minio-https.service=minio"
       # load middlewares for routers
-      - "traefik.http.routers.minio-http.middlewares=minio-https"
+      - "traefik.http.routers.minio-http.middlewares=minio-https" # or use next both & blockpath-middelware
+      #- "traefik.http.routers.minio-http.middlewares=minio-https,minio-blockpath"
+      #- "traefik.http.routers.minio-https.middlewares=minio-blockpath"
       # http to https redirect
       - "traefik.http.middlewares.minio-https.redirectscheme.scheme=https"
       #- "traefik.http.middlewares.minio-https.redirectscheme.permanent=true"
       #- "traefik.http.middlewares.minio-https.redirectscheme.port=443"
+      # Metrics deny from external, need plugin: https://plugins.traefik.io/plugins/62947354108ecc83915d778e/block-path
+      #- "traefik.http.middlewares.minio-blockpath.plugin.blockpath.Regex=^/minio/v2/metrics(.*)"
 
 #volumes:
 #  minio-data:
