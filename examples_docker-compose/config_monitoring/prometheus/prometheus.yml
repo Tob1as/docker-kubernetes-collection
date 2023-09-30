@@ -95,17 +95,5 @@ scrape_configs:
 #    scheme: http
 #    static_configs:
 #    - targets: ['minio:9000']
-#  - job_name: minio-job-node
-#    bearer_token: TOKEN
-#    metrics_path: /minio/v2/metrics/node
-#    scheme: http
-#    static_configs:
-#    - targets: ['minio:9000']
-#  - job_name: minio-job-bucket
-#    bearer_token: TOKEN
-#    metrics_path: /minio/v2/metrics/bucket
-#    scheme: http
-#    static_configs:
-#    - targets: ['minio:9000']
 
   # -------------------------------------
