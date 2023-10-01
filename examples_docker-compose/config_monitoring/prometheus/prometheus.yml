@@ -134,6 +134,12 @@ scrape_configs:
     #scrape_timeout: 5s
     static_configs:
       - targets: ['vernemq:9000']  # default port: 8888
+  
+  # Mosquitto
+  - job_name: 'mosquitto-exporter'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['mosquitto-exporter:9234']
 
   # -------------------------------------
 
