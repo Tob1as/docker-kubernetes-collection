@@ -88,7 +88,7 @@ services:
     command:
       - "--endpoint=tcp://mosquitto:1883"
       #- "--endpoint=tls://mosquitto:8883" # or: "tls://mosquitto.example.com:8883"
-      - "--bind-address=0.0.0.0:9234"
+      #- "--bind-address=0.0.0.0:9234"
       - "--user=admin"
       - "--pass=passw0rd"
       #- "--cert="
