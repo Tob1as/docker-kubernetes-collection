@@ -2,7 +2,7 @@
 version: '2.4'
 services:
   
-  # MQTT-Client based on mosquitto-clients 
+  # MQTT-Client CLI based on mosquitto-clients 
   # (OS: AlpineLinux ; Installed: "apk add --no-cache ca-certificates mosquitto-clients")
   # https://github.com/Tob1as/docker-tools
   # https://hub.docker.com/r/tobi312/tools
