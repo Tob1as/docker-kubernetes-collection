@@ -6,6 +6,7 @@ services:
   # https://nginx.org/
   # https://github.com/nginx/nginx
   # https://hub.docker.com/_/nginx + https://github.com/nginxinc/docker-nginx
+  # Alternative: https://hub.docker.com/r/nginxinc/nginx-unprivileged & https://github.com/nginxinc/docker-nginx-unprivileged (replace port 80 with 8080)
   # Supported architectures: arm32v6, arm32v7, arm64v8, amd64, ...
   # URL: http://localhost/ + https://localhost/
   nginx:
