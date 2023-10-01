@@ -61,6 +61,68 @@ services:
     depends_on:
       - mariadb
 
+  # As UI Adminer or phpMyAdmin can be used.
+
+  # phpMyAdmin - A web interface for MySQL and MariaDB 
+  # https://www.phpmyadmin.net/
+  # https://hub.docker.com/_/phpmyadmin + https://github.com/phpmyadmin/docker
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: unless-stopped
+    environment:
+       PMA_ARBITRARY: 0 # default: 1
+       # single server (use when PMA_ARBITRARY=1)
+       PMA_HOST: mariadb
+       #PMA_VERBOSE: 
+       PMA_PORT: 3306
+       # multiple server (use when PMA_ARBITRARY=1)
+       #PMA_HOSTS: mariadb, mysql, db
+       #PMA_VERBOSES: 
+       #PMA_PORTS: 3306, 3306, 3306
+       # user credentials (Do NOT use in public internet!)
+       #PMA_USER: root
+       #PMA_PASSWORD: passw0rd
+       # more settings
+       PMA_ABSOLUTE_URI: https://phpmyadmin.example.com
+       #MAX_EXECUTION_TIME: 600
+       #MEMORY_LIMIT: 512M
+       #UPLOAD_LIMIT: 2048K
+       #HIDE_PHP_VERSION: true # default: false
+       #APACHE_PORT: 80
+    ports:
+      - 127.0.0.1:8080:80/tcp
+    healthcheck:
+      test: ["CMD", "curl", "-Ss", "http://127.0.0.1:80/robots.txt"]
+      #start_period: 5s
+      interval: 60s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      - mariadb
+    labels:
+      # Explicitly tell Traefik to expose this container
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      # Tell Traefik to use the http port 80 to connect to phpmyadmin container
+      - "traefik.http.services.phpmyadmin.loadbalancer.server.port=80"
+      - "traefik.http.services.phpmyadmin.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.phpmyadmin-http.rule=Host(`phpmyadmin.example.com`)"
+      - "traefik.http.routers.phpmyadmin-http.entrypoints=web"
+      - "traefik.http.routers.phpmyadmin-http.service=phpmyadmin"
+      # https
+      - "traefik.http.routers.phpmyadmin-https.tls=true"
+      - "traefik.http.routers.phpmyadmin-https.rule=Host(`phpmyadmin.example.com`)"
+      - "traefik.http.routers.phpmyadmin-https.entrypoints=websecure"
+      - "traefik.http.routers.phpmyadmin-https.service=phpmyadmin"
+      # load middlewares for routes
+      - "traefik.http.routers.phpmyadmin-http.middlewares=phpmyadmin-https"
+      # http to https redirect      
+      - "traefik.http.middlewares.phpmyadmin-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.phpmyadmin-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.phpmyadmin-https.redirectscheme.port=443"
+
 networks:
   default:
     external: true
