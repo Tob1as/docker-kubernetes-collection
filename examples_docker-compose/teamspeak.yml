@@ -9,7 +9,9 @@ services:
   # https://support.teamspeak.com/hc/en-us/articles/360002712257-Which-ports-does-the-TeamSpeak-3-server-use-
   # Supported architectures: amd64
   # Requirements: use sqlite or setup MariaDB before start teamspeak!
-  # Admin-Token see in logs after start: docker logs -f teamspeak
+  # Admin-Credentials (token) see in logs after start: 
+  # * see logs: docker logs -f teamspeak
+  # * save logs: docker logs teamspeak >& ./teamspeak.txt
   teamspeak:
     image: teamspeak:latest   # 3.13.6
     container_name: teamspeak
@@ -28,6 +30,7 @@ services:
       #TS3SERVER_DB_PASSWORD: passw0rd              # for MariaDB comment in
       #TS3SERVER_DB_WAITUNTILREADY: 30
       TS3SERVER_LICENSE: accept
+      TS3SERVER_SERVERADMIN_PASSWORD: 'passw0rd'    # optional: set serverquery serveradmin Password (if unset, it will be generated) 
     volumes:
       - ./data_teamspeak:/var/ts3server:rw
     healthcheck:
