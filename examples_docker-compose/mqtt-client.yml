@@ -15,7 +15,7 @@ services:
     restart: unless-stopped
     #user: "1000:1000"  # format: "${UID}:${GID}"
     #volumes:
-    #  - ./etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    #  - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
     environment:
       MQTT_HOSTNAME: "mqtt.example.com"
       MQTT_PORT: "8883"               # 1883 for TCP without SSL or 8883 for TCP with SSL
