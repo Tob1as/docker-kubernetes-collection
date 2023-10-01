@@ -86,31 +86,37 @@ scrape_configs:
 
   # Databases
 
+  # MariaDB
   - job_name: 'mariadb-exporter'
     scrape_interval: 15s
     static_configs:
       - targets: ['mariadb-exporter:9104']
-      
+  
+  # PostgreSQL
   - job_name: 'postgres-exporter'
     scrape_interval: 15s
     static_configs:
       - targets: ['postgres-exporter:9187']
-
+  
+  # ElasticSearch
   - job_name: 'elasticsearch-exporter'
     scrape_interval: 15s
     static_configs:
       - targets: ['elasticsearch-exporter:9114']
-
+  
+  # MemCached
   - job_name: 'memcached-exporter'
     scrape_interval: 15s
     static_configs:
       - targets: ['memcached-exporter:9150']
-
+  
+  # MongoDB
   - job_name: 'mongo-exporter'
     scrape_interval: 15s
     static_configs:
       - targets: ['memcached-exporter:9216']
-
+  
+  # Redis
   - job_name: 'redis-exporter'
     scrape_interval: 15s
     static_configs:
@@ -151,6 +157,8 @@ scrape_configs:
       - targets: ['docker-registry:5001']
 
   # -------------------------------------
+
+  # Storages
 
   # MinIO 
   # https://min.io/docs/minio/container/operations/monitoring/collect-minio-metrics-using-prometheus.html#
