@@ -111,17 +111,21 @@ scrape_configs:
     static_configs:
       - targets: ['memcached-exporter:9216']
 
-  - job_name: 'rabbitmq-exporter'
-    scrape_interval: 15s
-    static_configs:
-      - targets: ['rabbitmq:15692']
-
   - job_name: 'redis-exporter'
     scrape_interval: 15s
     static_configs:
       - targets: ['redis-exporter:9121']
 
   # -------------------------------------
+
+  # Messages / MQTT Broker
+
+  # RabbitMQ
+  # https://www.rabbitmq.com/prometheus.html
+  - job_name: 'rabbitmq-exporter'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['rabbitmq:15692'] 
 
   # VerneMQ
   # https://docs.vernemq.com/monitoring/prometheus
