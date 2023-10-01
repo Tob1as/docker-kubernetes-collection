@@ -17,3 +17,9 @@ When you want use my examples with network `mynetwork`, you can create it with s
 
 Some examples with [Trafik](https://traefik.io/traefik/) as Proxy. [Traefik-Example](https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/traefik.yml)  
 If you don't want to use Traefik, you have to create your own configurations for another proxy or comment in the ports in the yml files and optional remove network `mynetwork`.
+
+### Important (Passwords!)
+
+Search for Password "passw0rd" and change it !!  
+In Traefik configs for services search under "labels" and then for "basicauth".  
+User changes is optional.
