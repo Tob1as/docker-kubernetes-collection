@@ -67,6 +67,36 @@ services:
       #- "traefik.tcp.routers.mosquitto-ws.tls=false"
       #- "traefik.tcp.routers.mosquitto-ws.rule=HostSNI(`*`)"
 
+  # https://github.com/sapcc/mosquitto-exporter
+  mosquitto-exporter:
+    image: sapcc/mosquitto-exporter:latest
+    container_name: mosquitto-exporter
+    restart: unless-stopped
+    #ports:
+    #  - 127.0.0.1:9234:9234/tcp
+    #volumes:
+    #  - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    #environment:
+    #  BROKER_ENDPOINT: "tcp://mosquitto:1883"
+    #  BROKER_ENDPOINT: "tls://mosquitto:8883"
+    #  BIND_ADDRESS: "0.0.0.0:9234"
+    #  MQTT_USER: "admin"
+    #  MQTT_PASS: "passw0rd"
+    #  #MQTT_CERT: ""
+    #  #MQTT_KEY: ""
+    #  MQTT_CLIENT_ID: "mosquitto-exporter"
+    command:
+      - "--endpoint=tcp://mosquitto:1883"
+      #- "--endpoint=tls://mosquitto:8883"
+      - "--bind-address=0.0.0.0:9234"
+      - "--user=admin"
+      - "--pass=passw0rd"
+      #- "--cert="
+      #- "--key="
+      - "--client-id=mosquitto-exporter"
+    depends_on:
+      - mosquitto
+
 networks:
   default:
     external: true

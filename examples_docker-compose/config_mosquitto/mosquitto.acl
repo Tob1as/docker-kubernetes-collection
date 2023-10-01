@@ -5,6 +5,10 @@
 user admin
 topic #
 
+# ACL for user 'mosquitto-exporter' (read only topic: $SYS/broker/)
+user mosquitto-exporter
+topic read $SYS/broker/#
+
 # ACL for user 'user' (write and read only topic: usertopic)
 user user
 topic usertopic/#
