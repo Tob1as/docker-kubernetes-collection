@@ -78,7 +78,7 @@ services:
     #  - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
     #environment:
     #  BROKER_ENDPOINT: "tcp://mosquitto:1883"
-    #  BROKER_ENDPOINT: "tls://mosquitto:8883"
+    #  BROKER_ENDPOINT: "tls://mosquitto:8883" # or: "tls://mosquitto.example.com:8883"
     #  BIND_ADDRESS: "0.0.0.0:9234"
     #  MQTT_USER: "admin"
     #  MQTT_PASS: "passw0rd"
@@ -87,7 +87,7 @@ services:
     #  MQTT_CLIENT_ID: "mosquitto-exporter"
     command:
       - "--endpoint=tcp://mosquitto:1883"
-      #- "--endpoint=tls://mosquitto:8883"
+      #- "--endpoint=tls://mosquitto:8883" # or: "tls://mosquitto.example.com:8883"
       - "--bind-address=0.0.0.0:9234"
       - "--user=admin"
       - "--pass=passw0rd"
