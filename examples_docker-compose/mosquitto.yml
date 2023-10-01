@@ -16,11 +16,11 @@ services:
     container_name: mosquitto
     #hostname: mosquitto
     restart: unless-stopped
-    ports:
-      - '1883:1883/tcp'    # MQTT
-      - '8883:8883/tcp'    # MQTTS
-    #  - '9001:8080/tcp'    # ws
-    #  - '9002:9002/tcp'    # wss
+    #ports:
+    #  - '1883:1883/tcp'    # MQTT
+    #  - '8883:8883/tcp'    # MQTTS
+    ##  - '9001:8080/tcp'    # ws
+    ##  - '9002:9002/tcp'    # wss
     volumes:
       - ./config_mosquitto:/mosquitto/config:rw
       - ./data_mosquitto:/mosquitto/data:rw

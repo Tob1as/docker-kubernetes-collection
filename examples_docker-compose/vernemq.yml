@@ -18,19 +18,19 @@ services:
   # fix permission problem before startup: "mkdir ./data_vernemq && chmod 777 ./data_vernemq"
   # after start you can check generated config in folder ./data_vernemq/generated.configs/
   vernemq:
-    image: vernemq/vernemq:1.13.0-alpine # 1.12.3-alpine
+    image: vernemq/vernemq:1.13.0-alpine
     container_name: vernemq
     #hostname: vernemq
     restart: unless-stopped
     ports:
-      - '1883:1883/tcp'    # mqtt
-      - '8883:8883/tcp'    # mqtts
-      - '127.0.0.1:8888:9000/tcp'   # http
+      - '1883:1883/tcp'              # mqtt
+      - '8883:8883/tcp'              # mqtts
+      #- '127.0.0.1:8888:9000/tcp'   # http
       #- '127.0.0.1:8889:8889/tcp'   # https
-      #- '18883:44053/tcp' # Cluster
-      #- '18884:18884/tcp' # Cluster
-      #- '9001:8080/tcp' # ws
-      #- '9002:9002/tcp' # wss
+      #- '18883:44053/tcp'           # Cluster
+      #- '18884:18884/tcp'           # Cluster
+      #- '9001:8080/tcp'             # ws
+      #- '9002:9002/tcp'             # wss
     volumes:
       - ./data_vernemq:/vernemq/data:rw
       - ./config_vernemq/vmq.passwd:/vernemq/etc/vmq.passwd:rw
