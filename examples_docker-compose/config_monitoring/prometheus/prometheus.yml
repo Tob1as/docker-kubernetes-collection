@@ -184,3 +184,13 @@ scrape_configs:
 #    - targets: ['minio:9000']
 
   # -------------------------------------
+
+  # Chat/Voice-Server
+
+  # Teamspeak
+  - job_name: 'teamspeak-exporter'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['teamspeak-exporter:9189']
+
+  # -------------------------------------

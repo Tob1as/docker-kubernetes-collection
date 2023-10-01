@@ -55,6 +55,32 @@ services:
     #  - "traefik.tcp.routers.teamspeak-tcp-ft.rule=HostSNI(`*`)"
     #  - "traefik.tcp.routers.teamspeak-tcp-ft.entrypoints=ts-tcp-ft"
 
+  # https://github.com/hikhvar/ts3exporter
+  # Docker Image: https://github.com/ricardbejarano/ts3exporter
+  teamspeak-exporter:
+    image: ricardbejarano/ts3exporter:latest
+    #image: ghcr.io/hikhvar/ts3exporter:latest
+    #build:
+    #  context: https://github.com/hikhvar/ts3exporter.git#:/
+    #  dockerfile: Dockerfile
+    container_name: teamspeak-exporter
+    restart: unless-stopped
+    #ports:
+    #  - 127.0.0.1:9189:9189/tcp
+    #volumes:
+    #  - /config_teamspeak-exporter/serveradmin_password.txt:/etc/ts3exporter/password:ro
+    environment:
+      SERVERQUERY_PASSWORD: "passw0rd"
+    command:
+      - "-enablechannelmetrics=true"
+      #- "-ignorefloodlimits=false" # Use this only if your exporter is whitelisted in the query_ip_whitelist.txt file.
+      #- "-listen=:9189"
+      #- "-passwordfile=/etc/ts3exporter/password" # or use env SERVERQUERY_PASSWORD
+      - "-remote=teamspeak:10011"
+      - "-user=serveradmin"
+    depends_on:
+      - teamspeak
+
 networks:
   default:
     external: true
