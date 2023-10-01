@@ -81,6 +81,33 @@ services:
     depends_on:
       - teamspeak
 
+#  # https://github.com/TilmannF/teamspeak-prometheus
+#  teamspeak-exporter:
+#    image: ghcr.io/tilmannf/teamspeak-prometheus:latest
+#    build:
+#      context: https://github.com/TilmannF/teamspeak-prometheus.git#:/
+#      dockerfile: Dockerfile
+#    container_name: teamspeak-exporter
+#    restart: unless-stopped
+#    ports:
+#      - 127.0.0.1:9189:9189/tcp
+#    command:
+#      - "python"
+#      - "./app.py"
+#      - "--ts3host=teamspeak"
+#      - "--ts3port=10011"
+#      - "--ts3username=serveradmin"
+#      - "--ts3password=passw0rd"
+#      - "--metricsport=9189" # default: 8000
+#    healthcheck:
+#      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 9189 || exit 1"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 3
+#      #start_period: 5s
+#    depends_on:
+#      - teamspeak
+
 networks:
   default:
     external: true
