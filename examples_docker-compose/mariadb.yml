@@ -84,7 +84,8 @@ services:
        #PMA_USER: root
        #PMA_PASSWORD: passw0rd
        # more settings
-       PMA_ABSOLUTE_URI: https://phpmyadmin.example.com
+       PMA_ABSOLUTE_URI: https://phpmyadmin.example.com   # use this without subpath
+       #PMA_ABSOLUTE_URI: https://example.com/phpmyadmin/ # use this for subpath (important: slash in end of url)
        #MAX_EXECUTION_TIME: 600
        #MEMORY_LIMIT: 512M
        #UPLOAD_LIMIT: 2048K
@@ -108,20 +109,27 @@ services:
       - "traefik.http.services.phpmyadmin.loadbalancer.server.port=80"
       - "traefik.http.services.phpmyadmin.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
       # http
-      - "traefik.http.routers.phpmyadmin-http.rule=Host(`phpmyadmin.example.com`)"
+      - "traefik.http.routers.phpmyadmin-http.rule=Host(`phpmyadmin.example.com`)"                    # use this without subpath
+      #- "traefik.http.routers.phpmyadmin-http.rule=Host(`example.com`) && PathPrefix(`/phpmyadmin`)" # use this for subpath
       - "traefik.http.routers.phpmyadmin-http.entrypoints=web"
       - "traefik.http.routers.phpmyadmin-http.service=phpmyadmin"
       # https
       - "traefik.http.routers.phpmyadmin-https.tls=true"
-      - "traefik.http.routers.phpmyadmin-https.rule=Host(`phpmyadmin.example.com`)"
+      - "traefik.http.routers.phpmyadmin-https.rule=Host(`phpmyadmin.example.com`)"                    # use this without subpath
+      #- "traefik.http.routers.phpmyadmin-https.rule=Host(`example.com`) && PathPrefix(`/phpmyadmin`)" # use this for subpath
       - "traefik.http.routers.phpmyadmin-https.entrypoints=websecure"
       - "traefik.http.routers.phpmyadmin-https.service=phpmyadmin"
       # load middlewares for routes
-      - "traefik.http.routers.phpmyadmin-http.middlewares=phpmyadmin-https"
+      - "traefik.http.routers.phpmyadmin-http.middlewares=phpmyadmin-https"                         # use this without subpath
+      #- "traefik.http.routers.phpmyadmin-http.middlewares=phpmyadmin-https,phpmyadmin-stripprefix" # use this for subpath
+      #- "traefik.http.routers.phpmyadmin-https.middlewares=phpmyadmin-stripprefix"                 # use this for subpath
       # http to https redirect      
       - "traefik.http.middlewares.phpmyadmin-https.redirectscheme.scheme=https"
       #- "traefik.http.middlewares.phpmyadmin-https.redirectscheme.permanent=true"
       #- "traefik.http.middlewares.phpmyadmin-https.redirectscheme.port=443"
+      # stripprefix, use this for subpath
+      #- traefik.http.middlewares.phpmyadmin-stripprefix.stripprefix.prefixes=/phpmyadmin
+      #- traefik.http.middlewares.phpmyadmin-stripprefix.stripprefix.forceslash=false
 
 networks:
   default:
