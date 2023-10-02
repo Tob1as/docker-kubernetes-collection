@@ -28,6 +28,34 @@ services:
       retries: 3
       #start_period: 30s
 
+#  # https://github.com/dgl/ircd_exporter
+#  ircd-exporter:
+#    image: tobi312/tools:ircd-exporter
+#    build:
+#      context: https://raw.githubusercontent.com/Tob1as/docker-tools/main/ircd-exporter.Dockerfile
+#      dockerfile: ircd-exporter.Dockerfile
+#      #args:
+#      #  GOLANG_VERSION: 1.21
+#      #  BUILD_DATE: 2023-10-01
+#    container_name: ircd-exporter
+#    restart: unless-stopped
+#    #ports:
+#    #  - 127.0.0.1:9678:9678/tcp
+#    command:
+#      - "-irc.nick=promexp"
+#      #- "-irc.oper=admin"
+#      #- "-irc.oper-password="
+#      #- "-irc.password="
+#      - "-irc.server=ircd:6667"
+#      #- "-listen=:9678"
+#      - "-stats.command-usage"
+#      #- "-stats.ignore="
+#      - "-stats.local-only"
+#      #- "-stats.nicks="
+#      #- "-stats.timeout=9s"
+#    depends_on:
+#      - ircd
+
 networks:
   default:
     external: true

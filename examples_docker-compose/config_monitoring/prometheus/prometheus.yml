@@ -193,4 +193,9 @@ scrape_configs:
     static_configs:
       - targets: ['teamspeak-exporter:9189']
 
+  #- job_name: 'ircd-exporter'
+  #  scrape_interval: 15s
+  #  static_configs:
+  #    - targets: ['ircd-exporter:9678']
+
   # -------------------------------------
