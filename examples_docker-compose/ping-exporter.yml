@@ -39,14 +39,19 @@ services:
       #- "--options.disable-ipv6=false"
       #- "--options.disable-ipv4=false"
       # targets:
-      - "one.one.one.one"
+      - "one.one.one.one"  # domain for 1.1.1.1, 2606:4700:4700::1111 and more
       #- "1.1.1.1"
       #- "2606:4700:4700::1111"
-      - "google.de"
-      - "8.8.8.8"
-      - "2001:4860:4860::8888"
-      - "9.9.9.9"
-      - "2620:fe::fe"
+      - "google.com"       # google search
+      - "dns.google"       # google dns: domain for 8.8.8.8, 2001:4860:4860::8888 and more
+      #- "8.8.8.8"
+      #- "2001:4860:4860::8888"
+      - "dns.quad9.net"    # domain for 9.9.9.9, 2620:fe::fe and more
+      #- "9.9.9.9"
+      #- "2620:fe::fe"
+      #- "dns.digitale-gesellschaft.ch"
+      #- "anycast.uncensoreddns.org"
+      #- "dns3.digitalcourage.de"
     healthcheck:
       test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 9427 || exit 1"]
       interval: 30s
