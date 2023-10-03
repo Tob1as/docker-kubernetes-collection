@@ -39,8 +39,9 @@ services:
       #- "--options.disable-ipv6=false"
       #- "--options.disable-ipv4=false"
       # targets:
-      - "1.1.1.1"
-      - "2606:4700:4700::1111"
+      - "one.one.one.one"
+      #- "1.1.1.1"
+      #- "2606:4700:4700::1111"
       - "google.de"
       - "8.8.8.8"
       - "2001:4860:4860::8888"
