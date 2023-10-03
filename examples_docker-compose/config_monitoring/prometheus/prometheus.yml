@@ -88,6 +88,13 @@ scrape_configs:
 
   # System/Network
 
+  # docker daemon
+  # https://docs.docker.com/config/daemon/prometheus/
+  #- job_name: 'docker'
+  #  scrape_interval: 15s
+  #  static_configs:
+  #    - targets: ['docker-host-ip:9323']
+
   # ping_exporter
   - job_name: 'ping-exporter'
     scrape_interval: 15s
@@ -140,7 +147,7 @@ scrape_configs:
 
   # RabbitMQ
   # https://www.rabbitmq.com/prometheus.html
-  - job_name: 'rabbitmq-exporter'
+  - job_name: 'rabbitmq'
     scrape_interval: 15s
     static_configs:
       - targets: ['rabbitmq:15692'] 
