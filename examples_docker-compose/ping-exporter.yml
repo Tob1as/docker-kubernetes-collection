@@ -1,0 +1,59 @@
+# docker-compose -f ping-exporter.yml up -d
+version: '2.4'
+services:
+
+  # ping_exporter - Prometheus exporter for ICMP echo requests
+  # https://github.com/czerwonk/ping_exporter
+  # https://hub.docker.com/r/czerwonk/ping_exporter
+  # using: https://github.com/digineo/go-ping
+  # Supported architectures: arm32v6, arm32v7, arm64v8, amd64
+  ping-exporter:
+    image: czerwonk/ping_exporter:latest  # v1.1.0
+    container_name: ping-exporter
+    restart: unless-stopped
+    #volumes:
+    #  - ./config_ping-exporter/:/config/:ro
+    #  - ./ssl:/ssl:ro
+    #cap_add:
+    #  - CAP_NET_RAW
+    #ports:
+    #  - 127.0.0.1:9427:9427/tcp     # curl http://localhost:9427/metrics
+    command:
+      - "./ping_exporter"
+      #- "--help"
+      #- "--web.listen-address=:9427"
+      #- "--web.telemetry-path=/metrics"
+      #- "--web.tls.enabled=false"
+      #- "--web.tls.cert-file=/ssl/ssl.crt"
+      #- "--web.tls.key-file=/ssl/ssl.key"
+      #- "--web.tls.mutual-auth-enabled=false"
+      #- "--web.tls.ca-file=/ssl/ca.crt"
+      #- "--config.path=/config/config.yml"
+      #- "--log.level=info"
+      #- "--ping.interval=5s"
+      #- "--ping.timeout=4s"
+      #- "--ping.size=56"
+      #- "--ping.history-size=10"
+      #- "--dns.refresh=1m"
+      #- "--dns.nameserver=1.1.1.1:53"
+      #- "--options.disable-ipv6=false"
+      #- "--options.disable-ipv4=false"
+      # targets:
+      - "1.1.1.1"
+      - "2606:4700:4700::1111"
+      - "google.de"
+      - "8.8.8.8"
+      - "2001:4860:4860::8888"
+      - "9.9.9.9"
+      - "2620:fe::fe"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 9427 || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      #start_period: 5s
+
+networks:
+  default:
+    external: true
+    name: mynetwork
