@@ -7,6 +7,7 @@ services:
   # https://www.minecraft.net/
   # https://www.minecraft.net/en-us/download/server
   # https://hub.docker.com/r/itzg/minecraft-server + https://github.com/itzg/docker-minecraft-server
+  # https://docker-minecraft-server.readthedocs.io/en/latest/
   # Supported architectures: arm32v7, arm64v8, amd64
   minecraft:
     image: itzg/minecraft-server:latest
@@ -22,7 +23,7 @@ services:
       #- 127.0.0.1:25575:25575/tcp  # RCON
     mem_limit: 3g         # set a higher than MAX_MEMORY (Xmx)
     #mem_reservation: 512m
-    #cpus: 1.0
+    cpus: 2.0
     environment:
       TZ: Europe/Berlin
       EULA: "TRUE"
@@ -41,8 +42,8 @@ services:
       #OVERRIDE_OPS: "true"
       #ICON: "http://..../some/other/image.png"
       #OVERRIDE_ICON: "TRUE"
-      #ENABLE_RCON: "true"
-      #RCON_PASSWORD: "minecraft"
+      ENABLE_RCON: "true"
+      RCON_PASSWORD: "passw0rd"
       #RCON_PORT: "25575"   # TCP-Port
       ENABLE_QUERY: "true"
       #QUERY_PORT: "25565"  # UDP-Port
@@ -78,6 +79,42 @@ services:
       ENABLE_ROLLING_LOGS: "true"
       #PROXY: "proxy:3128"
       #ENABLE_AUTOPAUSE: "TRUE"
+  
+  # https://github.com/dirien/minecraft-prometheus-exporter
+  minecraft-exporter:
+    image: ghcr.io/dirien/minecraft-exporter:latest
+    container_name: minecraft-exporter
+    restart: unless-stopped
+    volumes:
+      #- ./config_minecraft-exporter/:/config/:ro
+      - ./data_minecraft:/data:ro
+    #ports:
+    #  - 127.0.0.1:9150:9150/tcp
+    #environment:
+    #  #WEB_TELEMETRY_PATH: "/metrics"
+    #  #WEB_LISTEN_ADDRESS: ":9150"
+    #  #WEB_DISABLED_EXPORTER_METRICS: ""
+    #  #MC_CONFIG_PATH: "/config/config.yml"
+    #  MC_WORLD: "/data/world"
+    #  MC_RCON_ADDRESS: "minecraft:25575"
+    #  MC_RCON_PASSWORD: "passw0rd"
+    #  MC_NAME_SOURCE: "mojang"
+    #  #MC_MOD_SERVER_STATS: ""
+    command:
+      #- "--web.telemetry-path=/metrics"
+      #- "--web.listen-address=:9150"
+      #- "--web.disable-exporter-metrics"
+      #- "--mc.config-path=/config/config.yml"
+      - "--mc.world=/data/world"
+      - "--mc.rcon-address=minecraft:25575"
+      - "--mc.rcon-password=passw0rd"
+      - "--mc.name-source=mojang"
+      #- "--mc.mod-server-stats="
+      #- "--log.level=info"
+      #- "--log.format=logfmt"
+    depends_on:
+      minecraft:
+        condition: service_healthy
 
 networks:
   default:
