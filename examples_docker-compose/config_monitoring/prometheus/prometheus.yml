@@ -24,12 +24,12 @@ alerting:
 scrape_configs:
   # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
 
+#  # EXAMPLE
 #  - job_name: 'example-exporter'
-#    # Override the global default and scrape targets from this job every 15 seconds.
 #    scrape_interval: 15s
 #    scrape_timeout: 10s
 #    static_configs:
-#         - targets: ['example:8080']
+#      - targets: ['example:8080']
 #    metrics_path: /metrics
 #    scheme: http # or https
 #    tls_config:
@@ -45,7 +45,7 @@ scrape_configs:
   - job_name: 'prometheus'
     scrape_interval: 15s
     static_configs:
-         - targets: ['localhost:9090']
+      - targets: ['localhost:9090']
 
   - job_name: 'cadvisor'
     scrape_interval: 15s
@@ -70,13 +70,15 @@ scrape_configs:
 
   # -------------------------------------
 
+  # Webserver / Proxy
+
+  # Traefik
   - job_name: 'traefik'
     scrape_interval: 15s
     static_configs:
       - targets: ['traefik:8082']
-
-  # -------------------------------------
       
+  # NGINX
   - job_name: 'nginx'
     scrape_interval: 15s
     static_configs:
@@ -197,5 +199,15 @@ scrape_configs:
   #  scrape_interval: 15s
   #  static_configs:
   #    - targets: ['ircd-exporter:9678']
+
+  # -------------------------------------
+
+  # Game-Server
+
+  # Minecraft (Java)
+  - job_name: 'minecraft-exporter'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['minecraft-exporter:9150']
 
   # -------------------------------------
