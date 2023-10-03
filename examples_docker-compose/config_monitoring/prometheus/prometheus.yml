@@ -88,6 +88,7 @@ scrape_configs:
 
   # System/Network
 
+  # ping_exporter
   - job_name: 'ping-exporter'
     scrape_interval: 15s
     static_configs:
