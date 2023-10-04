@@ -14,7 +14,8 @@ deleteDatasources:
 datasources:
 - name: Alertmanager
   type: alertmanager
-  url: http://localhost:9093
+  #url: http://localhost:9093
+  url: http://localhost:9093/alertmanager
   access: proxy
   orgId: 1
   jsonData:

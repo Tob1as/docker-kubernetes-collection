@@ -50,8 +50,8 @@ services:
       #- '--web.console.libraries=/usr/share/prometheus/console_libraries'
       #- '--web.console.templates=/usr/share/prometheus/consoles'
       #- '--web.listen-address=0.0.0.0:9090'
-      - '--web.external-url=https://prometheus.example.org'
-      #- '--web.route-prefix=/'
+      - '--web.external-url=https://monitoring.example.com/prometheus'
+      - '--web.route-prefix=/prometheus'
     ports:
       - 127.0.0.1:9090:9090/tcp
     labels:
@@ -60,12 +60,12 @@ services:
       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
       - "traefik.http.services.prometheus.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
       # http
-      - "traefik.http.routers.prometheus-http.rule=Host(`prometheus.example.org`)"
+      - "traefik.http.routers.prometheus-http.rule=Host(`monitoring.example.com`) && PathPrefix(`/prometheus`)"
       - "traefik.http.routers.prometheus-http.entrypoints=web"
       - "traefik.http.routers.prometheus-http.service=prometheus"
       # https
       - "traefik.http.routers.prometheus-https.tls=true"
-      - "traefik.http.routers.prometheus-https.rule=Host(`prometheus.example.org`)"
+      - "traefik.http.routers.prometheus-https.rule=Host(`monitoring.example.com`) && PathPrefix(`/prometheus`)"
       - "traefik.http.routers.prometheus-https.entrypoints=websecure"
       - "traefik.http.routers.prometheus-https.service=prometheus"
       # load middlewares for routers
@@ -75,8 +75,8 @@ services:
       - "traefik.http.middlewares.prometheus-https.redirectscheme.scheme=https"
       #- "traefik.http.middlewares.prometheus-https.redirectscheme.permanent=true"
       #- "traefik.http.middlewares.prometheus-https.redirectscheme.port=443"
-      # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn prom passw0rd)
-      - "traefik.http.middlewares.prometheus-auth.basicauth.users=prom:$$apr1$$GCTy.Ynl$$BlJK/eqDMHz.WQtlZ.uxX/"
+      # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn admin passw0rd)
+      - "traefik.http.middlewares.prometheus-auth.basicauth.users=admin:$$apr1$$GCTy.Ynl$$BlJK/eqDMHz.WQtlZ.uxX/"
   
   # https://github.com/prometheus/alertmanager
   alertmanager:
@@ -90,8 +90,8 @@ services:
       - '--config.file=/etc/alertmanager/config.yml'
       - '--storage.path=/alertmanager'
       #- '--cluster.advertise-address=0.0.0.0:9093'
-      - '--web.external-url=https://alertmanager.example.org'
-      #- '--web.route-prefix=/'
+      - '--web.external-url=https://monitoring.example.com/alertmanager'
+      - '--web.route-prefix=/alertmanager'
     ports:
       - 127.0.0.1:9093:9093/tcp
     healthcheck:
@@ -106,12 +106,12 @@ services:
       - "traefik.http.services.alertmanager.loadbalancer.server.port=9093"
       - "traefik.http.services.alertmanager.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
       # http
-      - "traefik.http.routers.alertmanager-http.rule=Host(`alertmanager.example.org`)"
+      - "traefik.http.routers.alertmanager-http.rule=Host(`monitoring.example.com`) && PathPrefix(`/alertmanager`)"
       - "traefik.http.routers.alertmanager-http.entrypoints=web"
       - "traefik.http.routers.alertmanager-http.service=alertmanager"
       # https
       - "traefik.http.routers.alertmanager-https.tls=true"
-      - "traefik.http.routers.alertmanager-https.rule=Host(`alertmanager.example.org`)"
+      - "traefik.http.routers.alertmanager-https.rule=Host(`monitoring.example.com`) && PathPrefix(`/alertmanager`)"
       - "traefik.http.routers.alertmanager-https.entrypoints=websecure"
       - "traefik.http.routers.alertmanager-https.service=alertmanager"
       # load middlewares for routers
@@ -121,8 +121,8 @@ services:
       - "traefik.http.middlewares.alertmanager-https.redirectscheme.scheme=https"
       #- "traefik.http.middlewares.alertmanager-https.redirectscheme.permanent=true"
       #- "traefik.http.middlewares.alertmanager-https.redirectscheme.port=443"
-      # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn prom passw0rd)
-      - "traefik.http.middlewares.alertmanager-auth.basicauth.users=prom:$$apr1$$GCTy.Ynl$$BlJK/eqDMHz.WQtlZ.uxX/"
+      # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn admin passw0rd)
+      - "traefik.http.middlewares.alertmanager-auth.basicauth.users=admin:$$apr1$$GCTy.Ynl$$BlJK/eqDMHz.WQtlZ.uxX/"
       
   # https://github.com/grafana/grafana
   grafana:
@@ -145,7 +145,7 @@ services:
       #- GF_SECURITY_ADMIN_EMAIL=admin@localhost # default: admin@localhost
       #- GF_USERS_ALLOW_SIGN_UP=false
       #- GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,jdbranham-diagram-panel,fzakaria-simple-annotations-datasource
-      - GF_SERVER_DOMAIN=grafana.example.org
+      - GF_SERVER_DOMAIN=monitoring.example.com
       - GF_SERVER_ROOT_URL=http://%(domain)s/grafana/   # %(protocol)s://%(domain)s:%(http_port)s/grafana/
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
       # Grafana internal Metrics <https://grafana.com/docs/grafana/latest/setup-grafana/set-up-grafana-monitoring/#view-grafana-internal-metrics>
@@ -167,12 +167,12 @@ services:
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"
       - "traefik.http.services.grafana.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
       # http
-      - "traefik.http.routers.grafana-http.rule=Host(`grafana.example.org`) && (PathPrefix(`/grafana`) || PathPrefix(`/connections`))"
+      - "traefik.http.routers.grafana-http.rule=Host(`monitoring.example.com`) && PathPrefix(`/grafana`)"
       - "traefik.http.routers.grafana-http.entrypoints=web"
       - "traefik.http.routers.grafana-http.service=grafana"
       # https
       - "traefik.http.routers.grafana-https.tls=true"
-      - "traefik.http.routers.grafana-https.rule=Host(`grafana.example.org`) && (PathPrefix(`/grafana`) || PathPrefix(`/connections`))"
+      - "traefik.http.routers.grafana-https.rule=Host(`monitoring.example.com`) && PathPrefix(`/grafana`)"
       - "traefik.http.routers.grafana-https.entrypoints=websecure"
       - "traefik.http.routers.grafana-https.service=grafana"
       # load middlewares for routers
@@ -194,14 +194,14 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
-    devices:
-      - /dev/kmsg
+    #devices:
+    #  - /dev/kmsg
     #privileged: true
-    #environment:
-    #  - CADVISOR_HEALTHCHECK_URL=http://localhost:8080/healthz
-    #command:
+    environment:
+      - CADVISOR_HEALTHCHECK_URL=http://localhost:8080/cadvisor/healthz
+    command:
     #  - '-port=8080'
-    #  - '-url_base_prefix=/'
+      - '-url_base_prefix=/cadvisor'
     #ports:
     #  - 127.0.0.1:8088:8080/tcp
     labels:
@@ -210,12 +210,12 @@ services:
       - "traefik.http.services.cadvisor.loadbalancer.server.port=8080"
       - "traefik.http.services.cadvisor.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
       # http
-      - "traefik.http.routers.cadvisor-http.rule=Host(`cadvisor.example.org`)"
+      - "traefik.http.routers.cadvisor-http.rule=Host(`cadvisor.example.org`) && PathPrefix(`/cadvisor`)"
       - "traefik.http.routers.cadvisor-http.entrypoints=web"
       - "traefik.http.routers.cadvisor-http.service=cadvisor"
       # https
       - "traefik.http.routers.cadvisor-https.tls=true"
-      - "traefik.http.routers.cadvisor-https.rule=Host(`cadvisor.example.org`)"
+      - "traefik.http.routers.cadvisor-https.rule=Host(`cadvisor.example.org`) && PathPrefix(`/cadvisor`)"
       - "traefik.http.routers.cadvisor-https.entrypoints=websecure"
       - "traefik.http.routers.cadvisor-https.service=cadvisor"
       # load middlewares for routers
@@ -225,8 +225,8 @@ services:
       - "traefik.http.middlewares.cadvisor-https.redirectscheme.scheme=https"
       #- "traefik.http.middlewares.cadvisor-https.redirectscheme.permanent=true"
       #- "traefik.http.middlewares.cadvisor-https.redirectscheme.port=443"
-      # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn prom passw0rd)
-      - "traefik.http.middlewares.cadvisor-auth.basicauth.users=prom:$$apr1$$GCTy.Ynl$$BlJK/eqDMHz.WQtlZ.uxX/"
+      # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn admin passw0rd)
+      - "traefik.http.middlewares.cadvisor-auth.basicauth.users=admin:$$apr1$$GCTy.Ynl$$BlJK/eqDMHz.WQtlZ.uxX/"
 
   # optional: LOKI for Logs: https://grafana.com/docs/loki/latest/send-data/docker-driver/
 
