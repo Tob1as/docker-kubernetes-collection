@@ -18,7 +18,7 @@ services:
       - "8080:8080/tcp"
     environment:
       #- "DOZZLE_ADDR=:8080"
-      #- "DOZZLE_BASE=/logging"
+      #- "DOZZLE_BASE=/logs"
       - "DOZZLE_BASE=/"
       #- "DOZZLE_HOSTNAME="
       #- "DOZZLE_LEVEL=info"
@@ -38,11 +38,13 @@ services:
       - "traefik.http.services.dozzle.loadbalancer.server.port=8080"
       - "traefik.http.services.dozzle.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
       # http
+      #- "traefik.http.routers.dozzle-http.rule=Host(`monitoring.example.com`) && PathPrefix(`/logs`)"
       - "traefik.http.routers.dozzle-http.rule=Host(`logs.example.com`)"
       - "traefik.http.routers.dozzle-http.entrypoints=web"
       - "traefik.http.routers.dozzle-http.service=dozzle"
       # https
       - "traefik.http.routers.dozzle-https.tls=true"
+      #- "traefik.http.routers.dozzle-https.rule=Host(`monitoring.example.com`) && PathPrefix(`/logs`)"
       - "traefik.http.routers.dozzle-https.rule=Host(`logs.example.com`)"
       - "traefik.http.routers.dozzle-https.entrypoints=websecure"
       - "traefik.http.routers.dozzle-https.service=dozzle"
