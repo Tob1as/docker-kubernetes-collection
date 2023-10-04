@@ -1,0 +1,53 @@
+# docker-compose -f postgres-timescaledb.yml up -d
+version: '2.4'
+services:
+
+  # TimescaleDB - PostgreSQL++ for time series and events
+  # https://www.timescale.com/
+  # https://hub.docker.com/r/timescale/timescaledb-ha + https://github.com/timescale/timescaledb-docker-ha
+  # https://docs.timescale.com/self-hosted/latest/install/installation-docker/
+  # fix permission <https://github.com/timescale/timescaledb-docker-ha/issues/359#issuecomment-1492020533> : 
+  # mkdir ./data_postgres-timescaledb && chmod 777 ./data_postgres-timescaledb && chown 1000 ./data_postgres-timescaledb
+  postgres-timescaledb:
+    image: timescale/timescaledb-ha:pg15-latest # timescale/timescaledb-ha:pg15-ts2.12
+    container_name: postgres-timescaledb
+    restart: unless-stopped
+    volumes:
+      #- ./config_postgres/10_user.sh:/docker-entrypoint-initdb.d/10_user.sh:ro
+      #- ./config_postgres/20_exporter-user.sh:/docker-entrypoint-initdb.d/20_exporter-user.sh:ro
+      - ./data_postgres-timescaledb:/home/postgres/pgdata/data:rw
+    environment:
+       TZ: Europe/Berlin
+       POSTGRES_PASSWORD: passw0rd
+       #PGDATA: /home/postgres/pgdata/data
+    ports:
+      - 127.0.0.1:5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      
+  # https://github.com/prometheus-community/postgres_exporter 
+  postgres-timescaledb-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:latest
+    container_name: postgres-timescaledb-exporter
+    restart: unless-stopped
+    environment:
+       DATA_SOURCE_NAME: 'postgresql://postgres:passw0rd@postgres-timescaledb:5432/postgres?sslmode=disable'
+       #DATA_SOURCE_NAME: 'postgresql://postgres_exporter:Exp0rt3r!@postgres-timescaledb:5432/postgres?sslmode=disable'
+       #PG_EXPORTER_METRIC_PREFIX: 'pg'
+       #PG_EXPORTER_WEB_LISTEN_ADDRESS: ':9187'
+       #PG_EXPORTER_WEB_TELEMETRY_PATH: '/metrics'
+    #ports:
+    #  - 127.0.0.1:9187:9187/tcp
+    #command: ["--web.listen-address", ":9187", "--web.telemetry-path", "/metrics"]
+    depends_on:
+      - postgres-timescaledb
+
+  # As UI pgAdmin or Adminer can be used.
+
+networks:
+  default:
+    external: true
+    name: mynetwork

@@ -20,6 +20,7 @@ services:
     #image: postgis/postgis:15-3.4-alpine                    # Supported architectures: amd64
     #image: tobi312/rpi-postgresql-postgis:15-3.3-alpine-*   # Supported architectures: arm32v7, arm64v8
     container_name: postgres
+    restart: unless-stopped
     volumes:
       #- ./config_postgres/10_user.sh:/docker-entrypoint-initdb.d/10_user.sh:ro
       #- ./config_postgres/20_exporter-user.sh:/docker-entrypoint-initdb.d/20_exporter-user.sh:ro
@@ -29,13 +30,12 @@ services:
        POSTGRES_PASSWORD: passw0rd
        #POSTGRES_DB: postgres
        #POSTGRES_USER: postgres
-       #PGDATA: /var/lib/postgresql/data/pgdata
-    restart: unless-stopped
+       #PGDATA: /var/lib/postgresql/data
     ports:
       - 127.0.0.1:5432:5432/tcp
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 60s
+      interval: 30s
       timeout: 5s
       retries: 5
 
