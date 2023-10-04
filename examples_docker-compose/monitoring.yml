@@ -190,7 +190,7 @@ services:
     restart: unless-stopped
     volumes:
       - /:/rootfs:ro
-      - /var/run:/var/run:ro  # rw
+      - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
@@ -210,12 +210,12 @@ services:
       - "traefik.http.services.cadvisor.loadbalancer.server.port=8080"
       - "traefik.http.services.cadvisor.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
       # http
-      - "traefik.http.routers.cadvisor-http.rule=Host(`cadvisor.example.org`) && PathPrefix(`/cadvisor`)"
+      - "traefik.http.routers.cadvisor-http.rule=Host(`monitoring.example.com`) && PathPrefix(`/cadvisor`)"
       - "traefik.http.routers.cadvisor-http.entrypoints=web"
       - "traefik.http.routers.cadvisor-http.service=cadvisor"
       # https
       - "traefik.http.routers.cadvisor-https.tls=true"
-      - "traefik.http.routers.cadvisor-https.rule=Host(`cadvisor.example.org`) && PathPrefix(`/cadvisor`)"
+      - "traefik.http.routers.cadvisor-https.rule=Host(`monitoring.example.com`) && PathPrefix(`/cadvisor`)"
       - "traefik.http.routers.cadvisor-https.entrypoints=websecure"
       - "traefik.http.routers.cadvisor-https.service=cadvisor"
       # load middlewares for routers
