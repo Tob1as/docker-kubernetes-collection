@@ -7,23 +7,26 @@ services:
   # https://github.com/ergochat/ergo
   # https://github.com/ergochat/ergo/blob/master/docs/MANUAL.md
   # https://github.com/ergochat/ergo/blob/master/distrib/docker/README.md
+  # https://github.com/ergochat/ergo/blob/stable/docs/MANUAL.md#environment-variables
   # Supported architectures: amd64, arm64, ...
   # Oper Credentials see in logs after first start: docker logs ergo 2>&1 | grep 'Oper username:password'
   # After first start change settings in config in ./data_ircd/ircd.yaml and "/rehash" in chat or restart container or "docker kill -s SIGHUP ergo".
-  ircd:
+  ergo:
     image: ghcr.io/ergochat/ergo:stable  # v2.11.1
-    container_name: ircd
+    container_name: ergo
     restart: unless-stopped
+    #environment:
+    #  # see link above
     ports:
       - 6667:6667/tcp
       - 6697:6697/tcp  # TLS
       #- 8067:8067/tcp  # Websocket
       #- 8097:8097/tcp  # Websocket TLS
     volumes:
-      - ./data_ircd:/ircd:rw
+      - ./data_ergo:/ircd:rw
     healthcheck:
       test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 6697 || exit 1"]
-      interval: 120s
+      interval: 60s
       timeout: 5s
       retries: 3
       #start_period: 30s
@@ -46,7 +49,7 @@ services:
 #      #- "-irc.oper=admin"
 #      #- "-irc.oper-password="
 #      #- "-irc.password="
-#      - "-irc.server=ircd:6667"
+#      - "-irc.server=ergo:6667"
 #      #- "-listen=:9678"
 #      - "-stats.command-usage"
 #      #- "-stats.ignore="
@@ -54,7 +57,25 @@ services:
 #      #- "-stats.nicks="
 #      #- "-stats.timeout=9s"
 #    depends_on:
-#      - ircd
+#      - ergo
+
+#  # KiwiIRC - IRC web client
+#  # https://kiwiirc.com/
+#  # https://github.com/kiwiirc/kiwiirc
+#  # Docker: https://github.com/Tob1as/docker-tools/
+#  kiwiirc:
+#    image: docker.io/tobi312/tools:kiwiirc
+#    container_name: kiwiirc
+#    restart: unless-stopped
+#    ports:
+#      - 8080:8080/tcp
+#      - 8443:8443/tcp
+#    volumes:
+#      - ./data_kiwiirc:/kiwiirc/data:rw
+#      #- ./data_ergo/fullchain.pem:/kiwiirc/server.crt:ro
+#      #- ./data_ergo/privkey.pem:/kiwiirc/server.key:ro
+
+#  or use "qwebirc" as web client: https://github.com/Tob1as/docker-qwebirc
 
 networks:
   default:
