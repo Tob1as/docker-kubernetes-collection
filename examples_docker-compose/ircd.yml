@@ -31,6 +31,11 @@ services:
       retries: 3
       #start_period: 30s
 
+#  alternatively you can use the following as IRCd:
+#  * ngIRCd <https://github.com/linuxserver/docker-ngircd> 
+#  * InspIRCd <https://github.com/inspircd/inspircd-docker>
+#  with: https://github.com/anope/anope-docker for IRC Services
+
 #  # https://github.com/dgl/ircd_exporter
 #  ircd-exporter:
 #    image: tobi312/tools:ircd-exporter
@@ -75,7 +80,9 @@ services:
 #      #- ./data_ergo/fullchain.pem:/kiwiirc/server.crt:ro
 #      #- ./data_ergo/privkey.pem:/kiwiirc/server.key:ro
 
-#  or use "qwebirc" as web client: https://github.com/Tob1as/docker-qwebirc
+#  alternatively you can use the following as IRC Web Clients:
+#  * qwebirc: https://github.com/Tob1as/docker-qwebirc
+#  * thelounge: https://github.com/thelounge/thelounge-docker
 
 networks:
   default:
