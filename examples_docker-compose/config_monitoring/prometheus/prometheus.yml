@@ -73,6 +73,20 @@ scrape_configs:
 
   # -------------------------------------
 
+  # other Monitoring Tools
+
+  # Uptime-Kuma
+  - job_name: 'uptime-kuma'
+    scrape_interval: 30s
+    scheme: http
+    static_configs:
+      - targets: ['uptime-kuma:3001']
+    basic_auth:
+      username: ''  # not needed
+      password: '<api key>'
+
+  # -------------------------------------
+
   # Webserver / Proxy
 
   # Traefik
