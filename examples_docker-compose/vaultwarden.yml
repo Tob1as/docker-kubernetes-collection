@@ -89,8 +89,8 @@ services:
     restart: unless-stopped
     volumes:
       - ./data_vaultwarden:/data:ro
-    ports:
-      - 127.0.0.1:3040:3040/tcp
+    #ports:
+    #  - 127.0.0.1:3040:3040/tcp
     #environment:
     #  - 'DATABASE_URL=sqlite:///data/db.sqlite3?mode=ro'
     #  - 'PORT=3040'
