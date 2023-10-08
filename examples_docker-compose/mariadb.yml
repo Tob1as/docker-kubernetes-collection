@@ -58,6 +58,10 @@ services:
       - "--mysqld.address=mariadb:3306"
       #- "--web.listen-address=:9104"
       #- "--web.telemetry-path=/metrics"
+      #- "--log.level=info"
+      #- "--tls.insecure-skip-verify=false"
+      #- "--web.config.file=web-config.yml"
+      #- "--config.my-cnf=~/.my.cnf"
     depends_on:
       - mariadb
 
