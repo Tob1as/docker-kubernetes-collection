@@ -18,6 +18,7 @@ services:
     #ports:
     #  - "8080:80/tcp"
     environment:
+      - 'TZ=Europe/Berlin'
       - 'DOMAIN=https://vaultwarden.example.com' # https://github.com/dani-garcia/vaultwarden/wiki/Using-an-alternate-base-dir
       #- 'ROCKET_TLS={certs="/ssl/ssl.crt",key="/ssl/ssl.key"}' # pem format
       #- 'SIGNUPS_ALLOWED=false'
@@ -103,6 +104,8 @@ services:
       #- '--port=3040'
       #- '--host=127.0.0.1'
       #- '--update-seconds=60'
+    depends_on:
+      - vaultwarden
 
 networks:
   default:
