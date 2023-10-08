@@ -1,0 +1,61 @@
+# docker-compose -f uptime-kuma.yml up -d
+version: '2.4'
+services:
+
+  # Uptime Kuma - a monitoring tool 
+  # https://uptime.kuma.pet/
+  # https://github.com/louislam/uptime-kuma
+  # https://hub.docker.com/r/louislam/uptime-kuma
+  # Docs: https://github.com/louislam/uptime-kuma/wiki
+  # Supported architectures: arm32v7, arm64v8, amd64
+  # URL: http://localhost:3001/
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./data_uptime-kuma:/app/data:rw
+      #- ./ssl:/ssl:ro
+    #ports:
+    #  - "3001:3001/tcp"
+    #environment:
+    #  #- "DATA_DIR=./data/"
+    #  #- "UPTIME_KUMA_HOST=::"
+    #  #- "UPTIME_KUMA_PORT=3001"
+    #  - "UPTIME_KUMA_SSL_CERT=/ssl/ssl.crt"
+    #  - "UPTIME_KUMA_SSL_KEY=/ssl/ssl.key"
+    #  #- "UPTIME_KUMA_SSL_KEY_PASSPHRASE="
+    #  #- "UPTIME_KUMA_CLOUDFLARED_TOKEN="
+    #  #- "UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN=false"
+    #  #- "UPTIME_KUMA_ALLOW_ALL_CHROME_EXEC=0"
+    #  - "NODE_EXTRA_CA_CERTS=/ssl/ca.crt"
+    #  #- "NODE_TLS_REJECT_UNAUTHORIZED=0"
+    #  #- "NODE_OPTIONS="
+    #  #- "PUID=1000"
+    #  #- "PGID=1000"
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.uptime-kuma.loadbalancer.server.port=3001"
+      - "traefik.http.services.uptime-kuma.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.uptime-kuma-http.rule=Host(`uptime-kuma.example.com`)"
+      - "traefik.http.routers.uptime-kuma-http.entrypoints=web"
+      - "traefik.http.routers.uptime-kuma-http.service=uptime-kuma"
+      # https
+      - "traefik.http.routers.uptime-kuma-https.tls=true"
+      - "traefik.http.routers.uptime-kuma-https.rule=Host(`uptime-kuma.example.com`)"
+      - "traefik.http.routers.uptime-kuma-https.entrypoints=websecure"
+      - "traefik.http.routers.uptime-kuma-https.service=uptime-kuma"
+      # load middlewares for routers
+      - "traefik.http.routers.uptime-kuma-http.middlewares=uptime-kuma-https"
+      # http to https redirect
+      - "traefik.http.middlewares.uptime-kuma-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.uptime-kuma-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.uptime-kuma-https.redirectscheme.port=443"
+
+networks:
+  default:
+    external: true
+    name: mynetwork
