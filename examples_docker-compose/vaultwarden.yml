@@ -1,0 +1,110 @@
+# docker-compose -f vaultwarden.yml up -d
+version: '2.4'
+services:
+
+  # vaultwarden - Password Manager, unofficial Bitwarden compatible server written in Rust
+  # https://github.com/dani-garcia/vaultwarden
+  # https://hub.docker.com/r/vaultwarden/server
+  # Docs: https://github.com/dani-garcia/vaultwarden/wiki
+  # Supported architectures: arm32v6, arm32v7, arm64v8, amd64
+  # URL: http://localhost:8080/
+  vaultwarden:
+    image: vaultwarden/server:latest  # ghcr.io/dani-garcia/vaultwarden:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    volumes:
+      - ./data_vaultwarden:/data:rw
+      #- ./ssl:/ssl:ro
+    #ports:
+    #  - "8080:80/tcp"
+    environment:
+      - 'DOMAIN=https://vaultwarden.example.com' # https://github.com/dani-garcia/vaultwarden/wiki/Using-an-alternate-base-dir
+      #- 'ROCKET_TLS={certs="/ssl/ssl.crt",key="/ssl/ssl.key"}' # pem format
+      #- 'SIGNUPS_ALLOWED=false'
+      #- 'SIGNUPS_DOMAINS_WHITELIST=example.com'
+      #- 'INVITATIONS_ALLOWED=false'
+      #- 'ADMIN_TOKEN='  # openssl rand -base64 48
+      #- 'DISABLE_ADMIN_TOKEN=false'
+      #- 'PUSH_ENABLED=true' # Id & Key https://bitwarden.com/host/ (only us)
+      #- 'PUSH_INSTALLATION_ID='
+      #- 'PUSH_INSTALLATION_KEY='
+      #- 'YUBICO_SERVER='  # optional, default: YubiCloud servers https://upgrade.yubico.com/getapikey/
+      #- 'YUBICO_CLIENT_ID=12345'
+      #- 'YUBICO_SECRET_KEY=ABCDEABCDEABCDEABCDE='
+      #- 'DATA_FOLDER=/data'
+      #- 'DATABASE_URL=$DATA_FOLDER/db.sqlite3'
+      #- 'ATTACHMENTS_FOLDER=$DATA_FOLDER/attachments'
+      #- 'ICON_CACHE_FOLDER=$DATA_FOLDER/icon_cache'
+      #- 'TEMPLATES_FOLDER=$DATA_FOLDER/templates'
+      #- 'ROCKET_LIMITS={json=10485760}'  # 10MB API request size limit
+      #- 'ROCKET_WORKERS=10'  # 2 * <number of cpu cores>
+      #- 'SMTP_HOST=<smtp.domain.tld>'
+      #- 'SMTP_FROM=<vaultwarden@domain.tld>'
+      #- 'SMTP_PORT=587'
+      #- 'SMTP_SECURITY=starttls'  # starttls, force_tls and off
+      #- 'SMTP_USERNAME=<username>'
+      #- 'SMTP_PASSWORD=<password>'
+      #- 'SHOW_PASSWORD_HINT=true'
+      #- 'WEB_VAULT_ENABLED=true'
+      #- 'WEB_VAULT_FOLDER=web-vault/'
+      #- 'LOG_FILE=/data/vaultwarden.log' # stdout by default
+      #- 'USE_SYSLOG=false'
+      #- 'EXTENDED_LOGGING=false'
+      #- 'LOG_LEVEL=info' # "trace", "debug", "info", "warn", "error" or "off"
+      #- 'RUST_BACKTRACE=1'
+      #- 'ENABLE_DB_WAL=true'
+      #- 'DATABASE_URL=mysql://vaultwarden:passw0rd@mariadb:3306/vaultwarden'       # default: sqlite3
+      #- 'DATABASE_URL=postgresql://vaultwarden:passw0rd@postgres:5432/vaultwarden' # default: sqlite3
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.vaultwarden.loadbalancer.server.port=80"
+      - "traefik.http.services.vaultwarden.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.vaultwarden-http.rule=Host(`vaultwarden.example.com`)"
+      - "traefik.http.routers.vaultwarden-http.entrypoints=web"
+      - "traefik.http.routers.vaultwarden-http.service=vaultwarden"
+      # https
+      - "traefik.http.routers.vaultwarden-https.tls=true"
+      - "traefik.http.routers.vaultwarden-https.rule=Host(`vaultwarden.example.com`)"
+      - "traefik.http.routers.vaultwarden-https.entrypoints=websecure"
+      - "traefik.http.routers.vaultwarden-https.service=vaultwarden"
+      # load middlewares for routers
+      - "traefik.http.routers.vaultwarden-http.middlewares=vaultwarden-https"
+      # http to https redirect
+      - "traefik.http.middlewares.vaultwarden-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.vaultwarden-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.vaultwarden-https.redirectscheme.port=443"
+      
+  # Alternatively use offical Bitwarden:
+  # * https://bitwarden.com + https://github.com/bitwarden/server
+  # * Online Install: https://bitwarden.com/help/install-on-premise-linux/
+  # * Offline Install: https://bitwarden.com/help/install-and-deploy-offline/
+  # * Single Container (Beta): https://bitwarden.com/help/install-and-deploy-unified-beta/
+
+  # https://github.com/Tricked-dev/vwmetrics
+  vaultwarden-exporter:
+    image: ghcr.io/tricked-dev/vwmetrics:latest
+    container_name: vaultwarden-exporter
+    restart: unless-stopped
+    volumes:
+      - ./data_vaultwarden:/data:ro
+    ports:
+      - 127.0.0.1:3040:3040/tcp
+    #environment:
+    #  - 'DATABASE_URL=sqlite:///data/db.sqlite3?mode=ro'
+    #  - 'PORT=3040'
+    #  - 'HOST=127.0.0.1'
+    #  - 'UPDATE_SECONDS=60'      
+    command:
+      - '/usr/local/bin/vwmetrics'
+      #- '--help'
+      - '--database-url=sqlite:///data/db.sqlite3?mode=ro'
+      #- '--port=3040'
+      #- '--host=127.0.0.1'
+      #- '--update-seconds=60'
+
+networks:
+  default:
+    external: true
+    name: mynetwork
