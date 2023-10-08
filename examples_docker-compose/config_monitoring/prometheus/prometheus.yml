@@ -196,10 +196,10 @@ scrape_configs:
 
   # Storages
 
-  # MinIO 
-  # https://min.io/docs/minio/container/operations/monitoring/collect-minio-metrics-using-prometheus.html#
-  # docker exec -it minio mc alias list
-  # docker exec -it minio mc admin prometheus generate <alias> cluster|bucket|node
+#  # MinIO 
+#  # https://min.io/docs/minio/container/operations/monitoring/collect-minio-metrics-using-prometheus.html#
+#  # docker exec -it minio mc alias list
+#  # docker exec -it minio mc admin prometheus generate <alias> cluster|bucket|node
 #  - job_name: minio-job
 #    bearer_token: TOKEN
 #    metrics_path: /minio/v2/metrics/cluster
@@ -229,6 +229,7 @@ scrape_configs:
     static_configs:
       - targets: ['teamspeak-exporter:9189']
 
+  # IRCd
   #- job_name: 'ircd-exporter'
   #  scrape_interval: 15s
   #  static_configs:
@@ -243,5 +244,15 @@ scrape_configs:
     scrape_interval: 15s
     static_configs:
       - targets: ['minecraft-exporter:9150']
+
+  # -------------------------------------
+
+  # other Tools
+  
+  ## vaultwarden
+  #- job_name: 'vaultwarden-exporter'
+  #  scrape_interval: 60s
+  #  static_configs:
+  #    - targets: ['vaultwarden-exporter:3040']
 
   # -------------------------------------
