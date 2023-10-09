@@ -17,8 +17,10 @@ services:
       - owncloud-mariadb
       - owncloud-redis
     environment:
+      # https://github.com/owncloud-docker/base/blob/master/ENVIRONMENT.md
       - OWNCLOUD_DOMAIN=owncloud.example.com
       - OWNCLOUD_TRUSTED_DOMAINS=owncloud.example.com
+      #- OWNCLOUD_SUB_URL=/
       - OWNCLOUD_DB_TYPE=mysql
       - OWNCLOUD_DB_NAME=owncloud
       - OWNCLOUD_DB_USERNAME=owncloud
