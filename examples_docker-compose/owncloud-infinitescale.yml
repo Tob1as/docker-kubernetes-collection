@@ -1,0 +1,75 @@
+# docker-compose -f owncloud-infinitescale.yml up -d
+version: '2.4'
+services:
+
+  # OwnCloud Infinite Scale (OCIS) - Filesharing
+  # https://owncloud.com/
+  # https://github.com/owncloud/ocis
+  # https://hub.docker.com/r/owncloud/ocis
+  # https://doc.owncloud.com/ocis/next/deployment/container/container-setup.html
+  # fix permission: mkdir -p ./data_owncloud-infinitescale/{config,data} && chmod 777 ./data_owncloud-infinitescale/{config,data}
+  owncloud-infinitescale:
+    image: owncloud/ocis:latest
+    container_name: owncloud-infinitescale
+    restart: unless-stopped
+    #ports:
+    #  - 9200:9200
+    entrypoint:
+      - /bin/sh
+    # run ocis init to initialize a configuration file with random secrets
+    # it will fail on subsequent runs, because the config file already exists
+    # therefore we ignore the error and then start the ocis server
+    command: ["-c", "ocis init || true; ocis server"]
+    environment:
+      OCIS_URL: https://owncloud.example.com
+      OCIS_LOG_LEVEL: info
+      OCIS_LOG_COLOR: "false"
+      #PROXY_HTTP_ADDR: "0.0.0.0:9200"
+      #PROXY_HTTP_ROOT: "/"
+      PROXY_TLS: "false" # do not use SSL between Traefik and oCIS
+      # INSECURE: needed if oCIS / Traefik is using self generated certificates
+      OCIS_INSECURE: "false"
+      # basic auth (not recommended, but needed for eg. WebDav clients that do not support OpenID Connect)
+      PROXY_ENABLE_BASIC_AUTH: "false"
+      # admin user password
+      IDM_ADMIN_PASSWORD: "passw0rd" # this overrides the admin password from the configuration file
+      # demo users
+      IDM_CREATE_DEMO_USERS: "false"
+      # email server <https://doc.owncloud.com/ocis/next/deployment/services/s-list/notifications.html>
+      #NOTIFICATIONS_SMTP_HOST: mail.example.com
+      #NOTIFICATIONS_SMTP_PORT: 587
+      #NOTIFICATIONS_SMTP_SENDER: oCIS notifications <owncloud@example.com>
+      #NOTIFICATIONS_SMTP_USERNAME: owncloud@example.com
+      #NOTIFICATIONS_SMTP_PASSWORD: passw0rd
+      #NOTIFICATIONS_SMTP_INSECURE: "false" # set true if uses self signed certificates
+      #NOTIFICATIONS_SMTP_AUTHENTICATION: auto
+      #NOTIFICATIONS_SMTP_ENCRYPTION: starttls
+    volumes:
+      - ./data_owncloud-infinitescale/config:/etc/ocis:rw
+      - ./data_owncloud-infinitescale/data:/var/lib/ocis:rw
+      #- /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.owncloud-infinitescale.loadbalancer.server.port=9200"
+      - "traefik.http.services.owncloud-infinitescale.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.owncloud-infinitescale-http.rule=Host(`owncloud.example.com`)"
+      - "traefik.http.routers.owncloud-infinitescale-http.entrypoints=web"
+      - "traefik.http.routers.owncloud-infinitescale-http.service=owncloud-infinitescale"
+      # https
+      - "traefik.http.routers.owncloud-infinitescale-https.tls=true"
+      - "traefik.http.routers.owncloud-infinitescale-https.rule=Host(`owncloud.example.com`)"
+      - "traefik.http.routers.owncloud-infinitescale-https.entrypoints=websecure"
+      - "traefik.http.routers.owncloud-infinitescale-https.service=owncloud-infinitescale"
+      # load middlewares for routers
+      - "traefik.http.routers.owncloud-infinitescale-http.middlewares=owncloud-infinitescale-https"
+      # http to https redirect
+      - "traefik.http.middlewares.owncloud-infinitescale-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.owncloud-infinitescale-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.owncloud-infinitescale-https.redirectscheme.port=443"
+
+networks:
+  default:
+    external: true
+    name: mynetwork

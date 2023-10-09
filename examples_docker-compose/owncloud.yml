@@ -1,0 +1,95 @@
+# docker-compose -f owncloud.yml up -d
+version: '2.4'
+services:
+
+  # OwnCloud Server - Filesharing
+  # https://owncloud.com/
+  # https://github.com/owncloud/core
+  # https://hub.docker.com/r/owncloud/server
+  # https://doc.owncloud.com/server/10.13/admin_manual/installation/docker/#docker-compose
+  owncloud-server:
+    image: owncloud/server:latest
+    container_name: owncloud-server
+    restart: unless-stopped
+    #ports:
+    #  - 8080:8080
+    depends_on:
+      - owncloud-mariadb
+      - owncloud-redis
+    environment:
+      - OWNCLOUD_DOMAIN=owncloud.example.com
+      - OWNCLOUD_TRUSTED_DOMAINS=owncloud.example.com
+      - OWNCLOUD_DB_TYPE=mysql
+      - OWNCLOUD_DB_NAME=owncloud
+      - OWNCLOUD_DB_USERNAME=owncloud
+      - OWNCLOUD_DB_PASSWORD=passw0rd
+      - OWNCLOUD_DB_HOST=owncloud-mariadb
+      - OWNCLOUD_ADMIN_USERNAME=admin
+      - OWNCLOUD_ADMIN_PASSWORD=passw0rd
+      - OWNCLOUD_MYSQL_UTF8MB4=true
+      - OWNCLOUD_REDIS_ENABLED=true
+      - OWNCLOUD_REDIS_HOST=owncloud-redis
+    healthcheck:
+      test: ["CMD", "/usr/bin/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - ./data_owncloud/files:/mnt/data:rw
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.owncloud.loadbalancer.server.port=8080"
+      - "traefik.http.services.owncloud.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.owncloud-http.rule=Host(`owncloud.example.com`)"
+      - "traefik.http.routers.owncloud-http.entrypoints=web"
+      - "traefik.http.routers.owncloud-http.service=owncloud"
+      # https
+      - "traefik.http.routers.owncloud-https.tls=true"
+      - "traefik.http.routers.owncloud-https.rule=Host(`owncloud.example.com`)"
+      - "traefik.http.routers.owncloud-https.entrypoints=websecure"
+      - "traefik.http.routers.owncloud-https.service=owncloud"
+      # load middlewares for routers
+      - "traefik.http.routers.owncloud-http.middlewares=owncloud-https"
+      # http to https redirect
+      - "traefik.http.middlewares.owncloud-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.owncloud-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.owncloud-https.redirectscheme.port=443"
+
+  owncloud-mariadb:
+    image: mariadb:10.11
+    container_name: owncloud-mariadb
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=passw0rd
+      - MYSQL_USER=owncloud
+      - MYSQL_PASSWORD=passw0rd
+      - MYSQL_DATABASE=owncloud
+      - MARIADB_AUTO_UPGRADE=1
+    command: ["--max-allowed-packet=128M", "--innodb-log-file-size=64M"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./data_owncloud/mysql:/var/lib/mysql:rw
+
+  owncloud-redis:
+    image: redis:6
+    container_name: owncloud-redis
+    restart: unless-stopped
+    command: ["--databases", "1"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./data_owncloud/redis:/data:rw
+
+networks:
+  default:
+    external: true
+    name: mynetwork
