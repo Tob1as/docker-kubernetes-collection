@@ -1,0 +1,127 @@
+# docker-compose -f nextcloud.yml up -d
+version: '2.4'
+services:
+
+  # IMPORTANT: 
+  # This image (nextcloud:<tag> from Docker Hub) is not officially supported by Nextcloud GmbH, use at your own risk. 
+  # Use the All-in-One docker image for easier deployment. https://nextcloud.com/de/blog/how-to-install-the-nextcloud-all-in-one-on-linux/
+
+  # Nextcloud - Filesharing
+  # https://nextcloud.com/
+  # https://github.com/nextcloud/docker
+  # https://hub.docker.com/_/nextcloud
+  nextcloud:
+    image: nextcloud:latest
+    container_name: nextcloud
+    restart: unless-stopped
+    #ports:
+    #  - 8080:80
+    environment:
+      NEXTCLOUD_ADMIN_USER: admin
+      NEXTCLOUD_ADMIN_PASSWORD: passw0rd
+      #NEXTCLOUD_DATA_DIR: /var/www/html/data
+      #NEXTCLOUD_TRUSTED_DOMAINS: 'nextcloud.example.com'
+      # Databases (SQLite, MariaDB or PostgreSQL)
+      # SQLite
+      #SQLITE_DATABASE: sqlite3.db # not recommended
+      # MariaDB / MySQL
+      MYSQL_HOST: nextcloud-mariadb:3306
+      MYSQL_USER: nextcloud
+      MYSQL_PASSWORD: passw0rd
+      MYSQL_DATABASE: nextcloud
+      # PostgreSQL
+      #POSTGRES_HOST: nextcloud-postgres:5432
+      #POSTGRES_USER: nextcloud
+      #POSTGRES_PASSWORD: nextcloud
+      #POSTGRES_DB: nextcloud
+      # Redis
+      REDIS_HOST: nextcloud-redis
+      REDIS_HOST_PORT: 6379
+      #REDIS_HOST_PASSWORD: passw0rd
+      # Mail (SMTP)
+      #SMTP_HOST: mail.example.com
+      #SMTP_SECURE: tls
+      #SMTP_PORT: 587
+      #SMTP_AUTHTYPE: Login
+      #SMTP_NAME: nextcloud@example.com
+      #SMTP_PASSWORD: passw0rd
+      #MAIL_FROM_ADDRESS: 'Nextcloud <nextcloud@example.com>'
+      #MAIL_DOMAIN: 
+      # PHP/Apache
+      #PHP_MEMORY_LIMIT: 512MB
+      #PHP_UPLOAD_LIMIT: 512MB
+      #APACHE_BODY_LIMIT: 1073741824 # 1GiB
+      #APACHE_DISABLE_REWRITE_IP: 1
+      #TRUSTED_PROXIES: 'nextcloud.example.com'
+      OVERWRITEHOST: 'nextcloud.example.com'
+      OVERWRITEPROTOCOL: 'https'
+      #OVERWRITECLIURL: 'https://nextcloud.example.com'
+      #OVERWRITEWEBROOT: '/'
+      #OVERWRITECONDADDR: ''
+    volumes:
+      #- ./data_nextcloud/files:/var/www/html:rw # use this (only) or the other paths
+      - ./data_nextcloud/custom_apps:/var/www/html/custom_apps:rw
+      - ./data_nextcloud/config:/var/www/html/config:rw
+      - ./data_nextcloud/data:/var/www/html/data:rw
+      #- ./data_nextcloud/themes/<YOUR_CUSTOM_THEME>:/var/www/html/themes/<YOUR_CUSTOM_THEME>:rw
+      #- /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    depends_on:
+      - nextcloud-mariadb
+      - nextcloud-redis
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
+      - "traefik.http.services.nextcloud.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.nextcloud-http.rule=Host(`nextcloud.example.com`)"
+      - "traefik.http.routers.nextcloud-http.entrypoints=web"
+      - "traefik.http.routers.nextcloud-http.service=nextcloud"
+      # https
+      - "traefik.http.routers.nextcloud-https.tls=true"
+      - "traefik.http.routers.nextcloud-https.rule=Host(`nextcloud.example.com`)"
+      - "traefik.http.routers.nextcloud-https.entrypoints=websecure"
+      - "traefik.http.routers.nextcloud-https.service=nextcloud"
+      # load middlewares for routers
+      - "traefik.http.routers.nextcloud-http.middlewares=nextcloud-https"
+      # http to https redirect
+      - "traefik.http.middlewares.nextcloud-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.nextcloud-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.nextcloud-https.redirectscheme.port=443"
+      
+  nextcloud-mariadb:
+    image: mariadb:10.11
+    container_name: nextcloud-mariadb
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=passw0rd
+      - MYSQL_USER=nextcloud
+      - MYSQL_PASSWORD=passw0rd
+      - MYSQL_DATABASE=nextcloud
+      #- MARIADB_AUTO_UPGRADE=1
+    command: ["--transaction-isolation=READ-COMMITTED", "--log-bin=binlog", "--binlog-format=ROW"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./data_nextcloud/mysql:/var/lib/mysql:rw
+
+  nextcloud-redis:
+    image: redis:7
+    container_name: nextcloud-redis
+    restart: unless-stopped
+    command: ["--databases", "1"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./data_nextcloud/redis:/data:rw
+
+networks:
+  default:
+    external: true
+    name: mynetwork
