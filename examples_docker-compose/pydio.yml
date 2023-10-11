@@ -1,0 +1,86 @@
+# docker-compose -f pydio.yml up -d
+version: '2.4'
+services:
+
+  # Pydio - Filesharing
+  # https://pydio.com/
+  # https://github.com/pydio/cells
+  # https://hub.docker.com/r/pydio/cells
+  # Docs: https://pydio.com/en/docs/cells/v4/docker
+  # Example: https://github.com/pydio/cells/blob/main/tools/docker/compose/behind-traefik/docker-compose.yml
+  # Supported architectures: amd64
+  # URL: https://localhost:8080
+  pydio-cells:
+    image: pydio/cells:latest  # 4.3
+    container_name: pydio-cells
+    restart: unless-stopped
+    #ports:
+    #  - 8080:8080/tcp
+    #  #- 33060:33060/tcp
+    environment:
+      #- CELLS_SITE_BIND=0.0.0.0:8080
+      - CELLS_SITE_EXTERNAL=https://pydio.example.com
+      #- CELLS_SITE_NO_TLS=0
+      #- CELLS_WORKING_DIR=/var/cells
+      - CELLS_LOG=info
+      #- CELLS_GRPC_EXTERNAL=33060
+      - CELLS_INSTALL_YAML=/pydio/config/install.yml
+      # Injected in install conf at run time
+      - CELLS_ADMIN_PWD=passw0rd
+      - MYSQL_USER_PWD=passw0rd
+    volumes:
+      - ./config_pydio/install-conf.yml:/pydio/config/install.yml:ro
+      - ./data_pydio/cellsdir:/var/cells:rw
+      - ./data_pydio/data:/var/cells/data:rw
+    healthcheck:
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 8080 || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      #start_period: 10s
+    depends_on:
+      - pydio-mysql
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.pydio.loadbalancer.server.port=8080"
+      - "traefik.http.services.pydio.loadbalancer.server.scheme=https"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.pydio-http.rule=Host(`pydio.example.com`)"
+      - "traefik.http.routers.pydio-http.entrypoints=web"
+      - "traefik.http.routers.pydio-http.service=pydio"
+      # https
+      - "traefik.http.routers.pydio-https.tls=true"
+      - "traefik.http.routers.pydio-https.rule=Host(`pydio.example.com`)"
+      - "traefik.http.routers.pydio-https.entrypoints=websecure"
+      - "traefik.http.routers.pydio-https.service=pydio"
+      # load middlewares for routers
+      - "traefik.http.routers.pydio-http.middlewares=pydio-https"
+      # http to https redirect
+      - "traefik.http.middlewares.pydio-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.pydio-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.pydio-https.redirectscheme.port=443"
+
+  pydio-mysql:
+    image: mariadb:10.11   # mysql:8
+    container_name: pydio-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: passw0rd
+      MYSQL_DATABASE: pydio
+      MYSQL_USER: pydio
+      MYSQL_PASSWORD: passw0rd
+      #MARIADB_AUTO_UPGRADE: 1
+    command: [mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci]
+    volumes:
+      - ./data_pydio/mysql:/var/lib/mysql:rw
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-u", "$$MYSQL_USER", "--password=$$MYSQL_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  default:
+    external: true
+    name: mynetwork
