@@ -1,0 +1,55 @@
+# docker-compose -f apt-cacher-ng.yml up -d
+version: '2.4'
+services:
+
+  # Apt-Cacher NG (ACNG) - Software Package Download Proxy
+  # https://www.unix-ag.uni-kl.de/~bloch/acng/
+  # https://github.com/sameersbn/docker-apt-cacher-ng
+  # https://hub.docker.com/r/sameersbn/apt-cacher-ng
+  # Supported architectures: arm32v7, arm64v8, amd64
+  apt-cacher-ng:
+    image: sameersbn/apt-cacher-ng:latest
+    container_name: apt-cacher-ng
+    restart: unless-stopped
+    volumes:
+      - ./config_apt-cacher-ng/acng.conf:/etc/apt-cacher-ng/acng.conf:ro
+      - ./data_apt-cacher-ng:/var/cache/apt-cacher-ng:rw
+      #- /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    #ports:
+    #  - "3142:3142/tcp"
+    #healthcheck:
+    #  test:  wget -q -t1 -O /dev/null  http://localhost:3142/acng-report.html || exit 1
+    #  interval: 10s
+    #  timeout: 2s
+    #  retries: 3
+    #  #start_period: 10s
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.apt-cacher-ng.loadbalancer.server.port=3142"
+      - "traefik.http.services.apt-cacher-ng.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.apt-cacher-ng-http.rule=Host(`acng.example.com`)"
+      - "traefik.http.routers.apt-cacher-ng-http.entrypoints=web"
+      - "traefik.http.routers.apt-cacher-ng-http.service=apt-cacher-ng"
+      # https
+      - "traefik.http.routers.apt-cacher-ng-https.tls=true"
+      - "traefik.http.routers.apt-cacher-ng-https.rule=Host(`acng.example.com`)"
+      - "traefik.http.routers.apt-cacher-ng-https.entrypoints=websecure"
+      - "traefik.http.routers.apt-cacher-ng-https.service=apt-cacher-ng"
+      # load middlewares for routers
+      #- "traefik.http.routers.apt-cacher-ng-http.middlewares=apt-cacher-ng-https"  # or use next both & blockpath-middelware
+      - "traefik.http.routers.apt-cacher-ng-http.middlewares=apt-cacher-ng-https,apt-cacher-ng-blockpath"
+      - "traefik.http.routers.apt-cacher-ng-https.middlewares=apt-cacher-ng-blockpath"
+      # http to https redirect
+      - "traefik.http.middlewares.apt-cacher-ng-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.apt-cacher-ng-https.redirectscheme.permanent=true"
+      - "traefik.http.middlewares.apt-cacher-ng-https.redirectscheme.port=443"
+      
+      # "acng-report" deny from external, need plugin: https://plugins.traefik.io/plugins/62947354108ecc83915d778e/block-path
+      - "traefik.http.middlewares.apt-cacher-ng-blockpath.plugin.blockpath.Regex=/acng-report.html"
+
+networks:
+  default:
+    external: true
+    name: mynetwork
