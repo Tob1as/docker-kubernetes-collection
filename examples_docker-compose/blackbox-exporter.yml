@@ -5,7 +5,7 @@ services:
   # Prometheus Blackbox Exporter - The blackbox exporter allows blackbox probing of endpoints over HTTP, HTTPS, DNS, TCP, ICMP and gRPC.
   # https://github.com/prometheus/blackbox_exporter
   blackbox-exporter:
-    image: prom/blackbox-exporter:latest # quay.io/blackbox-exporter/blackbox-exporter:latest
+    image: prom/blackbox-exporter:latest # quay.io/prometheus/blackbox-exporter:latest
     container_name: blackbox-exporter
     restart: unless-stopped
     #volumes:
