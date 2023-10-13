@@ -9,7 +9,7 @@ services:
     container_name: blackbox-exporter
     restart: unless-stopped
     #volumes:
-    #  #- ./config_ping-exporter/:/config/:ro
+    #  #- ./config_blackbox-exporter/:/config/:ro
     #  - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
     #cap_add:
     #  - CAP_NET_RAW
