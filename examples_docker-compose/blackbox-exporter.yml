@@ -1,0 +1,62 @@
+# docker-compose -f blackbox-exporter.yml up -d
+version: '2.4'
+services:
+
+  # Prometheus Blackbox Exporter - The blackbox exporter allows blackbox probing of endpoints over HTTP, HTTPS, DNS, TCP, ICMP and gRPC.
+  # https://github.com/prometheus/blackbox_exporter
+  blackbox-exporter:
+    image: prom/blackbox-exporter:latest # quay.io/blackbox-exporter/blackbox-exporter:latest
+    container_name: blackbox-exporter
+    restart: unless-stopped
+    #volumes:
+    #  #- ./config_ping-exporter/:/config/:ro
+    #  - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    #cap_add:
+    #  - CAP_NET_RAW
+    ports:
+      - 127.0.0.1:9115:9115/tcp
+    command:
+      #- "--help"
+      - "--config.file=/etc/blackbox_exporter/config.yml" # default command, when use any command set this also!
+      - "--web.route-prefix=/blackbox"
+      - "--web.external-url=https://monitoring.example.com/blackbox"
+      #- "--web.listen-address=:9115"
+      #- "--web.config.file==/config/config.yml"
+      #- "--history.limit=100"
+      #- "--timeout-offset=0.5"
+      #- "--log.level=info"
+      #- "--log.format=logfmt"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 9115 || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      #start_period: 10s
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.blackbox-exporter.loadbalancer.server.port=9115"
+      - "traefik.http.services.blackbox-exporter.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.blackbox-exporter-http.rule=Host(`monitoring.example.com`) && PathPrefix(`/blackbox`)"
+      - "traefik.http.routers.blackbox-exporter-http.entrypoints=web"
+      - "traefik.http.routers.blackbox-exporter-http.service=blackbox-exporter"
+      # https
+      - "traefik.http.routers.blackbox-exporter-https.tls=true"
+      - "traefik.http.routers.blackbox-exporter-https.rule=Host(`monitoring.example.com`) && PathPrefix(`/blackbox`)"
+      - "traefik.http.routers.blackbox-exporter-https.entrypoints=websecure"
+      - "traefik.http.routers.blackbox-exporter-https.service=blackbox-exporter"
+      # load middlewares for routers
+      - "traefik.http.routers.blackbox-exporter-http.middlewares=blackbox-exporter-https,blackbox-exporter-auth"
+      - "traefik.http.routers.blackbox-exporter-https.middlewares=blackbox-exporter-auth"
+      # http to https redirect
+      - "traefik.http.middlewares.blackbox-exporter-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.blackbox-exporter-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.blackbox-exporter-https.redirectscheme.port=443"
+      # auth (You may need to escape any $ with another $.) (docker run --rm tobi312/tools:htpasswd -bn admin passw0rd)
+      - "traefik.http.middlewares.blackbox-exporter-auth.basicauth.users=admin:$$apr1$$GCTy.Ynl$$BlJK/eqDMHz.WQtlZ.uxX/"
+
+networks:
+  default:
+    external: true
+    name: mynetwork

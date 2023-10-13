@@ -70,6 +70,12 @@ scrape_configs:
     scrape_interval: 15s
     static_configs:
       - targets: ['node-exporter:9100']
+    # Relabeling "instance" to remove the ":9100" part
+    #relabel_configs:
+    #  - source_labels: [__address__]
+    #    target_label: instance
+    #    regex: '([^:]+)(:[0-9]+)?'
+    #    replacement: '${1}'
 
   # -------------------------------------
 
@@ -117,6 +123,48 @@ scrape_configs:
     scrape_interval: 15s
     static_configs:
       - targets: ['ping-exporter:9427']
+
+  # blackbox_exporter
+  - job_name: 'blackbox-exporter'
+    scrape_interval: 60s
+    metrics_path: "/blackbox/metrics"
+    static_configs:
+      - targets: ['blackbox-exporter:9115']
+  - job_name: "blackbox-exporter-http"
+    scrape_interval: 60s
+    metrics_path: "/blackbox/probe"
+    relabel_configs:
+      - source_labels: [ "__address__" ]
+        target_label: "__param_target"
+      - source_labels: [ "__param_target" ]
+        target_label: "instance"
+      - target_label: "__address__"
+        replacement: "blackbox-exporter:9115"
+    params:
+      module: [ "http_2xx" ]
+    static_configs:
+      - targets:
+        - http://prometheus.io    # Target to probe with http.
+        - https://prometheus.io   # Target to probe with https.
+        - https://www.google.com  # google search
+        - http://0.0.0.0:8080     # fake local web service.
+  - job_name: "blackbox-exporter-icmp"
+    scrape_interval: 60s
+    metrics_path: "/blackbox/probe"
+    relabel_configs:
+      - source_labels: [ "__address__" ]
+        target_label: "__param_target"
+      - source_labels: [ "__param_target" ]
+        target_label: "instance"
+      - target_label: "__address__"
+        replacement: "blackbox-exporter:9115"
+    params:
+      module: [ "icmp" ]   # ping
+    static_configs:
+      - targets:
+        - one.one.one.one  # domain for 1.1.1.1, 2606:4700:4700::1111 and more
+        - dns.google       # google dns: domain for 8.8.8.8, 2001:4860:4860::8888 and more
+        - dns.quad9.net    # domain for 9.9.9.9, 2620:fe::fe and more
 
   # -------------------------------------
 
