@@ -78,7 +78,8 @@ If you don't want to use monitoring, don't start it and delete the exporter from
 ### Databases & GUI
 
 Some databases contain additional services in their `*.yml`-files, such as an exporter or even a Web GUI.  
-It is recommended to start the Web GUI only if absolutely necessary and then to provide it with an additional password protection (basicauth).
+It is recommended to start the Web GUI only if absolutely necessary and then to provide it with an additional password protection (basicauth).  
+It is not recommended to expose the port of a database, when you need access from host use `127.0.0.1:PORT:PORT`. 
 
 ## more Examples
 
