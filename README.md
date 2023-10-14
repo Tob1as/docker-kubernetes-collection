@@ -2,7 +2,7 @@
 
 Examples of self-hosted applications in a Container environment, like Docker/docker-compose and Kubernetes (K8s).  
   
-A great list of self-hosted applications can be found here: https://github.com/awesome-selfhosted/awesome-selfhosted :-)  
+A great list of self-hosted applications can be found here: https://github.com/awesome-selfhosted/awesome-selfhosted tagged with "docker" :-)  
 
 ## Examples
 
