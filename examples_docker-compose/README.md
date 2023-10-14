@@ -70,7 +70,7 @@ If you don't want to use monitoring, don't start it and delete the exporter from
 
 ### Folder structure
 
-* `*.yml`-files are the docker-compose files
+* `*.yml`-files are the docker-compose files, start with `docker compose -f <NAME>.yml up -d`.
 * `config_*/`-folder contains configurations that mostly have to be accessed read-only.
 * `data_*/`-folder contains data from containers, it is recommended to backup them periodically. (For Database backups use the database tools/cli.)
 * `ssl/`-folder contains own ssl certificate and ca.
