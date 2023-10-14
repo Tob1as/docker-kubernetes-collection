@@ -19,7 +19,7 @@ echo 'alias docker-compose="docker compose"' >> ~/.bashrc
 ```
 (`~/.bash_aliases` or `~/.bashrc`)  
   
-Note: If you want to use this on Windows [Docker Desktop](https://www.docker.com/products/docker-desktop/) with WSL2 ([#1](https://docs.docker.com/desktop/wsl/), [#2](https://learn.microsoft.com/en-us/windows/wsl/)) is recommended.
+Note: If you want to use this on Windows, [Docker Desktop](https://www.docker.com/products/docker-desktop/) with WSL2 ([#1](https://docs.docker.com/desktop/wsl/), [#2](https://learn.microsoft.com/en-us/windows/wsl/)) is recommended.
 
 
 ## Usage
@@ -55,8 +55,8 @@ For the Montoring Prometheus/Grafana/Alertmanager/cAdvisor with some prometheus-
 
 Name          | Website  | GitHub
 ------------  | -------- | --------
-cAdvisor      | [Click]()   | [Click]()
-Grafana       | [Click](https://grafana.com/oss/grafana/)   | [Click](https://github.com/grafana/grafana)
+cAdvisor      | - | [Click](https://github.com/google/cadvisor)
+Grafana       | [Click](https://grafana.com/oss/grafana/) | [Click](https://github.com/grafana/grafana)
 Prometheus    | [Click](https://prometheus.io/)   | [Click](https://github.com/prometheus/prometheus)
 Alertmanager  |  see prom  | [Click](https://github.com/prometheus/alertmanager)
 node-exporter | see prom  | [Click](https://github.com/prometheus/node_exporter)
