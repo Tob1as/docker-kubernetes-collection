@@ -29,7 +29,7 @@ Note: If you want to use this on Windows, [Docker Desktop](https://www.docker.co
 When you want use the examples with network `mynetwork`, you can create it with sh-script [docker_network_create.sh](https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/docker_network_create.sh).  
 You can rename it or delete it if you don't need it.
 
-### Traefik
+### Traefik (Proxy)
 
 Most examples are with [Traefik](https://traefik.io/traefik/) as Proxy. **[Traefik-Example](https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/traefik.yml)**   
 Important: The containers (example: Web-Applications) to be used with Traefik must be on the same Docker network.
