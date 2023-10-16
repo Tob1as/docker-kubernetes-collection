@@ -51,7 +51,7 @@ Username changes is optional.
 
 ### Monitoring: 
 
-For the Montoring Prometheus/Grafana/Alertmanager/cAdvisor with some prometheus-exporters is used as Software-Stack.
+For the [Montoring](https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/monitoring.yml) Prometheus/Grafana/Alertmanager/cAdvisor with some prometheus-exporters is used as Software-Stack.
 
 Name          | Website  | GitHub
 ------------  | -------- | --------
