@@ -1,0 +1,31 @@
+# docker-compose -f haproxy.yml up -d
+version: '2.4'
+services:
+
+  # HAProxy - proxying for TCP and HTTP-based applications
+  # https://www.haproxy.org/
+  # https://github.com/haproxy/haproxy
+  # https://hub.docker.com/_/haproxy & https://github.com/docker-library/haproxy
+  # Supported architectures: arm32v5, arm32v7, arm64v8, amd64, ...
+  haproxy:
+    image: haproxy:lts-alpine
+    container_name: haproxy
+    restart: unless-stopped
+    hostname: haproxy
+    volumes:
+      - ./config_haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    ports:
+      - 127.0.0.1:8404:8404/tcp  # stats/metrics
+      - 8080:8080/tcp
+      - 8443:8443/tcp
+    healthcheck:
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 8404 || exit 1"]
+      #start_period: 30s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  default:
+    external: true
+    name: mynetwork
