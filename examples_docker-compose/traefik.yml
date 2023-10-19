@@ -2,7 +2,11 @@
 version: '2.4'
 services:
 
-  # https://hub.docker.com/_/traefik & https://hub.docker.com/r/traefik/whoami
+  # Traefik - reverse proxy and load balancer
+  # https://traefik.io/traefik/
+  # https://github.com/traefik/traefik
+  # https://hub.docker.com/_/traefik
+  # Supported architectures: arm32v6, arm64v8, amd64, ...
   # https://doc.traefik.io/traefik/
   # https://medium.com/@clintcolding/use-your-own-certificates-with-traefik-a31d785a6441
   # https://community.traefik.io/t/enable-a-secure-dashboard-using-a-pathprefix/3763/6
@@ -154,7 +158,10 @@ services:
       timeout: 5s
       retries: 3
 
-  # A container that exposes an API to show its IP address
+  # whoami - Tiny Go webserver that prints OS information and HTTP request to output.
+  # https://hub.docker.com/r/traefik/whoami
+  # https://github.com/traefik/whoami
+  # Supported architectures: arm32v6, arm64v8, amd64
   traefik-whoami:
     image: traefik/whoami:latest
     container_name: traefik-whoami

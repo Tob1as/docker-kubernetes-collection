@@ -24,8 +24,9 @@ services:
       retries: 3
 
   # https://github.com/prometheus/memcached_exporter
+  # Supported architectures: arm32v7, arm64v8, amd64
   memcached-exporter:
-    image: quay.io/prometheus/memcached-exporter:latest
+    image: prom/memcached-exporter:latest # quay.io/prometheus/memcached-exporter:latest
     container_name: memcached-exporter
     restart: unless-stopped
     ports:

@@ -6,8 +6,8 @@ services:
   # (OS: AlpineLinux ; Installed: "apk add --no-cache ca-certificates mosquitto-clients")
   # https://github.com/Tob1as/docker-tools
   # https://hub.docker.com/r/tobi312/tools
+  # Supported architectures: arm32v6, arm32v7, arm64v8, amd64
   # https://mosquitto.org/man/mosquitto_sub-1.html - read for more information about mosquitto_sub-command
-  # Images Supported architectures: amd64 (for ARM-Arch use "build"-line)
   # after start see logs: "docker logs -f mqtt-client"
   mqtt-client:
     image: tobi312/tools:mqtt-client

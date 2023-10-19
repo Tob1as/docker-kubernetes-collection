@@ -7,7 +7,7 @@ services:
   # https://github.com/nginx/nginx
   # https://hub.docker.com/_/nginx + https://github.com/nginxinc/docker-nginx
   # Alternative: https://hub.docker.com/r/nginxinc/nginx-unprivileged & https://github.com/nginxinc/docker-nginx-unprivileged (replace port 80 with 8080)
-  # Supported architectures: arm32v6, arm32v7, arm64v8, amd64, ...
+  # Supported architectures: arm32v5, arm32v7, arm64v8, amd64, ...
   # URL: http://localhost/ + https://localhost/
   nginx:
     image: nginx:alpine
@@ -64,6 +64,7 @@ services:
       #- "traefik.http.middlewares.nginx-https.redirectscheme.port=443"
 
   # https://github.com/nginxinc/nginx-prometheus-exporter
+  # Supported architectures: arm32v7, arm64v8, amd64, ...
   nginx-exporter:
     image: nginx/nginx-prometheus-exporter:latest
     container_name: nginx-exporter

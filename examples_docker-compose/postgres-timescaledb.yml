@@ -5,6 +5,7 @@ services:
   # TimescaleDB - PostgreSQL++ for time series and events
   # https://www.timescale.com/
   # https://hub.docker.com/r/timescale/timescaledb-ha + https://github.com/timescale/timescaledb-docker-ha
+  # Supported architectures: amd64
   # https://docs.timescale.com/self-hosted/latest/install/installation-docker/
   # fix permission <https://github.com/timescale/timescaledb-docker-ha/issues/359#issuecomment-1492020533> : 
   # mkdir ./data_postgres-timescaledb && chmod 777 ./data_postgres-timescaledb && chown 1000 ./data_postgres-timescaledb
@@ -28,9 +29,10 @@ services:
       timeout: 5s
       retries: 5
       
-  # https://github.com/prometheus-community/postgres_exporter 
+  # https://github.com/prometheus-community/postgres_exporter
+  # Supported architectures: arm32v7, arm64v8, amd64, ...
   postgres-timescaledb-exporter:
-    image: quay.io/prometheuscommunity/postgres-exporter:latest
+    image: prometheuscommunity/postgres-exporter:latest # quay.io/prometheuscommunity/postgres-exporter:latest
     container_name: postgres-timescaledb-exporter
     restart: unless-stopped
     environment:

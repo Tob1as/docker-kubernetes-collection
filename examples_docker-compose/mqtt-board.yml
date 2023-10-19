@@ -5,6 +5,7 @@ services:
   # MQTT-Board: MQTT Web Client Tool (only wss:// connection)
   # https://github.com/flespi-software/MQTT-Board
   # https://github.com/Tob1as/docker-tools
+  # Supported architectures: arm32v6, arm32v7, arm64v8, amd64
   mqtt-board:
     image: tobi312/tools:mqtt-board
     container_name: mqtt-board

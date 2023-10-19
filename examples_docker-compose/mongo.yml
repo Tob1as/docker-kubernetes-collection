@@ -26,8 +26,9 @@ services:
       #start_period: 30s
 
   # https://github.com/percona/mongodb_exporter
+  # Supported architectures: arm64v8, amd64
   mongo-exporter:
-    image: percona/mongodb_exporter:0.20
+    image: percona/mongodb_exporter:0.39 # or: 0.20 ?
     container_name: mongo-exporter
     restart: unless-stopped
     #ports:
@@ -102,6 +103,7 @@ services:
       #- "traefik.http.middlewares.mongo-express-https.redirectscheme.port=443"
 
 #  # https://github.com/SamuelTallet/MongoDB-PHP-GUI
+#  # Supported architectures: arm32v7, arm64v8, amd64
 #  mongo-php-gui:
 #    image: samueltallet/mongodb-php-gui:latest
 #    container_name: mongo-php-gui
@@ -138,6 +140,7 @@ services:
 #      #- "traefik.http.middlewares.mongo-php-gui-https.redirectscheme.port=443"
       
 #  # https://github.com/arunbandari/mongo-gui
+#  # Supported architectures: amd64
 #  mongo-gui:
 #    image: ugleiton/mongo-gui:latest
 #    build:

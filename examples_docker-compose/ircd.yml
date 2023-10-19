@@ -37,6 +37,7 @@ services:
 #  with: https://github.com/anope/anope-docker for IRC Services
 
 #  # https://github.com/dgl/ircd_exporter
+#  # Supported architectures: amd64
 #  ircd-exporter:
 #    image: tobi312/tools:ircd-exporter
 #    build:
@@ -68,6 +69,7 @@ services:
 #  # https://kiwiirc.com/
 #  # https://github.com/kiwiirc/kiwiirc
 #  # Docker: https://github.com/Tob1as/docker-tools/
+#  # Supported architectures: arm32v6, arm32v7, arm64v8, amd64
 #  kiwiirc:
 #    image: docker.io/tobi312/tools:kiwiirc
 #    container_name: kiwiirc

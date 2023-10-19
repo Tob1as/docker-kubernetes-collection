@@ -8,6 +8,7 @@ services:
   # https://www.consul.io/
   # https://hub.docker.com/r/hashicorp/consul
   # https://github.com/hashicorp/consul
+  # Supported architectures: arm32v6, arm64v8, amd64, ...
   consul-server0:
     image: hashicorp/consul:latest
     container_name: consul-server0

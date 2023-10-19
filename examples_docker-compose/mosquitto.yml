@@ -5,6 +5,7 @@ services:
   # Eclipse Mosquitto - MQTT Broker
   # https://mosquitto.org/
   # https://hub.docker.com/_/eclipse-mosquitto + https://github.com/eclipse/mosquitto
+  # Supported architectures: arm32v6, arm64v8, amd64
   # Docs: https://mosquitto.org/man/mosquitto-conf-5.html
   # Config: https://github.com/eclipse/mosquitto/blob/master/mosquitto.conf
   # ACL example: https://github.com/eclipse/mosquitto/blob/master/aclfile.example
@@ -68,6 +69,7 @@ services:
       #- "traefik.tcp.routers.mosquitto-ws.rule=HostSNI(`*`)"
 
   # https://github.com/sapcc/mosquitto-exporter
+  # Supported architectures: amd64
   mosquitto-exporter:
     image: sapcc/mosquitto-exporter:latest
     container_name: mosquitto-exporter

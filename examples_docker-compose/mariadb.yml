@@ -46,6 +46,7 @@ services:
       #start_period: 30s
 
   # https://github.com/prometheus/mysqld_exporter
+  # Supported architectures: arm32v7, arm64v8, amd64
   mariadb-exporter:
     image: prom/mysqld-exporter:latest  # quay.io/prometheus/mysqld-exporter:latest
     container_name: mariadb-exporter
@@ -70,6 +71,7 @@ services:
   # phpMyAdmin - A web interface for MySQL and MariaDB 
   # https://www.phpmyadmin.net/
   # https://hub.docker.com/_/phpmyadmin + https://github.com/phpmyadmin/docker
+  # Supported architectures: arm32v5, arm32v7, arm64v8, amd64, ...
   phpmyadmin:
     image: phpmyadmin:latest
     container_name: phpmyadmin

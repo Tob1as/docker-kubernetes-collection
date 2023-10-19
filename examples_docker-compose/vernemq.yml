@@ -6,7 +6,7 @@ services:
   # https://vernemq.com/
   # https://github.com/vernemq/vernemq
   # https://github.com/vernemq/docker-vernemq
-  # https://github.com/Tob1as/docker-vernemq
+  # Supported architectures: arm64v8, amd64
   # Help:
   # * https://docs.vernemq.com/
   # * https://github.com/vernemq/docker-vernemq#vernemq-configuration

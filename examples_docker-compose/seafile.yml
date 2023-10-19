@@ -47,7 +47,8 @@ services:
   # https://hub.docker.com/r/seafileltd/seafile-mc
   # https://manual.seafile.com/config/seahub_settings_py/
   # https://github.com/haiwen/seafile/issues/2118#issuecomment-523688712 (CSRF_TRUSTED_ORIGINS = ['seafile.example.com:23456'])
-  # https://forum.seafile.com/t/check-status-of-seafile-server/3720/6   
+  # https://forum.seafile.com/t/check-status-of-seafile-server/3720/6
+  # Supported architectures: amd64
   seafile:
     image: seafileltd/seafile-mc:latest # 10.x
     container_name: seafile

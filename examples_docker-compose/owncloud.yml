@@ -6,6 +6,7 @@ services:
   # https://owncloud.com/
   # https://github.com/owncloud/core
   # https://hub.docker.com/r/owncloud/server
+  # Supported architectures: arm64v8, amd64
   # https://doc.owncloud.com/server/10.13/admin_manual/installation/docker/#docker-compose
   owncloud-server:
     image: owncloud/server:latest
@@ -60,7 +61,8 @@ services:
       #- "traefik.http.middlewares.owncloud-https.redirectscheme.port=443"
 
   owncloud-mariadb:
-    image: mariadb:10.11
+    image: mariadb:10.11                      # Supported architectures: amd64, arm64v8
+    #image: tobi312/rpi-mariadb:10.11-alpine  # Supported architectures: arm32v7 (RaspberryPi)
     container_name: owncloud-mariadb
     restart: unless-stopped
     environment:
@@ -79,7 +81,7 @@ services:
       - ./data_owncloud/mysql:/var/lib/mysql:rw
 
   owncloud-redis:
-    image: redis:6
+    image: redis:6                            # Supported architectures: arm32v7, arm64v8, amd64, ...
     container_name: owncloud-redis
     restart: unless-stopped
     command: ["--databases", "1"]

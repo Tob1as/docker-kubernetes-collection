@@ -10,6 +10,7 @@ services:
 
   # https://prometheus.io/docs/instrumenting/exporters/
   # https://github.com/prometheus/node_exporter
+  # Supported architectures: arm32v7, arm64v8, amd64, ...
   node-exporter:
     image: prom/node-exporter:latest  # quay.io/prometheus/node-exporter:latest
     container_name: node-exporter
@@ -37,6 +38,7 @@ services:
       #start_period: 30s
   
   # https://github.com/prometheus/prometheus
+  # Supported architectures: arm32v7, arm64v8, amd64, ...
   prometheus:
     image: prom/prometheus:latest  # quay.io/prometheus/prometheus:latest
     container_name: prometheus
@@ -79,6 +81,7 @@ services:
       - "traefik.http.middlewares.prometheus-auth.basicauth.users=admin:$$apr1$$GCTy.Ynl$$BlJK/eqDMHz.WQtlZ.uxX/"
   
   # https://github.com/prometheus/alertmanager
+  # Supported architectures: arm32v7, arm64v8, amd64, ...
   alertmanager:
     image: prom/alertmanager:latest  # quay.io/prometheus/alertmanager:latest
     container_name: alertmanager
@@ -125,6 +128,7 @@ services:
       - "traefik.http.middlewares.alertmanager-auth.basicauth.users=admin:$$apr1$$GCTy.Ynl$$BlJK/eqDMHz.WQtlZ.uxX/"
       
   # https://github.com/grafana/grafana
+  # Supported architectures: arm64v8, amd64
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -184,6 +188,7 @@ services:
       #- "traefik.http.middlewares.grafana-https.redirectscheme.port=443"
 
   # https://github.com/google/cadvisor
+  # Supported architectures: arm32v7, arm64v8, amd64
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.47.2  # latest = v0.38.6
     container_name: cadvisor

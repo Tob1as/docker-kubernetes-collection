@@ -76,8 +76,9 @@ services:
       #- "traefik.http.middlewares.elasticsearch-https.redirectscheme.port=443"
  
   # https://github.com/prometheus-community/elasticsearch_exporter
+  # Supported architectures: arm32v7, arm64v8, amd64, ...
   elasticsearch-exporter:
-    image: quay.io/prometheuscommunity/elasticsearch-exporter:latest
+    image: prometheuscommunity/elasticsearch-exporter:latest # quay.io/prometheuscommunity/elasticsearch-exporter:latest
     container_name: elasticsearch-exporter
     restart: unless-stopped
     #volumes:
@@ -102,6 +103,7 @@ services:
   # elasticvue - Elasticsearch gui for the browser 
   # https://elasticvue.com/
   # https://hub.docker.com/r/cars10/elasticvue + https://github.com/cars10/elasticvue
+  # Supported architectures: arm32v7, arm64v8, amd64
   elasticsearch-ui:
     image: cars10/elasticvue:latest
     container_name: elasticsearch-ui

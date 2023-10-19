@@ -6,6 +6,7 @@ services:
   # https://github.com/thomasnordquist/MQTT-Explorer
   # https://hub.docker.com/r/smeagolworms4/mqtt-explorer & https://github.com/Smeagolworms4/MQTT-Explorer
   # https://github.com/Tob1as/docker-mqtt-explorer
+  # Supported architectures: arm32v6, arm32v7, arm64v8, amd64
   # fix permission problem before startup: "mkdir ./data_mqtt-explorer/ && chmod 777 ./data_mqtt-explorer/"
   mqtt-explorer:
     image: smeagolworms4/mqtt-explorer:latest

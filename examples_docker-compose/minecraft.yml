@@ -81,6 +81,7 @@ services:
       #ENABLE_AUTOPAUSE: "TRUE"
   
   # https://github.com/dirien/minecraft-prometheus-exporter
+  # Supported architectures: arm64v8, amd64
   minecraft-exporter:
     image: ghcr.io/dirien/minecraft-exporter:latest
     container_name: minecraft-exporter

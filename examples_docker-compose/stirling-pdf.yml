@@ -1,0 +1,76 @@
+# docker-compose -f stirling-pdf.yml up -d
+version: '2.4'
+services:
+
+  # Stirling-PDF - locally hosted web application that allows you to perform various operations on PDF files 
+  # https://github.com/Frooodle/Stirling-PDF
+  # https://hub.docker.com/r/frooodle/s-pdf
+  # Supported architectures: arm64v8, amd64
+  # URL: http://localhost:8080/
+  stirling-pdf:
+    image: frooodle/s-pdf:latest
+    container_name: stirling-pdf
+    restart: unless-stopped
+    volumes:
+      - ./data_stirling-pdf/trainingData:/usr/share/tesseract-ocr/4.00/tessdata:rw # Required for extra OCR languages
+      - ./data_stirling-pdf/extraConfigs:/configs:rw
+      #- ./data_stirling-pdf/customFiles:/customFiles:rw # for customisation but are not required
+    environment:
+      # Security
+      - DOCKER_ENABLE_SECURITY=true              # set to 'true' to tell docker to download security jar (required as true for auth login)
+      - SECURITY_ENABLE_LOGIN=true               # set to 'true' to enable login
+      - SECURITY_INITIALLOGIN_USERNAME=admin     
+      - SECURITY_INITIALLOGIN_PASSWORD=stirling  
+      #- SECURITY_CSRFDISABLED=true               
+      # System
+      - SYSTEM_DEFAULTLOCALE=en-US               # Set the default language (e.g. 'en-US', 'de-DE', 'fr-FR', etc)
+      - SYSTEM_GOOGLEVISIBILITY=false            # 'true' to allow Google visibility (via robots.txt), 'false' to disallow
+      #- SYSTEM_CUSTOMSTATICFILEPATH=/customFiles/static/ # Directory path for custom static files
+      #- SYSTEM_ROOTURIPATH=/pdf-app             # Set the application's root URI to localhost:8080/pdf-app
+      #- SYSTEM_CONNECTIONTIMEOUTMINUTES=        # set custom connection timeout values
+      # UI
+      #- UI_APPNAME=exampleAppName               # Application's visible name
+      #- UI_HOMEDESCRIPTION='I am a description' # Short description or tagline shown on homepage.
+      #- UI_APPNAMENAVBAR=navbarName             # Name displayed on the navigation bar
+      # Endpoints (use comma separate lists)
+      #- ENDPOINTS_TO_REMOVE=                    # List endpoints to disable (e.g. ['img-to-pdf', 'remove-pages']) 
+      #- GROUPS_TO_REMOVE=                       # List groups to disable (e.g. ['LibreOffice'])
+      # Metrics
+      - METRICS_ENABLED=true                     # 'true' to enable Info APIs endpoints (view http://localhost:8080/swagger-ui/index.html#/API to learn more), 'false' to disable
+    #ports:
+    #  - 8080:8080/tcp
+    healthcheck:
+      test: ["CMD-SHELL", "curl -u ${USERNAM}:${PASSWORD} http://localhost:8080/api/v1/status || exit 1"]
+      #test: ["CMD-SHELL", "curl -u ${USERNAM}:${PASSWORD} http://localhost:8080/pdf-app/api/v1/status || exit 1"]
+      start_period: 15s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.stirling-pdf.loadbalancer.server.port=8080"
+      - "traefik.http.services.stirling-pdf.loadbalancer.server.scheme=http" 
+      # http
+      - "traefik.http.routers.stirling-pdf-http.rule=Host(`pdf.example.com`)"
+      #- "traefik.http.routers.stirling-pdf-http.rule=Host(`example.com`) && PathPrefix(`/pdf-app`)"
+      - "traefik.http.routers.stirling-pdf-http.entrypoints=web"
+      - "traefik.http.routers.stirling-pdf-http.service=stirling-pdf"
+      # https
+      - "traefik.http.routers.stirling-pdf-https.tls=true"
+      - "traefik.http.routers.stirling-pdf-https.rule=Host(`pdf.example.com`)"
+      #- "traefik.http.routers.stirling-pdf-https.rule=Host(`example.com`) && PathPrefix(`/pdf-app`)"
+      - "traefik.http.routers.stirling-pdf-https.entrypoints=websecure"
+      - "traefik.http.routers.stirling-pdf-https.service=stirling-pdf"
+      # load middlewares for routes
+      - "traefik.http.routers.stirling-pdf-http.middlewares=stirling-pdf-https"
+      #- "traefik.http.routers.stirling-pdf-https.middlewares=stirling-pdf-customheaders"
+      # http to https redirect      
+      - "traefik.http.middlewares.stirling-pdf-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.stirling-pdf-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.stirling-pdf-https.redirectscheme.port=443"
+
+networks:
+  default:
+    external: true
+    name: mynetwork

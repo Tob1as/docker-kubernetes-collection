@@ -6,6 +6,7 @@ services:
   # https://owncloud.com/
   # https://github.com/owncloud/ocis
   # https://hub.docker.com/r/owncloud/ocis
+  # Supported architectures: arm64v8, amd64
   # https://doc.owncloud.com/ocis/next/deployment/container/container-setup.html
   # fix permission: mkdir -p ./data_owncloud-infinitescale/{config,data} && chmod 777 ./data_owncloud-infinitescale/{config,data}
   owncloud-infinitescale:

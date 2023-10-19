@@ -10,6 +10,7 @@ services:
   # https://nextcloud.com/
   # https://github.com/nextcloud/docker
   # https://hub.docker.com/_/nextcloud
+  # Supported architectures: arm32v5, arm32v7, arm64v8, amd64, ...
   nextcloud:
     image: nextcloud:latest
     container_name: nextcloud
@@ -90,7 +91,8 @@ services:
       #- "traefik.http.middlewares.nextcloud-https.redirectscheme.port=443"
       
   nextcloud-mariadb:
-    image: mariadb:10.11
+    image: mariadb:10.11                      # Supported architectures: amd64, arm64v8
+    #image: tobi312/rpi-mariadb:10.11-alpine  # Supported architectures: arm32v7 (RaspberryPi)
     container_name: nextcloud-mariadb
     restart: unless-stopped
     environment:
@@ -108,8 +110,9 @@ services:
     volumes:
       - ./data_nextcloud/mysql:/var/lib/mysql:rw
 
+  
   nextcloud-redis:
-    image: redis:7
+    image: redis:7                            # Supported architectures: arm32v7, arm64v8, amd64, ...
     container_name: nextcloud-redis
     restart: unless-stopped
     command: ["--databases", "1"]
