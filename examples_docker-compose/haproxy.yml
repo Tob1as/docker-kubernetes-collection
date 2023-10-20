@@ -7,6 +7,8 @@ services:
   # https://github.com/haproxy/haproxy
   # https://hub.docker.com/_/haproxy & https://github.com/docker-library/haproxy
   # Supported architectures: arm32v5, arm32v7, arm64v8, amd64, ...
+  # Docs: https://docs.haproxy.org/
+  # Docs (limited): https://www.haproxy.com/documentation/hapee/latest/
   haproxy:
     image: haproxy:lts-alpine
     container_name: haproxy
