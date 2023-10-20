@@ -48,9 +48,9 @@ services:
       - ./data_monitoring/prometheus/:/prometheus/:rw
     command:   # https://prometheus.io/docs/prometheus/latest/command-line/prometheus/
       - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      #- '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      #- '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--storage.tsdb.path=/prometheus' # default: data/
+      - '--storage.tsdb.retention.time=15d'
+      #- '--storage.tsdb.retention.size=0' # Units supported: B, KB, MB, GB, TB, PB, EB. Ex: "512MB"
       #- '--web.listen-address=0.0.0.0:9090'
       - '--web.external-url=https://monitoring.example.com/prometheus'
       - '--web.route-prefix=/prometheus'
