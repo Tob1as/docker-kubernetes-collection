@@ -1,0 +1,390 @@
+##  __  __            _       ____  ____
+## |  \/  | __ _ _ __(_) __ _|  _ \| __ )
+## | |\/| |/ _` | '__| |/ _` | | | |  _ \
+## | |  | | (_| | |  | | (_| | |_| | |_) |
+## |_|  |_|\__,_|_|  |_|\__,_|____/|____/
+## 
+
+## https://mariadb.org/ + https://github.com/MariaDB/server
+## https://hub.docker.com/_/mariadb + https://github.com/MariaDB/mariadb-docker
+## https://hub.docker.com/r/tobi312/rpi-mariadb/ + https://github.com/Tob1as/docker-mariadb
+## https://mariadb.com/kb/en/mariadb-server-docker-official-image-environment-variables/
+
+## Miscellaneous:
+## StatefulSet instead Deploymen:
+## https://kubernetes.io/docs/tasks/run-application/run-single-instance-stateful-application/
+## root login:
+## [DE] https://kofler.info/root-login-problem-mit-mariadb/ + https://www.linuxmaker.com/tutorials/mariadb-problem-mit-root-login.html
+## [EN] https://community.flexera.com/t5/Software-Vulnerability-Manager/Grant-Remote-Access-to-Root-in-MariaDB-On-Prem/ta-p/4967
+## reset pw: https://linuxconfig.org/how-to-reset-root-mysql-mariadb-password-on-ubuntu-20-04-focal-fossa-linux
+
+---
+
+## volume (Recommended: Comment volume out after first run.)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-data
+  namespace: default
+  labels:
+    app: mariadb
+spec:
+  accessModes:
+  - ReadWriteOnce
+  volumeMode: Filesystem
+  storageClassName: local-path # change or use: https://github.com/rancher/local-path-provisioner
+  resources:
+    requests:
+      storage: 15Gi
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-env-config
+  namespace: default
+  labels:
+    app: mariadb
+data:
+  TZ: "Europe/Berlin"
+  #MARIADB_AUTO_UPGRADE: "1"
+  #MARIADB_DATABASE: "db"
+  #MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+  #MARIADB_MYSQL_LOCALHOST_USER: "true"
+
+---
+
+## convert string to base64 in Linux: "echo -n 'value' | base64"
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mariadb-env-secret
+  namespace: default
+  labels:
+    app: mariadb
+data:
+  MARIADB_ROOT_PASSWORD: cGFzc3cwcmQ=  # passw0rd
+  #MARIADB_USER: dXNlcg==              # user
+  #MARIADB_PASSWORD: cGFzc3cwcmQ=      # passw0rd
+  EXPORTER_PASSWORD: RXhwMHJ0M3Ih      # Exp0rt3r!
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+      annotations: {}
+    spec:
+      #imagePullSecrets:
+      #- name: regcred
+      serviceAccountName: ""
+      restartPolicy: Always
+      containers:
+      - name: mariadb
+        image: mariadb:10.11                     # Supported architectures: amd64, arm64v8
+        #image: tobi312/rpi-mariadb:10.11-alpine # Supported architectures: arm32v7 (RaspberryPi)
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: mariadb-env-config
+        - secretRef:
+            name: mariadb-env-secret
+        ports:
+        - containerPort: 3306
+          name: mariadb
+          protocol: TCP
+        #command: ["/bin/sh", "-c", "echo \"SET GLOBAL time_zone = '$(TZ)'; SET time_zone = '$(TZ)'; SELECT CURRENT_TIME; CREATE USER IF NOT EXISTS 'exporter'@'%' IDENTIFIED BY '$(EXPORTER_PASSWORD)' WITH MAX_USER_CONNECTIONS 3; GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO 'exporter'@'%'; \" > /docker-entrypoint-initdb.d/init.sql; /usr/local/bin/docker-entrypoint.sh --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"]
+        readinessProbe:
+          exec:
+            command: ["/bin/sh", "-c", "mysqladmin ping -h localhost --user=root --password=$MARIADB_ROOT_PASSWORD || exit 1"]
+            #command: ["/bin/sh", "-c", "mysqladmin ping -h localhost --user=$MARIADB_USER --password=$MARIADB_PASSWORD || exit 1"]
+          #tcpSocket:
+          #  port: 3306
+          initialDelaySeconds: 15
+          periodSeconds: 120
+          timeoutSeconds: 5
+        livenessProbe:
+          exec:
+            command: ["/bin/sh", "-c", "mysqladmin ping -h localhost --user=root --password=$MARIADB_ROOT_PASSWORD || exit 1"]
+            #command: ["/bin/sh", "-c", "mysqladmin ping -h localhost --user=$MARIADB_USER --password=$MARIADB_PASSWORD || exit 1"]
+          #tcpSocket:
+          #  port: 3306
+          initialDelaySeconds: 30
+          periodSeconds: 120
+          timeoutSeconds: 5
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "0.1"
+          limits:
+            memory: "1Gi"
+            cpu: "1.0"
+        volumeMounts:
+        - name: mariadb-data
+          mountPath: /var/lib/mysql
+        - name: mariadb-db-file-config
+          subPath: 99-my.cnf
+          mountPath: /etc/mysql/mariadb.conf.d/99-my.cnf # for unofficial image use: /etc/my.cnf.d/99-my.cnf
+          readOnly: true
+        - name: mariadb-db-file-sh-exporter
+          subPath: 20_exporter-user.sh
+          mountPath: /docker-entrypoint-initdb.d/20_exporter-user.sh
+          readOnly: true
+      - name: exporter
+        image: prom/mysqld-exporter:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9104
+          name: exporter
+          protocol: TCP
+        env:
+        #- name: ROOT_PASSWORD
+        #  valueFrom:
+        #    secretKeyRef:
+        #      name: mariadb-env-secret
+        #      key: MARIADB_ROOT_PASSWORD
+        - name: EXPORTER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-env-secret
+              key: EXPORTER_PASSWORD
+        args:
+        #- "--mysqld.username=root:$(ROOT_PASSWORD)"
+        - "--mysqld.username=exporter:$(EXPORTER_PASSWORD)"
+        - "--mysqld.address=localhost:3306"
+        - "--web.listen-address=:9104"
+        - "--web.telemetry-path=/metrics"
+        #- "--log.level=info"
+        #- "--tls.insecure-skip-verify=false"
+        #- "--web.config.file=web-config.yml"
+        #- "--config.my-cnf=~/.my.cnf"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "0.1"
+          limits:
+            memory: "256Mi"
+            cpu: "0.5"
+      volumes:
+        - name: mariadb-data
+          persistentVolumeClaim:
+            claimName: mariadb-data
+        - name: mariadb-db-file-config
+          configMap:
+            name: mariadb-db-file-config
+        - name: mariadb-db-file-sh-exporter
+          configMap:
+            name: mariadb-db-file-sh-exporter
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-db-file-config
+  namespace: default
+  labels:
+    app: mariadb
+data:
+  99-my.cnf: |-
+    [mysqld]
+    skip-host-cache
+    skip-name-resolve
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-db-file-sh-exporter
+  namespace: default
+  labels:
+    app: mariadb
+data:
+  20_exporter-user.sh: |-
+    #!/bin/sh
+    set -e
+    
+    : "${EXPORTER_USER:="exporter"}"
+    : "${EXPORTER_PASSWORD:="Exp0rt3r!"}"
+    : "${EXPORTER_MAXUSERCONNECTIONS:="3"}"
+    
+    mariadb -h localhost -u root --password="${MARIADB_ROOT_PASSWORD}" -sNe \
+    "SELECT user FROM mysql.user WHERE user = '${EXPORTER_USER}' GROUP BY user;" \
+    | grep -q ${EXPORTER_USER}} \
+    || mariadb -h localhost -u root --password="${MARIADB_ROOT_PASSWORD}" -sN <<EOSQL
+    	CREATE USER '${EXPORTER_USER}'@'%' IDENTIFIED BY '${EXPORTER_PASSWORD}' WITH MAX_USER_CONNECTIONS ${EXPORTER_MAXUSERCONNECTIONS};
+    	GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO '${EXPORTER_USER}'@'%';
+    	-- GRANT SELECT ON performance_schema.* TO '${EXPORTER_USER}'@'%';
+      GRANT SLAVE MONITOR ON *.* TO '${EXPORTER_USER}';
+    	FLUSH PRIVILEGES;
+    EOSQL
+    
+    mariadb -h localhost -u root --password=${MARIADB_ROOT_PASSWORD} -e "SELECT user, host, max_user_connections FROM mysql.user;"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+  namespace: default
+  labels:
+    app: mariadb
+spec:
+  type: ClusterIP    # default: "ClusterIP" , set to "NodePort" for access over external-ip (not recommended)
+  ports:
+    - name: "mariadb"
+      protocol: TCP
+      port: 3306
+      targetPort: 3306
+      #nodePort: 33306
+    - name: "exporter"
+      protocol: TCP
+      port: 9104
+      targetPort: 9104
+  selector:
+    app: mariadb # deployment
+
+---
+
+## After this line ONLY for Monitoring !
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mariadb
+  namespace: default
+  labels:
+    app: mariadb
+spec:
+  endpoints:
+  - path: /metrics
+    scheme: HTTP
+    port: exporter # 9104
+    targetPort: 9104
+    #metricRelabelings:
+  selector:
+    matchLabels:
+      app: mariadb  # service
+
+--- 
+
+# Examples: https://samber.github.io/awesome-prometheus-alerts/rules#mysql-1
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mariadb
+  namespace: default
+  labels:
+    app: mariadb
+spec:
+  groups:
+    - name: mariadb.rules
+      rules:
+      
+      # 2.1.1. MySQL down
+      - alert: MysqlDown
+        expr: 'mysql_up == 0'
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: MySQL down (instance {{ $labels.instance }})
+          description: "MySQL instance is down on {{ $labels.instance }}\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+      
+      # 2.1.2. MySQL too many connections (> 80%)
+      - alert: MysqlTooManyConnections(>80%)
+        expr: 'max_over_time(mysql_global_status_threads_connected[1m]) / mysql_global_variables_max_connections * 100 > 80'
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: MySQL too many connections (> 80%) (instance {{ $labels.instance }})
+          description: "More than 80% of MySQL connections are in use on {{ $labels.instance }}\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+      
+      # 2.1.3. MySQL high threads running 
+      - alert: MysqlHighThreadsRunning
+        expr: 'max_over_time(mysql_global_status_threads_running[1m]) / mysql_global_variables_max_connections * 100 > 60'
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: MySQL high threads running (instance {{ $labels.instance }})
+          description: "More than 60% of MySQL connections are in running state on {{ $labels.instance }}\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+      
+      # 2.1.4. MySQL Slave IO thread not running
+      - alert: MysqlSlaveIoThreadNotRunning
+        expr: '( mysql_slave_status_slave_io_running and ON (instance) mysql_slave_status_master_server_id > 0 ) == 0'
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: MySQL Slave IO thread not running (instance {{ $labels.instance }})
+          description: "MySQL Slave IO thread not running on {{ $labels.instance }}\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+      
+      # 2.1.5. MySQL Slave SQL thread not running
+      - alert: MysqlSlaveSqlThreadNotRunning
+        expr: '( mysql_slave_status_slave_sql_running and ON (instance) mysql_slave_status_master_server_id > 0) == 0'
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: MySQL Slave SQL thread not running (instance {{ $labels.instance }})
+          description: "MySQL Slave SQL thread not running on {{ $labels.instance }}\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+      
+      # 2.1.6. MySQL Slave replication lag 
+      - alert: MysqlSlaveReplicationLag
+        expr: '( (mysql_slave_status_seconds_behind_master - mysql_slave_status_sql_delay) and ON (instance) mysql_slave_status_master_server_id > 0 ) > 30'
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: MySQL Slave replication lag (instance {{ $labels.instance }})
+          description: "MySQL replication lag on {{ $labels.instance }}\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+      
+      # 2.1.7. MySQL slow queries 
+      - alert: MysqlSlowQueries
+        expr: 'increase(mysql_global_status_slow_queries[1m]) > 0'
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: MySQL slow queries (instance {{ $labels.instance }})
+          description: "MySQL server mysql has some new slow query.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+      
+      # 2.1.8. MySQL InnoDB log waits
+      - alert: MysqlInnodbLogWaits
+        expr: 'rate(mysql_global_status_innodb_log_waits[15m]) > 10'
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: MySQL InnoDB log waits (instance {{ $labels.instance }})
+          description: "MySQL innodb log writes stalling\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+      
+      # 2.1.9. MySQL restarted 
+      - alert: MysqlRestarted
+        expr: 'mysql_global_status_uptime < 60'
+        for: 0m
+        labels:
+          severity: info
+        annotations:
+          summary: MySQL restarted (instance {{ $labels.instance }})
+          description: "MySQL has just been restarted, less than one minute ago on {{ $labels.instance }}.\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"

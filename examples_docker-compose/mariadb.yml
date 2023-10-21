@@ -7,6 +7,7 @@ services:
   # https://hub.docker.com/_/mariadb
   # https://github.com/MariaDB/mariadb-docker
   # https://github.com/Tob1asDocker/rpi-mariadb/
+  # https://mariadb.com/kb/en/mariadb-server-docker-official-image-environment-variables/
   # Optional: additional user without admin permission
   # * with init script: https://github.com/docker-library/docs/tree/master/mariadb#initializing-a-fresh-instance
   # * with docker command when container running: docker exec -it mariadb sh -c 'mysql -u root --password=$MARIADB_ROOT_PASSWORD'
@@ -29,7 +30,9 @@ services:
       #MARIADB_DATABASE: db
       #MARIADB_USER: user
       #MARIADB_PASSWORD: passw0rd
-    #  EXPORTER_PASSWORD: passw0rd
+      #EXPORTER_PASSWORD: Exp0rt3r!
+      #MARIADB_MYSQL_LOCALHOST_USER: "true"
+      #MARIADB_AUTO_UPGRADE: 1
     #entrypoint:
     #  sh -c "
     #    echo \"SET GLOBAL time_zone = '$$TZ'; SET time_zone = '$$TZ'; SELECT CURRENT_TIME; CREATE USER IF NOT EXISTS 'exporter'@'%' IDENTIFIED BY '$$EXPORTER_PASSWORD' WITH MAX_USER_CONNECTIONS 3; GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO 'exporter'@'%'; \" > /docker-entrypoint-initdb.d/init.sql;
