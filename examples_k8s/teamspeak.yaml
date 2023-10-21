@@ -248,3 +248,17 @@ spec:
     matchLabels:
       app: ts3      # service
       exporter: ts3
+
+#---
+#
+#apiVersion: monitoring.coreos.com/v1
+#kind: PrometheusRule
+#metadata:
+#  name: ts3
+#  namespace: default
+#  labels:
+#    app: ts3
+#spec:
+#  groups:
+#    - name: ts3.rules
+#      rules:
