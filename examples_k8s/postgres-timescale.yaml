@@ -1,12 +1,12 @@
-##  ____           _                 ____   ___  _          __  ____           _    ____ ___ ____
-## |  _ \ ___  ___| |_ __ _ _ __ ___/ ___| / _ \| |        / / |  _ \ ___  ___| |_ / ___|_ _/ ___|
-## | |_) / _ \/ __| __/ _` | '__/ _ \___ \| | | | |       / /  | |_) / _ \/ __| __| |  _ | |\___ \
-## |  __/ (_) \__ \ || (_| | | |  __/___) | |_| | |___   / /   |  __/ (_) \__ \ |_| |_| || | ___) |
-## |_|   \___/|___/\__\__, |_|  \___|____/ \__\_\_____| /_/    |_|   \___/|___/\__|\____|___|____/
-##                    |___/
+##  _____ _                               _      ____  ____
+## |_   _(_)_ __ ___   ___  ___  ___ __ _| | ___|  _ \| __ )
+##   | | | | '_ ` _ \ / _ \/ __|/ __/ _` | |/ _ \ | | |  _ \
+##   | | | | | | | | |  __/\__ \ (_| (_| | |  __/ |_| | |_) |
+##   |_| |_|_| |_| |_|\___||___/\___\__,_|_|\___|____/|____/
+## 
+##  based on PostgreSQL
 
-## https://www.postgresql.org/ + https://github.com/postgres/postgres + https://hub.docker.com/_/postgres
-## https://postgis.net/ + https://github.com/postgis/postgis + https://hub.docker.com/r/postgis/postgis
+## https://www.timescale.com/ + https://github.com/timescale/timescaledb-docker-ha + https://hub.docker.com/r/timescale/timescaledb-ha
 ## https://github.com/prometheus-community/postgres_exporter
 
 ---
@@ -15,10 +15,10 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: postgres-data
+  name: postgres-timescaledb-data
   namespace: default
   labels:
-    app: postgres
+    app: postgres-timescaledb
 spec:
   accessModes:
   - ReadWriteOnce
@@ -33,14 +33,14 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: postgres-env-config
+  name: postgres-timescaledb-env-config
   namespace: default
   labels:
-    app: postgres
+    app: postgres-timescaledb
 data:
   TZ: "Europe/Berlin"
   #POSTGRES_DB: "postgres"
-  #PGDATA: "/var/lib/postgresql/data"
+  #PGDATA: "/home/postgres/pgdata/data"
 
 ---
 
@@ -49,10 +49,10 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: postgres-env-secret
+  name: postgres-timescaledb-env-secret
   namespace: default
   labels:
-    app: postgres
+    app: postgres-timescaledb
 data:
   #POSTGRES_USER: cG9zdGdyZXM=       # postgres
   POSTGRES_PASSWORD: cGFzc3cwcmQ=    # passw0rd
@@ -63,38 +63,37 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: postgres
+  name: postgres-timescaledb
   namespace: default
   labels:
-    app: postgres
+    app: postgres-timescaledb
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: postgres
+      app: postgres-timescaledb
   template:
     metadata:
       labels:
-        app: postgres
+        app: postgres-timescaledb
     spec:
       #imagePullSecrets:
       #- name: regcred
       restartPolicy: Always
       containers:
-      - name: postgres
-        image: postgres:15-alpine
-        #image: postgis/postgis:15-3.4-alpine
+      - name: timescaledb
+        image: timescale/timescaledb-ha:pg15-latest
         imagePullPolicy: Always
         envFrom:
         - configMapRef:
-            name: postgres-env-config
+            name: postgres-timescaledb-env-config
         - secretRef:
-            name: postgres-env-secret
+            name: postgres-timescaledb-env-secret
         ports:
         - containerPort: 5432
-          name: postgres
+          name: timescaledb
           protocol: TCP
         readinessProbe:
           exec:
@@ -120,10 +119,10 @@ spec:
             memory: "1Gi"
             cpu: "1.0"
         volumeMounts:
-        - name: postgres-data
-          subPath: data
-          mountPath: /var/lib/postgresql/data/
-        - name: postgres-db-file-sh-exporter
+        - name: postgres-timescaledb-data
+          #subPath: data
+          mountPath: /home/postgres/pgdata/  # not working: /home/postgres/pgdata/data
+        - name: postgres-timescaledb-db-file-sh-exporter
           subPath: 20_exporter-user.sh
           mountPath: /docker-entrypoint-initdb.d/20_exporter-user.sh
           readOnly: true
@@ -156,10 +155,10 @@ spec:
             memory: "256Mi"
             cpu: "0.5"
       volumes:
-        - name: postgres-data
+        - name: postgres-timescaledb-data
           persistentVolumeClaim:
-            claimName: postgres-data
-        - name: postgres-db-file-sh-exporter
+            claimName: postgres-timescaledb-data
+        - name: postgres-timescaledb-db-file-sh-exporter
           configMap:
             name: postgres-db-file-sh-exporter
 
@@ -203,14 +202,14 @@ data:
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres
+  name: postgres-timescaledb
   namespace: default
   labels:
-    app: postgres
+    app: postgres-timescaledb
 spec:
   type: ClusterIP    # default: "ClusterIP" , set to "NodePort" for access over external-ip (not recommended)
   ports:
-    - name: "postgres"
+    - name: "timescaledb"
       protocol: TCP
       port: 5432
       targetPort: 5432
@@ -220,7 +219,7 @@ spec:
       port: 9187
       targetPort: 9187
   selector:
-    app: postgres
+    app: postgres-timescaledb
 
 ---
 
@@ -229,10 +228,10 @@ spec:
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: postgres
+  name: postgres-timescaledb
   namespace: default
   labels:
-    app: postgres
+    app: postgres-timescaledb
 spec:
   endpoints:
   - path: /metrics
@@ -242,7 +241,7 @@ spec:
     #metricRelabelings:
   selector:
     matchLabels:
-      app: postgres  # service
+      app: postgres-timescaledb  # service
 
 --- 
 
