@@ -1,0 +1,143 @@
+##     _       _           _
+##    / \   __| |_ __ ___ (_)_ __   ___ _ __
+##   / _ \ / _` | '_ ` _ \| | '_ \ / _ \ '__|
+##  / ___ \ (_| | | | | | | | | | |  __/ |
+## /_/   \_\__,_|_| |_| |_|_|_| |_|\___|_|
+## 
+
+## Adminer - Database management in PHP
+## Adminer is available for MySQL, MariaDB, PostgreSQL, SQLite, MS SQL, Oracle, Elasticsearch, MongoDB and others via plugin.
+## https://www.adminer.org/ + https://github.com/vrana/adminer/
+## https://hub.docker.com/_/adminer + https://github.com/TimWolla/docker-adminer
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: adminer-env-config
+  namespace: default
+  labels:
+    app: adminer
+data:
+  #ADMINER_DEFAULT_SERVER: "db"  # default: db
+  #ADMINER_PLUGINS: ""           # see: https://github.com/vrana/adminer/tree/master/plugins
+  ADMINER_DESIGN: "nette"
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adminer
+  namespace: default
+  labels:
+    app: adminer
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: adminer
+  template:
+    metadata:
+      labels:
+        app: adminer
+    spec:
+      #imagePullSecrets:
+      #- name: regcred
+      restartPolicy: Always
+      containers:
+      - name: adminer
+        image: adminer:latest
+        #image: tobi312/tools:adminer
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: adminer-env-config
+        ports:
+        - containerPort: 8080
+          name: adminer
+          protocol: TCP
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 120
+          timeoutSeconds: 5
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 120
+          timeoutSeconds: 5
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "0.1"
+          limits:
+            memory: "512Mi"
+            cpu: "0.5"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: adminer
+  namespace: default
+  labels:
+    app: adminer
+spec:
+  ports:
+    - name: "adminer"
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: adminer
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: adminer
+  namespace: default
+  labels:
+    app: adminer
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    #nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    #nginx.ingress.kubernetes.io/rewrite-target: /$1
+    #nginx.ingress.kubernetes.io/x-forwarded-prefix: "/adminer"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    ## https://cert-manager.io/docs/
+    #cert-manager.io/cluster-issuer: ingress-tls-secret
+    #cert-manager.io/acme-challenge-type: http01
+    ## https://kubernetes.github.io/ingress-nginx/examples/auth/oauth-external-auth/
+    #nginx.ingress.kubernetes.io/auth-url: "https://$host/oauth2/auth"
+    #nginx.ingress.kubernetes.io/auth-signin: "https://$host/oauth2/start?rd=$escaped_request_uri"
+    ## https://kubernetes.github.io/ingress-nginx/examples/auth/basic/
+    #nginx.ingress.kubernetes.io/auth-type: basic
+    #nginx.ingress.kubernetes.io/auth-secret: basic-auth
+    #nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - Adminer'
+spec:
+  tls:
+  - hosts:
+    - adminer.example.com
+    secretName: ingress-tls-secret  # use file: ingress-tls-secret.yaml
+  rules:
+  - host: adminer.example.com
+    http:
+      paths:
+      - path: /
+        #path: /adminer/(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: adminer
+            port:
+              #name: adminer
+              number: 8080
