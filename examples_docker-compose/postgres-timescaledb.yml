@@ -37,7 +37,7 @@ services:
     restart: unless-stopped
     environment:
        DATA_SOURCE_NAME: 'postgresql://postgres:passw0rd@postgres-timescaledb:5432/postgres?sslmode=disable'
-       #DATA_SOURCE_NAME: 'postgresql://postgres_exporter:Exp0rt3r!@postgres-timescaledb:5432/postgres?sslmode=disable'
+       #DATA_SOURCE_NAME: 'postgresql://exporter:Exp0rt3r!@postgres-timescaledb:5432/postgres?sslmode=disable'
        #PG_EXPORTER_METRIC_PREFIX: 'pg'
        #PG_EXPORTER_WEB_LISTEN_ADDRESS: ':9187'
        #PG_EXPORTER_WEB_TELEMETRY_PATH: '/metrics'

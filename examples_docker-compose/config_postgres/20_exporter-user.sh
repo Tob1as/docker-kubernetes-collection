@@ -3,7 +3,7 @@ set -e
 
 : "${POSTGRES_USER:="postgres"}"
 
-: "${EXPORTER_USER:="postgres_exporter"}"
+: "${EXPORTER_USER:="exporter"}"
 : "${EXPORTER_PASSWORD:="Exp0rt3r!"}"
 
 # PostgreSQL versions >= 10  <https://github.com/prometheus-community/postgres_exporter#running-as-non-superuser>
