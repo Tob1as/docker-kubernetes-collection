@@ -6,6 +6,7 @@
 ## 
 ##  based on PostgreSQL
 
+## TimescaleDB - PostgreSQL++ for time series and events
 ## https://www.timescale.com/ + https://github.com/timescale/timescaledb-docker-ha + https://hub.docker.com/r/timescale/timescaledb-ha
 ## https://github.com/prometheus-community/postgres_exporter
 

@@ -5,6 +5,7 @@
 ## |_|   \___/|___/\__\__, |_|  \___|____/ \__\_\_____| /_/    |_|   \___/|___/\__|\____|___|____/
 ##                    |___/
 
+## PostgreSQL - object-relational database (SQL)
 ## https://www.postgresql.org/ + https://github.com/postgres/postgres + https://hub.docker.com/_/postgres
 ## https://postgis.net/ + https://github.com/postgis/postgis + https://hub.docker.com/r/postgis/postgis
 ## https://github.com/prometheus-community/postgres_exporter
