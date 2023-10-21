@@ -17,7 +17,7 @@
 
 ---
 
-## volume for teamspeak data
+## volume (Recommended: Comment volume out after first run.)
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
