@@ -11,7 +11,7 @@ services:
   # Requirements: use sqlite or setup MariaDB before start teamspeak!
   # Admin-Credentials (token) see in logs after start: 
   # * see logs: docker logs -f teamspeak
-  # * save logs: docker logs teamspeak >& ./teamspeak.txt
+  # * save logs: docker logs teamspeak >& ./teamspeak.log
   teamspeak:
     image: teamspeak:latest   # 3.13.6
     container_name: teamspeak

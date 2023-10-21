@@ -12,7 +12,9 @@
 ## https://support.teamspeak.com/hc/en-us/articles/360002712257-Which-ports-does-the-TeamSpeak-3-server-use-
 ## Supported architectures: amd64
 ## Requirements: use sqlite or setup MariaDB before start teamspeak!
-## Admin-Token set TS3SERVER_SERVERADMIN_PASSWORD or see in teamspeak logs after start (kubectl -n default logs -f deployment/ts3)
+## Admin-Credentials (token) see in logs after start:
+## * see logs: "kubectl -n default logs -f deployment/ts3 -c ts3"
+## * save logs: "kubectl -n default logs deployment/ts3 -c ts3 >& ./teamspeak.log"
 ## Exporter: https://github.com/hikhvar/ts3exporter + https://github.com/ricardbejarano/ts3exporter
 
 ---
