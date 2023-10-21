@@ -77,6 +77,8 @@ kind: Deployment
 metadata:
   name: mariadb
   namespace: default
+  labels:
+    app: mariadb
 spec:
   replicas: 1
   strategy:
@@ -88,15 +90,13 @@ spec:
     metadata:
       labels:
         app: mariadb
-      annotations: {}
     spec:
       #imagePullSecrets:
       #- name: regcred
-      serviceAccountName: ""
       restartPolicy: Always
       containers:
       - name: mariadb
-        image: mariadb:10.11                     # Supported architectures: amd64, arm64v8
+        image: mariadb:10.11       # 10.11 = LTS , Supported architectures: amd64, arm64v8
         #image: tobi312/rpi-mariadb:10.11-alpine # Supported architectures: arm32v7 (RaspberryPi)
         imagePullPolicy: Always
         envFrom:
@@ -181,15 +181,15 @@ spec:
             memory: "256Mi"
             cpu: "0.5"
       volumes:
-        - name: mariadb-data
-          persistentVolumeClaim:
-            claimName: mariadb-data
-        - name: mariadb-db-file-config
-          configMap:
-            name: mariadb-db-file-config
-        - name: mariadb-db-file-sh-exporter
-          configMap:
-            name: mariadb-db-file-sh-exporter
+      - name: mariadb-data
+        persistentVolumeClaim:
+          claimName: mariadb-data
+      - name: mariadb-db-file-config
+        configMap:
+          name: mariadb-db-file-config
+      - name: mariadb-db-file-sh-exporter
+        configMap:
+          name: mariadb-db-file-sh-exporter
 
 ---
 
@@ -285,7 +285,7 @@ spec:
 
 --- 
 
-# Examples: https://samber.github.io/awesome-prometheus-alerts/rules#mysql-1
+# Examples: https://samber.github.io/awesome-prometheus-alerts/rules#mysql
 
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
