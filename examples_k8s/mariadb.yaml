@@ -5,6 +5,7 @@
 ## |_|  |_|\__,_|_|  |_|\__,_|____/|____/
 ## 
 
+## MariaDB - relational database (SQL), forked from MySQL
 ## https://mariadb.org/ + https://github.com/MariaDB/server
 ## https://hub.docker.com/_/mariadb + https://github.com/MariaDB/mariadb-docker
 ## https://hub.docker.com/r/tobi312/rpi-mariadb/ + https://github.com/Tob1as/docker-mariadb
