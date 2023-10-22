@@ -149,7 +149,6 @@ spec:
         volumeMounts:
         - mountPath: /usr/share/elasticsearch/data
           name: elasticsearch-data
-          #subpath: data
       - name: exporter
         image: prometheuscommunity/elasticsearch-exporter:latest # quay.io/prometheuscommunity/elasticsearch-exporter:latest
         imagePullPolicy: Always
