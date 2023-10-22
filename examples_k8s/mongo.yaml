@@ -1,0 +1,227 @@
+##  __  __                         ____  ____
+## |  \/  | ___  _ __   __ _  ___ |  _ \| __ )
+## | |\/| |/ _ \| '_ \ / _` |/ _ \| | | |  _ \
+## | |  | | (_) | | | | (_| | (_) | |_| | |_) |
+## |_|  |_|\___/|_| |_|\__, |\___/|____/|____/
+##                     |___/
+
+## MongoDB - document-oriented database (NoSQL)
+## https://www.mongodb.com/
+## https://hub.docker.com/_/mongo + https://github.com/docker-library/mongo
+## https://hub.docker.com/r/percona/mongodb_exporter + https://github.com/percona/mongodb_exporter
+
+---
+
+## volume (Recommended: Comment volume out after first run.)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-data
+  namespace: default
+  labels:
+    app: mongo
+spec:
+  accessModes:
+  - ReadWriteOnce
+  volumeMode: Filesystem
+  storageClassName: local-path # change or use: https://github.com/rancher/local-path-provisioner
+  resources:
+    requests:
+      storage: 15Gi
+
+---
+
+#apiVersion: v1
+#kind: ConfigMap
+#metadata:
+#  name: mongo-env-config
+#  namespace: default
+#  labels:
+#    app: mongo
+#data:
+#  MONGO_INITDB_DATABASE: ""  # optional, when using /docker-entrypoint-initdb.d/*
+#
+#---
+
+## convert string to base64 in Linux: "echo -n 'value' | base64"
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongo-env-secret
+  namespace: default
+  labels:
+    app: mongo
+data:
+  MONGO_INITDB_ROOT_USERNAME: YWRtaW4=      # admin
+  MONGO_INITDB_ROOT_PASSWORD: cGFzc3cwcmQ=  # passw0rd
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+  namespace: default
+  labels:
+    app: mongo
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      #imagePullSecrets:
+      #- name: regcred
+      restartPolicy: Always
+      containers:
+      - name: mongo
+        image: mongo:4.4
+        imagePullPolicy: Always
+        envFrom:
+        #- configMapRef:
+        #    name: mongo-env-config
+        - secretRef:
+            name: mongo-env-secret
+        ports:
+        - containerPort: 27017
+          name: mongo
+          protocol: TCP
+        args: ["mongod", "--storageEngine", "wiredTiger"]
+        readinessProbe:
+          #tcpSocket:
+          #  port: 27017
+          exec:
+            command:
+            - bash
+            - "-c"
+            - |
+              mongo -u $MONGO_INITDB_ROOT_USERNAME -p $MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval db.adminCommand\(\"ping\"\)
+          initialDelaySeconds: 15
+          periodSeconds: 120
+          timeoutSeconds: 5
+          #failureThreshold: 4
+          #successThreshold: 1
+        livenessProbe:
+          #tcpSocket:
+          #  port: 27017
+          exec:
+            command:
+            - bash
+            - "-c"
+            - |
+              mongo -u $MONGO_INITDB_ROOT_USERNAME -p $MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval db.adminCommand\(\"ping\"\)
+          initialDelaySeconds: 30
+          periodSeconds: 120
+          timeoutSeconds: 5
+          #failureThreshold: 4
+          #successThreshold: 1
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "0.1"
+          limits:
+            memory: "1Gi"
+            cpu: "1.0"
+        volumeMounts:
+        - name: mongo-data
+          mountPath: /data/db
+      - name: exporter
+        image: percona/mongodb_exporter:0.39
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9216
+          name: exporter
+          protocol: TCP
+        env:
+        - name: MONGO_USER
+          valueFrom:
+            secretKeyRef:
+              name: mongo-env-secret
+              key: MONGO_INITDB_ROOT_USERNAME
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongo-env-secret
+              key: MONGO_INITDB_ROOT_PASSWORD
+        args: ["--mongodb.uri", "mongodb://$(MONGO_USER):$(MONGO_PASSWORD)@localhost:27017/admin?ssl=false", "--web.listen-address", ":9216", "--web.telemetry-path", "/metrics"]
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "0.1"
+          limits:
+            memory: "256Mi"
+            cpu: "0.5"
+      volumes:
+        - name: mongo-data
+          persistentVolumeClaim:
+            claimName: mongo-data
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+  namespace: default
+  labels:
+    app: mongo
+spec:
+  type: ClusterIP    # default: "ClusterIP" , set to "NodePort" for access over external-ip (not recommended)
+  ports:
+    - name: "mongo"
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
+      #nodePort: 37017
+    - name: "exporter"
+      protocol: TCP
+      port: 9216
+      targetPort: 9216
+  selector:
+    app: mongo
+
+---
+
+## After this line ONLY for Monitoring !
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mongo
+  namespace: default
+  labels:
+    app: mongo
+spec:
+  endpoints:
+  - path: /metrics
+    scheme: HTTP
+    port: exporter # 9216
+    targetPort: 9216
+    #metricRelabelings:
+  selector:
+    matchLabels:
+      app: mongo  # service
+
+#--- 
+#
+### Examples: https://samber.github.io/awesome-prometheus-alerts/rules#mongodb
+#
+#apiVersion: monitoring.coreos.com/v1
+#kind: PrometheusRule
+#metadata:
+#  name: mongo
+#  namespace: default
+#  labels:
+#    app: mongo
+#spec:
+#  groups:
+#    - name: mongo.rules
+#      rules:
+      
