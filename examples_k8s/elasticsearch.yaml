@@ -1,0 +1,294 @@
+##  _____ _           _   _      ____                      _
+## | ____| | __ _ ___| |_(_) ___/ ___|  ___  __ _ _ __ ___| |__
+## |  _| | |/ _` / __| __| |/ __\___ \ / _ \/ _` | '__/ __| '_ \
+## | |___| | (_| \__ \ |_| | (__ ___) |  __/ (_| | | | (__| | | |
+## |_____|_|\__,_|___/\__|_|\___|____/ \___|\__,_|_|  \___|_| |_|
+## 
+
+## Elasticsearch - RESTful search and analytics engine
+## https://www.elastic.co/elasticsearch/ + https://github.com/elastic/elasticsearch
+## https://hub.docker.com/_/elasticsearch + https://hub.docker.com/r/elastic/elasticsearch
+##
+## https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
+## https://discuss.elastic.co/t/set-password-and-user-with-docker-compose/225075/2
+## 
+## or use a community open source fork: 
+## https://github.com/opensearch-project/OpenSearch
+## https://opensearch.org/docs/latest/opensearch/install/docker/
+
+---
+
+## volume (Recommended: Comment volume out after first run.)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: elasticsearch-data
+  namespace: default
+  labels:
+    app: elasticsearch
+spec:
+  accessModes:
+  - ReadWriteOnce
+  volumeMode: Filesystem
+  storageClassName: local-path # change or use: https://github.com/rancher/local-path-provisioner
+  resources:
+    requests:
+      storage: 15Gi
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch-env-config
+  namespace: default
+  labels:
+    app: elasticsearch
+data:
+  node.name: "elasticsearch"
+  cluster.name: "es-docker-cluster"
+  discovery.type: "single-node"
+  bootstrap.memory_lock: "true"
+  ES_JAVA_OPTS: "-Xms512m -Xmx2g"
+  http.port: "9200"
+  transport.port: "9300"
+  http.cors.enabled: "true"
+  http.cors.allow-origin: "/.*/"
+  http.cors.allow-headers: "X-Requested-With,Content-Type,Content-Length,Authorization"
+  xpack.security.enabled: "true"
+  #xpack.security.http.ssl.enabled: "true"
+  #xpack.security.http.ssl.verification_mode: "full"
+  #xpack.security.http.ssl.certificate_authorities: "/usr/share/elasticsearch/config/certificates/ca-certificates.crt"
+  #xpack.security.http.ssl.certificate: "/usr/share/elasticsearch/config/certificates/ssl.crt"
+  #xpack.security.http.ssl.key: "/usr/share/elasticsearch/config/certificates/ssl.key"
+  ##xpack.security.http.ssl.cipher_suites: ""
+
+---
+
+## convert string to base64 in Linux: "echo -n 'value' | base64"
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: elasticsearch-env-secret
+  namespace: default
+  labels:
+    app: elasticsearch
+data:
+  ELASTIC_PASSWORD: cGFzc3cwcmQ=  # passw0rd
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticsearch
+  namespace: default
+  labels:
+    app: elasticsearch
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      #imagePullSecrets:
+      #- name: regcred
+      restartPolicy: Always
+      containers:
+      - name: elasticsearch
+        image: elastic/elasticsearch:8.10.2
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: elasticsearch-env-config
+        - secretRef:
+            name: elasticsearch-env-secret
+        ports:
+        - containerPort: 9200
+          name: elasticsearch
+          protocol: TCP
+        - containerPort: 9300
+          name: cluster
+          protocol: TCP
+        readinessProbe:
+          #tcpSocket:
+          #  port: 9200
+          exec:
+            command: ["/bin/sh", "-c", "curl --silent --fail -XGET 'http://localhost:9200/_cluster/health?pretty' --user elastic:$ELASTIC_PASSWORD || exit 1"]
+            #command: ["/bin/sh", "-c", "curl --silent --insecure --fail -XGET 'https://localhost:9200/_cluster/health?pretty' --user elastic:$ELASTIC_PASSWORD || exit 1"]
+          initialDelaySeconds: 30
+          periodSeconds: 120
+          timeoutSeconds: 5
+          #failureThreshold: 4
+          #successThreshold: 1
+        livenessProbe:
+          #tcpSocket:
+          #  port: 9200
+          exec:
+            command: ["/bin/sh", "-c", "curl --silent --fail -XGET 'http://localhost:9200/_cluster/health?pretty' --user elastic:$ELASTIC_PASSWORD || exit 1"]
+            #command: ["/bin/sh", "-c", "curl --silent --insecure --fail -XGET 'https://localhost:9200/_cluster/health?pretty' --user elastic:$ELASTIC_PASSWORD || exit 1"]
+          initialDelaySeconds: 45
+          periodSeconds: 120
+          timeoutSeconds: 5
+          #failureThreshold: 4
+          #successThreshold: 1
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "0.1"
+          limits:
+            memory: "2Gi"
+            cpu: "1.0"
+        volumeMounts:
+        - mountPath: /usr/share/elasticsearch/data
+          name: elasticsearch-data
+          #subpath: data
+      - name: exporter
+        image: prometheuscommunity/elasticsearch-exporter:latest # quay.io/prometheuscommunity/elasticsearch-exporter:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9114
+          name: exporter
+          protocol: TCP
+        env:
+        - name: ELASTIC_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: elasticsearch-env-secret
+              key: ELASTIC_PASSWORD
+        args:
+        - "--es.uri=http://elastic:$(ELASTIC_PASSWORD)@localhost:9200"
+        #- "--es.uri=https://elastic:$(ELASTIC_PASSWORD)@localhost:9200"
+        #- "--es.ssl-skip-verify=false"
+        #- "--es.ca=/ssl/ca.crt"
+        #- "--web.listen-address=:9114"
+        #- "--web.telemetry-path=/metrics"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "0.1"
+          limits:
+            memory: "256Mi"
+            cpu: "0.5"
+      volumes:
+      - name: elasticsearch-data
+        persistentVolumeClaim:
+          claimName: elasticsearch-data
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+  namespace: default
+  labels:
+    app: elasticsearch
+spec:
+  type: ClusterIP    # default: "ClusterIP" , set to "NodePort" for access over external-ip (not recommended)
+  ports:
+  - name: "elasticsearch"
+    protocol: TCP
+    port: 9200
+    targetPort: 9200
+    #nodePort: 39200
+  #- name: "elasticsearch"
+  #  protocol: TCP
+  #  port: 9300
+  #  targetPort: 9300
+  #  #nodePort: 39300
+  - name: "exporter"
+    protocol: TCP
+    port: 9114
+    targetPort: 9114
+  selector:
+    app: elasticsearch
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: elasticsearch
+  namespace: default
+  labels:
+    app: elasticsearch
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    #nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    #nginx.ingress.kubernetes.io/rewrite-target: /$1
+    #nginx.ingress.kubernetes.io/x-forwarded-prefix: "/"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    ## https://cert-manager.io/docs/
+    #cert-manager.io/cluster-issuer: ingress-tls-secret
+    #cert-manager.io/acme-challenge-type: http01
+    ## https://kubernetes.github.io/ingress-nginx/examples/auth/oauth-external-auth/
+    #nginx.ingress.kubernetes.io/auth-url: "https://$host/oauth2/auth"
+    #nginx.ingress.kubernetes.io/auth-signin: "https://$host/oauth2/start?rd=$escaped_request_uri"
+    ## https://kubernetes.github.io/ingress-nginx/examples/auth/basic/
+    #nginx.ingress.kubernetes.io/auth-type: basic
+    #nginx.ingress.kubernetes.io/auth-secret: basic-auth
+    #nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - ElasticSearch'
+spec:
+  tls:
+  - hosts:
+    - elasticsearch.example.com
+    secretName: ingress-tls-secret  # use file: ingress-tls-secret.yaml
+  rules:
+  - host: elasticsearch.example.com
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: elasticsearch
+            port:
+              #name: elasticsearch
+              number: 9200
+
+---
+
+## After this line ONLY for Monitoring !
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: elasticsearch
+  namespace: default
+  labels:
+    app: elasticsearch
+spec:
+  endpoints:
+  - path: /metrics
+    scheme: HTTP
+    port: exporter # 9114
+    targetPort: 9114
+    #metricRelabelings:
+  selector:
+    matchLabels:
+      app: elasticsearch  # service
+
+#--- 
+#
+### Examples: https://samber.github.io/awesome-prometheus-alerts/rules#elasticsearch
+#
+#apiVersion: monitoring.coreos.com/v1
+#kind: PrometheusRule
+#metadata:
+#  name: elasticsearch
+#  namespace: default
+#  labels:
+#    app: elasticsearch
+#spec:
+#  groups:
+#    - name: elasticsearch.rules
+#      rules:
+      
