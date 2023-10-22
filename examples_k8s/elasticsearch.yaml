@@ -226,6 +226,7 @@ metadata:
     #nginx.ingress.kubernetes.io/rewrite-target: /$1
     #nginx.ingress.kubernetes.io/x-forwarded-prefix: "/"
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    #nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     ## https://cert-manager.io/docs/
     #cert-manager.io/cluster-issuer: ingress-tls-secret
     #cert-manager.io/acme-challenge-type: http01
