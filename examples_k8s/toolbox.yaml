@@ -8,6 +8,8 @@
 ## Toolbox with git, wget, curl, nano, netcat and more.
 ## https://github.com/Tob1as/docker-tools#toolbox
 ## https://hub.docker.com/r/tobi312/tools
+##
+## kubectl -n default exec -it deployment/toolbox -- bash
 
 ---
 
