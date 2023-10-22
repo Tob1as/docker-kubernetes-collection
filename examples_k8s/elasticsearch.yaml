@@ -8,6 +8,7 @@
 ## Elasticsearch - RESTful search and analytics engine
 ## https://www.elastic.co/elasticsearch/ + https://github.com/elastic/elasticsearch
 ## https://hub.docker.com/_/elasticsearch + https://hub.docker.com/r/elastic/elasticsearch
+## https://github.com/prometheus-community/elasticsearch_exporter
 ##
 ## https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
 ## https://discuss.elastic.co/t/set-password-and-user-with-docker-compose/225075/2
