@@ -210,15 +210,15 @@ metadata:
 spec:
   type: ClusterIP    # default: "ClusterIP" , set to "NodePort" for access over external-ip (not recommended)
   ports:
-    - name: "timescaledb"
-      protocol: TCP
-      port: 5432
-      targetPort: 5432
-      #nodePort: 35432
-    - name: "exporter"
-      protocol: TCP
-      port: 9187
-      targetPort: 9187
+  - name: "timescaledb"
+    protocol: TCP
+    port: 5432
+    targetPort: 5432
+    #nodePort: 35432
+  - name: "exporter"
+    protocol: TCP
+    port: 9187
+    targetPort: 9187
   selector:
     app: postgres-timescaledb
 

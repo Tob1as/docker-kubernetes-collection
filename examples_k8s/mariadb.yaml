@@ -251,15 +251,15 @@ metadata:
 spec:
   type: ClusterIP    # default: "ClusterIP" , set to "NodePort" for access over external-ip (not recommended)
   ports:
-    - name: "mariadb"
-      protocol: TCP
-      port: 3306
-      targetPort: 3306
-      #nodePort: 33306
-    - name: "exporter"
-      protocol: TCP
-      port: 9104
-      targetPort: 9104
+  - name: "mariadb"
+    protocol: TCP
+    port: 3306
+    targetPort: 3306
+    #nodePort: 33306
+  - name: "exporter"
+    protocol: TCP
+    port: 9104
+    targetPort: 9104
   selector:
     app: mariadb # deployment
 

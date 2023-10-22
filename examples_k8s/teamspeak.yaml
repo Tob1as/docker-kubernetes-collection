@@ -189,21 +189,21 @@ metadata:
 spec:
   type: NodePort    # default: "ClusterIP" , set to "NodePort" for access over external-ip
   ports:
-    - name: "voice"
-      protocol: UDP
-      port: 9987
-      targetPort: 9987
-      #nodePort: 39987
-    - name: "query"
-      protocol: TCP
-      port: 10011
-      targetPort: 10011
-      #nodePort: 31011
-    - name: "file"
-      protocol: TCP
-      port: 30033
-      targetPort: 30033
-      #nodePort: 33033
+  - name: "voice"
+    protocol: UDP
+    port: 9987
+    targetPort: 9987
+    #nodePort: 39987
+  - name: "query"
+    protocol: TCP
+    port: 10011
+    targetPort: 10011
+    #nodePort: 31011
+  - name: "file"
+    protocol: TCP
+    port: 30033
+    targetPort: 30033
+    #nodePort: 33033
   selector:
     app: ts3
 
@@ -221,10 +221,10 @@ metadata:
 spec:
   type: ClusterIP    # default: "ClusterIP" , set to "NodePort" for access over external-ip (not recommended)
   ports:
-    - name: "exporter"
-      protocol: TCP
-      port: 9189
-      targetPort: 9189
+  - name: "exporter"
+    protocol: TCP
+    port: 9189
+    targetPort: 9189
   selector:
     app: ts3
 

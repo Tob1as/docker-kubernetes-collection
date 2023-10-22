@@ -91,10 +91,10 @@ metadata:
     app: adminer
 spec:
   ports:
-    - name: "adminer"
-      protocol: TCP
-      port: 8080
-      targetPort: 8080
+  - name: "adminer"
+    protocol: TCP
+    port: 8080
+    targetPort: 8080
   selector:
     app: adminer
 
