@@ -62,8 +62,8 @@ spec:
       restartPolicy: Always
       containers:
       - name: toolbox
-        #image: tobi312/tools:toolbox
-        image: tobi312/tools:toolbox-extended
+        #image: tobi312/tools:toolbox          # git, wget, curl, nano, netcat and more
+        image: tobi312/tools:toolbox-extended  # additional with Databases and Storages Tools
         imagePullPolicy: Always
         env:
         - name: TZ
