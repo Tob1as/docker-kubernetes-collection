@@ -6,7 +6,7 @@ services:
   # https://min.io/
   # https://github.com/minio/minio
   # https://hub.docker.com/r/minio/minio
-  # https://github.com/Tob1asDocker/minio
+  # https://github.com/Tob1as/docker-minio
   # URL: http://localhost:9001/
   # fix permission problem before startup, when use user/group settings: "mkdir ./data_minio && chmod 777 ./data_minio"
   minio:

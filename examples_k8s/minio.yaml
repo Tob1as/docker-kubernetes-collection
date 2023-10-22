@@ -1,0 +1,325 @@
+##  __  __ _       ___ ___
+## |  \/  (_)_ __ |_ _/ _ \
+## | |\/| | | '_ \ | | | | |
+## | |  | | | | | || | |_| |
+## |_|  |_|_|_| |_|___\___/
+## 
+
+## MinIO - Object Storage compatible with S3
+## https://min.io/ 
+## https://github.com/minio/minio + https://hub.docker.com/r/minio/minio
+##
+## https://github.com/Tob1as/docker-minio + https://hub.docker.com/r/tobi312/minio/
+
+---
+
+## volume (Recommended: Comment volume out after first run.)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-data
+  namespace: default
+  labels:
+    app: minio
+spec:
+  accessModes:
+  - ReadWriteOnce
+  volumeMode: Filesystem
+  storageClassName: local-path # change or use: https://github.com/rancher/local-path-provisioner
+  resources:
+    requests:
+      storage: 15Gi
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minio-env-config
+  namespace: default
+  labels:
+    app: minio
+data:
+  # execute user/group (Username, Groupname, UID and GID works NOT with custom CA!)
+  #MINIO_USERNAME: "minio"
+  #MINIO_GROUPNAME: "minio"
+  #MINIO_UID: "1000"
+  #MINIO_GID: "1000"
+  # URLs
+  MINIO_SERVER_URL: "https://minio.example.com"                   # S3-API
+  MINIO_BROWSER_REDIRECT_URL: "https://minio-console.example.com" # Console/GUI
+  # Metrics <https://min.io/docs/minio/container/operations/monitoring/collect-minio-metrics-using-prometheus.html#>
+  MINIO_PROMETHEUS_AUTH_TYPE: "public" # use not recommended, please use TOKEN for Auth or nginx-ingress with BasicAuth
+  MINIO_PROMETHEUS_URL: "http://prometheus-operated.cattle-monitoring-system:9090"
+  MINIO_PROMETHEUS_JOB_ID: "minio"
+
+---
+
+## convert string to base64 in Linux: "echo -n 'value' | base64"
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: minio-env-secret
+  namespace: default
+  labels:
+    app: minio
+data:
+  MINIO_ROOT_USER: bWluaW8=            # minio
+  MINIO_ROOT_PASSWORD: bWluaW8xMjM=    # minio123
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+  namespace: default
+  labels:
+    app: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      name: minio
+      labels:
+        app: minio
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: minio
+        image: minio/minio:latest
+        #image: tobi312/minio:latest
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: minio-env-config
+        - secretRef:
+            name: minio-env-secret
+        ports:
+        - containerPort: 9000
+          name: minio
+          protocol: TCP
+        - containerPort: 9001
+          name: minio-console
+          protocol: TCP
+        args:
+        - server
+        - --address
+        - :9000
+        - --console-address
+        - :9001
+        - /data
+        readinessProbe:
+          httpGet:
+            path: /minio/health/ready
+            port: 9000
+          initialDelaySeconds: 15
+          periodSeconds: 120
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /minio/health/live
+            port: 9000
+          initialDelaySeconds: 30
+          periodSeconds: 120
+          timeoutSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "0.5"
+          limits:
+            memory: "1Gi"
+            cpu: "1.0"
+        volumeMounts:
+        - name: minio-data
+          mountPath: /data
+        - name: cacerts     # https://docs.min.io/docs/how-to-secure-access-to-minio-server-with-tls.html#install-certificates-from-third-party-cas
+          mountPath: /root/.minio/certs/CAs
+          #readOnly: true
+      volumes:
+        - name: minio-data
+          persistentVolumeClaim:
+            claimName: minio-data
+        - name: cacerts
+          secret:
+            secretName: ca-files-secret
+            defaultMode: 0644
+            optional: true
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  namespace: default
+  labels:
+    app: minio
+spec:
+  ports:
+    - name: "minio"
+      port: 9000
+      targetPort: 9000
+      protocol: TCP
+    - name: "minio-console"
+      port: 9001
+      targetPort: 9001
+      protocol: TCP
+  selector:
+    app: minio
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-minio
+  namespace: default
+  labels:
+    app: minio
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    #nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    #nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    ## https://cert-manager.io/docs/
+    #cert-manager.io/cluster-issuer: ingress-tls-secret
+    #cert-manager.io/acme-challenge-type: http01
+spec:
+  tls:
+  - hosts:
+    - minio.example.com
+    - minio-console.example.com
+    secretName: ingress-tls-secret
+  rules:
+  - host: minio-console.example.com
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: minio
+            port:
+              #name: minio-console
+              number: 9001
+  - host: minio.example.com
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: minio
+            port:
+              #name: minio
+              number: 9000
+
+---
+
+# secure metics path with BasicAuth
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-minio-metrics
+  namespace: default
+  labels:
+    app: minio
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    #nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    #nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    ## https://cert-manager.io/docs/
+    #cert-manager.io/cluster-issuer: ingress-tls-secret
+    #cert-manager.io/acme-challenge-type: http01
+    ## https://kubernetes.github.io/ingress-nginx/examples/auth/basic/
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - MinIO Metrics'
+spec:
+  tls:
+  - hosts:
+    - minio.example.com
+    secretName: ingress-tls-secret
+  rules:
+  - host: minio.example.com
+    http:
+      paths:
+      - path: /minio/v2/metrics
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: minio
+            port:
+              #name: minio
+              number: 9000
+
+---
+
+## After this line ONLY for Monitoring !
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: minio
+  namespace: default
+  labels:
+    app: minio
+spec:
+  endpoints:
+  - path: /minio/v2/metrics/cluster
+    scheme: HTTP
+    port: minio # 9000
+    targetPort: 9000
+    #tlsConfig:
+    #  insecureSkipVerify: true
+    #bearerTokenSecret:
+    #  name: "minio-env-secret-token"
+    #  key: "token"
+    #metricRelabelings:
+  - path: /minio/v2/metrics/node
+    scheme: HTTP
+    port: minio # 9000
+    targetPort: 9000
+    #tlsConfig:
+    #  insecureSkipVerify: true
+    #bearerTokenSecret:
+    #  name: "minio-env-secret-token"
+    #  key: "token"
+    #metricRelabelings:
+  - path: /minio/v2/metrics/bucket
+    scheme: HTTP
+    port: minio # 9000
+    targetPort: 9000
+    #tlsConfig:
+    #  insecureSkipVerify: true
+    #bearerTokenSecret:
+    #  name: "minio-env-secret-token"
+    #  key: "token"
+    #metricRelabelings:
+  selector:
+    matchLabels:
+      app: minio  # service
+
+#---
+#
+#apiVersion: monitoring.coreos.com/v1
+#kind: PrometheusRule
+#metadata:
+#  name: minio
+#  namespace: default
+#  labels:
+#    app: minio
+#spec:
+#  groups:
+#    - name: minio.rules
+#      rules:
