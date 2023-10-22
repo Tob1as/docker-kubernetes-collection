@@ -19,7 +19,7 @@ Help for install Kubernetes Tools? Use my install [Script](https://github.com/To
 ## Operators
 
 A [Prometheus-Operator](https://github.com/prometheus-operator/prometheus-operator) is used for monitoring.  
-(It is recommended to set a volume for Prometheus and Grafana so that there is no data loss.)  
+(If you use Rancher, it can be installed as an app. It is recommended to set a volume for Prometheus and Grafana so that there is no data loss.)  
   
 Some deployments in this project can be replaced by operators.  
 A search/list for operators is available at [OperatorHub.io](https://operatorhub.io/)
