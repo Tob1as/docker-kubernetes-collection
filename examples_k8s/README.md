@@ -16,6 +16,14 @@ KVM hypervisor: [Proxmox](https://www.proxmox.com/en/proxmox-ve) based on [Debia
 
 Help for install Kubernetes Tools? Use my install [Script](https://github.com/Tob1asDocker/Collection/blob/master/scripts/kubernetes_tools_install.sh) for Linux Debian/Raspbian.  
 
+## Operators
+
+A [Prometheus-Operator](https://github.com/prometheus-operator/prometheus-operator) is used for monitoring.  
+(It is recommended to set a volume for Prometheus and Grafana so that there is no data loss.)  
+  
+Some deployments in this project can be replaced by operators.  
+A search/list for operators is available at [OperatorHub.io](https://operatorhub.io/)
+
 ## more Examples
 
 You can find other examples in my other Docker [Projects](https://github.com/Tob1as) beginn with `docker-*`.
