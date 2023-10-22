@@ -26,7 +26,7 @@ A search/list for operators is available at [OperatorHub.io](https://operatorhub
 
 ## more Examples
 
-You can find other examples in my other Docker [Projects](https://github.com/Tob1as) beginn with `docker-*`.
+You can find other examples (e.g. databases) in my other Docker [Projects](https://github.com/Tob1as) beginn with `docker-*`.
 
 ## Feedback
 
