@@ -16,8 +16,10 @@ KVM hypervisor: [Proxmox](https://www.proxmox.com/en/proxmox-ve) based on [Debia
 
 Help for install Kubernetes Tools? Use my install [Script](https://github.com/Tob1asDocker/Collection/blob/master/scripts/kubernetes_tools_install.sh) for Linux Debian/Raspbian.  
 
-## Links
+## more Examples
 
-* Website (NGINX/Apache, PHP, SSH/SFTP) -> [github.com/Tob1as/docker-php](https://github.com/Tob1as/docker-php/blob/master/k8s.yaml)
-* MariaDB -> [github.com/Tob1as/docker-mariadb](https://github.com/Tob1as/docker-mariadb/blob/master/k8s.yaml)
-* MinIO -> [github.com/Tob1as/docker-minio](https://github.com/Tob1as/docker-minio/blob/main/k8s.yaml)
+You can find other examples in my other Docker [Projects](https://github.com/Tob1as) beginn with `docker-*`.
+
+## Feedback
+
+If you have feedback, questions or improvements, create an issue or an MR.
