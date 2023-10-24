@@ -1,0 +1,456 @@
+##  ____       _     _     _ _   __  __  ___
+## |  _ \ __ _| |__ | |__ (_) |_|  \/  |/ _ \
+## | |_) / _` | '_ \| '_ \| | __| |\/| | | | |
+## |  _ < (_| | |_) | |_) | | |_| |  | | |_| |
+## |_| \_\__,_|_.__/|_.__/|_|\__|_|  |_|\__\_\
+## 
+
+## https://www.rabbitmq.com/ + https://github.com/rabbitmq/rabbitmq-server
+## https://hub.docker.com/_/rabbitmq + https://github.com/docker-library/rabbitmq
+## Docs: 
+## * ENV Vars: https://www.rabbitmq.com/configure.html#supported-environment-variables
+## * Ports: https://www.rabbitmq.com/networking.html
+## * Exporter: https://www.rabbitmq.com/prometheus.html
+## * Example config: https://github.com/rabbitmq/rabbitmq-server/blob/v3.12.x/deps/rabbit/docs/rabbitmq.conf.example
+## * SSL + Managment: https://rabbitmq.com/ssl.html#enabling-tls + https://rabbitmq.com/management.html
+## * MQTT: https://rabbitmq.com/mqtt.html + https://www.rabbitmq.com/web-mqtt.html
+
+---
+
+## volume (Recommended: Comment volume out after first run.)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rabbitmq-data
+  namespace: default
+  labels:
+    app: rabbitmq
+spec:
+  accessModes:
+  - ReadWriteOnce
+  volumeMode: Filesystem
+  storageClassName: local-path # change or use: https://github.com/rancher/local-path-provisioner
+  resources:
+    requests:
+      storage: 15Gi
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-env-config
+  namespace: default
+  labels:
+    app: rabbitmq
+data:
+  #RABBITMQ_DEFAULT_VHOST: ""
+  RABBITMQ_NODENAME: "rabbit@localhost"  # default: "rabbit@$HOSTNAME"
+
+---
+
+## convert string to base64 in Linux: "echo -n 'value' | base64"
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rabbitmq-env-secret
+  namespace: default
+  labels:
+    app: rabbitmq
+data:
+  RABBITMQ_DEFAULT_USER: YWRtaW4=          # admin (default: guest)
+  RABBITMQ_DEFAULT_PASS: cGFzc3cwcmQ=      # passw0rd (default: guest)
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: default
+  labels:
+    app: rabbitmq
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      #imagePullSecrets:
+      #- name: regcred
+      #hostname: rabbitmq
+      restartPolicy: Always
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:management-alpine
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: rabbitmq-env-config
+        - secretRef:
+            name: rabbitmq-env-secret
+        ports:
+        - containerPort: 5672  # AMQP
+          name: amqp
+          protocol: TCP
+        - containerPort: 5671  # AMQP TLS
+          name: amqp-tls
+          protocol: TCP
+        - containerPort: 15672 # HTTP API & Web UI
+          name: http-api
+          protocol: TCP
+        - containerPort: 15671 # HTTPS API & Web UI
+          name: https-api
+          protocol: TCP
+        - containerPort: 15692 # HTTP exporter
+          name: exporter
+          protocol: TCP
+        #- containerPort: 15691 # HTTPS exporter
+        #  name: exporter
+        #  protocol: TCP
+        - containerPort: 1883  # MQTT
+          name: mqtt
+          protocol: TCP
+        - containerPort: 8883  # MQTTS
+          name: mqtts
+          protocol: TCP
+        - containerPort: 15675 # MQTT WS
+          name: mqtt-ws
+          protocol: TCP
+        - containerPort: 15676 # MQTT WSS
+          name: mqtt-wss
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command: ["rabbitmq-diagnostics", "ping"]
+          initialDelaySeconds: 15
+          periodSeconds: 60
+          timeoutSeconds: 5
+        livenessProbe:
+          exec:
+            command: ["rabbitmq-diagnostics", "-q" , "ping"]
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          timeoutSeconds: 5
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "0.1"
+          limits:
+            memory: "1Gi"
+            cpu: "1.0"
+        volumeMounts:
+        - name: rabbitmq-data
+          mountPath: /var/lib/rabbitmq/mnesia
+        - name: rabbitmq-plugins
+          subPath: enabled_plugins.erl
+          mountPath: /etc/rabbitmq/enabled_plugins
+        #- name: rabbitmq-conf
+        #  subPath: rabbitmq.conf
+        #  mountPath: /etc/rabbitmq/rabbitmq.conf
+        #  readOnly: true
+        - name: rabbitmq-conf
+          subPath: 20-ssl.conf
+          mountPath: /etc/rabbitmq/conf.d/20-ssl.conf
+          readOnly: true
+        - name: rabbitmq-conf
+          subPath: 30-management.conf
+          mountPath: /etc/rabbitmq/conf.d/30-management.conf
+          readOnly: true
+        - name: rabbitmq-conf
+          subPath: 40-mqtt.conf
+          mountPath: /etc/rabbitmq/conf.d/40-mqtt.conf
+          readOnly: true
+        - name: rabbitmq-conf
+          subPath: 41-mqtt-ws.conf
+          mountPath: /etc/rabbitmq/conf.d/41-mqtt-ws.conf
+          readOnly: true
+        - name: rabbitmq-ssl
+          mountPath: /ssl
+          readOnly: true
+      volumes:
+      - name: rabbitmq-data
+        persistentVolumeClaim:
+          claimName: rabbitmq-data
+      - name: rabbitmq-plugins
+        configMap:
+          name: rabbitmq-plugins
+      - name: rabbitmq-conf
+        configMap:
+          name: rabbitmq-files-config
+      - name: rabbitmq-ssl
+        secret:
+          secretName: rabbitmq-ssl-secret
+
+---
+
+## https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/config_rabbitmq/enabled_plugins.erl
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-plugins
+  namespace: default
+  labels:
+    app: rabbitmq
+data:
+  enabled_plugins.erl: |-
+    [rabbitmq_management,rabbitmq_prometheus,rabbitmq_federation,rabbitmq_federation_management,rabbitmq_mqtt,rabbitmq_web_mqtt].
+
+---
+
+## Files:
+## https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/config_rabbitmq/conf.d/20-ssl.conf
+## https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/config_rabbitmq/conf.d/30-management.conf
+## https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/config_rabbitmq/conf.d/40-mqtt.conf
+## https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/config_rabbitmq/conf.d/41-mqtt-ws.conf
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-files-config
+  namespace: default
+  labels:
+    app: rabbitmq
+data:
+  20-ssl.conf: |-
+    # AMQP
+    listeners.tcp.default = 5672
+    listeners.ssl.default = 5671
+    
+    # SSL/TLS
+    ssl_options.cacertfile = /ssl/ca.crt
+    ssl_options.certfile   = /ssl/ssl.crt
+    ssl_options.keyfile    = /ssl/ssl.key
+    #ssl_options.password   = passw0rd
+    ssl_options.verify     = verify_peer
+    ssl_options.fail_if_no_peer_cert = false
+    ssl_options.versions.1 = tlsv1.3
+    ssl_options.versions.2 = tlsv1.2
+
+  30-management.conf: |-
+    management.tcp.port = 15672
+    
+    management.ssl.port       = 15671
+    management.ssl.cacertfile = /ssl/ca.crt
+    management.ssl.certfile   = /ssl/ssl.crt
+    management.ssl.keyfile    = /ssl/ssl.key
+    #management.ssl.password   = passw0rd
+    management.ssl.honor_cipher_order   = true
+    management.ssl.honor_ecc_order      = true
+    management.ssl.client_renegotiation = false
+    management.ssl.secure_renegotiate   = true
+    management.ssl.versions.1 = tlsv1.3
+    management.ssl.versions.2 = tlsv1.2
+
+  40-mqtt.conf: |-
+    # need 20-ssl.conf !
+    
+    mqtt.listeners.tcp.default = 1883
+    mqtt.listeners.ssl.default = 8883
+    
+    mqtt.allow_anonymous  = false
+    mqtt.default_user     = mqtt
+    mqtt.default_pass     = passw0rd
+    
+    mqtt.vhost            = /
+    mqtt.exchange         = amq.topic
+    # 24 hours by default
+    mqtt.subscription_ttl = 86400000
+    mqtt.prefetch         = 10
+
+  41-mqtt-ws.conf: |-
+    # ws://127.0.0.1:15675/ws
+    web_mqtt.tcp.port = 15675
+    
+    web_mqtt.ssl.port = 15676
+    web_mqtt.ssl.backlog    = 1024
+    web_mqtt.ssl.cacertfile = /ssl/ca.crt
+    web_mqtt.ssl.certfile   = /ssl/ssl.crt
+    web_mqtt.ssl.keyfile    = /ssl/ssl.key
+    #web_mqtt.ssl.password   = passw0rd
+    web_mqtt.ssl.honor_cipher_order   = true
+    web_mqtt.ssl.honor_ecc_order      = true
+    web_mqtt.ssl.client_renegotiation = false
+    web_mqtt.ssl.secure_renegotiate   = true
+    web_mqtt.ssl.versions.1 = tlsv1.3
+    web_mqtt.ssl.versions.2 = tlsv1.2
+    
+---
+
+## help: https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_k8s/ca-files-secret.yaml#L8-L14
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rabbitmq-ssl-secret
+  namespace: default
+type: Opaque
+data:
+  ca.crt: <ca.crt>
+  ssl.crt: <ssl.crt>
+  ssl.key: <ssl.key>
+
+--- 
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-external
+  namespace: default
+  labels:
+    app: rabbitmq
+spec:
+  type: NodePort
+  ports:
+    - name: "amqp"
+      protocol: TCP
+      port: 5672
+      targetPort: 5672
+      #nodePort: 35672
+    - name: "amqp-tls"
+      protocol: TCP
+      port: 5671
+      targetPort: 5671
+      #nodePort: 35671
+    - name: "mqtt"
+      protocol: TCP
+      port: 1883
+      targetPort: 1883
+      #nodePort: 31883
+    - name: "mqtts"
+      protocol: TCP
+      port: 8883
+      targetPort: 8883
+      #nodePort: 38883
+  selector:
+    app: rabbitmq
+
+--- 
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: default
+  labels:
+    app: rabbitmq
+    exporter: rabbitmq
+spec:
+  type: ClusterIP    # default: "ClusterIP" , set to "NodePort" for access over external-ip (not recommended)
+  ports:
+    - name: "http-api"
+      protocol: TCP
+      port: 15672
+      targetPort: 15672
+    - name: "https-api"
+      protocol: TCP
+      port: 15671
+      targetPort: 15671
+    - name: "exporter"
+      protocol: TCP
+      port: 15692
+      targetPort: 15692
+    - name: "mqtt-ws"
+      protocol: TCP
+      port: 15675
+      targetPort: 15675
+    - name: "mqtt-wss"
+      protocol: TCP
+      port: 15676
+      targetPort: 15676
+  selector:
+    app: rabbitmq
+  
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  namespace: default
+  labels:
+    app: rabbitmq
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    #nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    #nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    #nginx.ingress.kubernetes.io/rewrite-target: /$1
+    #nginx.ingress.kubernetes.io/x-forwarded-prefix: "/"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    ## https://cert-manager.io/docs/
+    #cert-manager.io/cluster-issuer: ingress-tls-secret
+    #cert-manager.io/acme-challenge-type: http01
+spec:
+  tls:
+  - hosts:
+    - rabbitmq.example.com
+    secretName: ingress-tls-secret
+  rules:
+  - host: rabbitmq.example.com
+    http:
+      paths:
+      - path: /
+        #path: /(.*)
+        #path: /rabbitmq/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: rabbitmq
+            port:
+              #name: http-api
+              number: 15672
+      - path: /ws
+        pathType: Exact
+        backend:
+          service:
+            name: rabbitmq
+            port:
+              #name: mqtt-ws
+              number: 15675
+
+---
+
+## After this line ONLY for Monitoring !
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: rabbitmq
+  namespace: default
+  labels:
+    app: rabbitmq
+spec:
+  endpoints:
+  - path: /metrics
+    scheme: HTTP
+    port: exporter # 15692
+    targetPort: 15692
+    #metricRelabelings:
+  selector:
+    matchLabels:
+      app: rabbitmq  # service
+      exporter: rabbitmq
+
+#--- 
+#
+## Examples: https://samber.github.io/awesome-prometheus-alerts/rules#rabbitmq
+#
+#apiVersion: monitoring.coreos.com/v1
+#kind: PrometheusRule
+#metadata:
+#  name: rabbitmq
+#  namespace: default
+#  labels:
+#    app: rabbitmq
+#spec:
+#  groups:
+#    - name: rabbitmq.rules
+#      rules:
