@@ -407,7 +407,7 @@ spec:
             port:
               #name: http-api
               number: 15672
-      - path: /ws
+      - path: /ws            # wss://rabbitmq.example.com/ws , test with https://mqttboard.flespi.io/
         pathType: Exact
         backend:
           service:
