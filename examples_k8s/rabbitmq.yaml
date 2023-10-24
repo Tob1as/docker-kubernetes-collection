@@ -283,7 +283,7 @@ data:
     
 ---
 
-## help: https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_k8s/ca-files-secret.yaml#L8-L14
+## help to convert to base64: https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_k8s/ca-files-secret.yaml#L8-L14
 apiVersion: v1
 kind: Secret
 metadata:
