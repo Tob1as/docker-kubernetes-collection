@@ -24,6 +24,10 @@ A [Prometheus-Operator](https://github.com/prometheus-operator/prometheus-operat
 Some deployments in this project can be replaced by operators.  
 A search/list for operators is available at [OperatorHub.io](https://operatorhub.io/)
 
+## SSL / TLS
+
+For this Examples i used also self signed certificate create with easy-rsa ([#1](https://github.com/OpenVPN/easy-rsa),[#2](https://github.com/Tob1as/docker-tools#easy-rsa)), when you want use Let's Encrypt you can use [Cert-Manager](https://cert-manager.io/docs/).
+
 ## more Examples
 
 You can find other examples (e.g. databases) in my other Docker [Projects](https://github.com/Tob1as) beginn with `docker-*`.
