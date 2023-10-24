@@ -210,6 +210,7 @@ data:
 
 ---
 
+# https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/config_mariadb/20_exporter-user.sh
 apiVersion: v1
 kind: ConfigMap
 metadata:
