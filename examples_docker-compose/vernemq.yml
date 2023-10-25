@@ -104,7 +104,7 @@ services:
       - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.keepalive_interval=60"
       - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.username=bridge-user"
       - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.password=passw0rd"
-      - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.topic.1=* out 1"  # use 'in', 'out' or 'both'
+      - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.topic.1=* out 1"  # use 'in', 'out' or 'both' and set qos
       - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.mqtt_version=3"
       - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.max_outgoing_buffered_messages=1000"
       #- "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.capath=/etc/ssl/certs"
