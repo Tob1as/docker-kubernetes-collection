@@ -113,6 +113,13 @@ services:
       #- "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.keyfile=./etc/key.pem"
       - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.insecure=off"
       - "DOCKER_VERNEMQ_vmq_bridge.ssl.br0.tls_version=tlsv1.2"
+    # healtcheck integrated with: "CMD vernemq ping | grep -q pong"
+    #healthcheck:
+    #  test: ["CMD", "curl", "--fail", "--insecure", "http://localhost:9000/health"]
+    #  start_period: 30s
+    #  interval: 15s
+    #  timeout: 3s
+    #  retries: 3
     #labels:
     #  - "traefik.enable=true"
     #  - "traefik.http.services.vernemq.loadbalancer.server.port=9000"
