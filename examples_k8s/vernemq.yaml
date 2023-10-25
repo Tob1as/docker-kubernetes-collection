@@ -150,11 +150,25 @@ spec:
       #imagePullSecrets:
       #- name: regcred
       #hostname: vernemq
+      securityContext:
+        fsGroup: 10000
+        runAsGroup: 10000
+        runAsUser: 10000
       restartPolicy: Always
       containers:
       - name: vernemq
-        image: vernemq/vernemq:1.13.0-alpine
+        image: vernemq/vernemq:1.12.3-alpine # vernemq/vernemq:1.13.0-alpine # not working, only with StatefulSet?
         imagePullPolicy: Always
+        env: 
+        #- name: DOCKER_VERNEMQ_DISCOVERY_KUBERNETES
+        #  value: "0"
+        - name: VMQ_NODENAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        #- name: VMQ_HOSTNAME   # not working?
+        #  value: vernemq
         envFrom:
         - configMapRef:
             name: vernemq-env-config
@@ -413,7 +427,7 @@ spec:
   - host: vernemq.example.com
     http:
       paths:
-      - path: /status
+      - path: /
         pathType: Prefix
         backend:
           service:
@@ -477,8 +491,8 @@ spec:
   endpoints:
   - path: /metrics
     scheme: HTTP
-    port: exporter # 15692
-    targetPort: 15692
+    port: http # 9000
+    targetPort: 9000
     #metricRelabelings:
   selector:
     matchLabels:
