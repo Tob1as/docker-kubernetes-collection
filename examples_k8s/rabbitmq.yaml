@@ -289,6 +289,8 @@ kind: Secret
 metadata:
   name: rabbitmq-ssl-secret
   namespace: default
+  labels:
+    app: rabbitmq
 type: Opaque
 data:
   ca.crt: <ca.crt>
