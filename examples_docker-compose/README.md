@@ -64,7 +64,8 @@ node-exporter | see prom  | [Click](https://github.com/prometheus/node_exporter)
 All applications in the example use the same subdomain and their own subpaths/subfolders.
 
 Grafana dashboards can be found in the GitHub projects of the exporters or on the [Grafana website](https://grafana.com/grafana/dashboards/).  
-When you copy the dashboards `*.json`-files in `.config_monitoring/grafana/provisioning/dashboards/` before first startup, it will automatically add.
+When you copy the dashboards `*.json`-files in `.config_monitoring/grafana/provisioning/dashboards/` before first startup, it will automatically add.  
+A [list of exporters](https://prometheus.io/docs/instrumenting/exporters/) can be found on the Prometheus website.
 
 If you don't want to use monitoring, don't start it and delete the exporter from the example *.yml files.
 
