@@ -1,0 +1,502 @@
+## __     __                   __  __  ___
+## \ \   / /__ _ __ _ __   ___|  \/  |/ _ \
+##  \ \ / / _ \ '__| '_ \ / _ \ |\/| | | | |
+##   \ V /  __/ |  | | | |  __/ |  | | |_| |
+##    \_/ \___|_|  |_| |_|\___|_|  |_|\__\_\
+## 
+
+## VerneMQ - MQTT Broker
+## https://vernemq.com/ + https://github.com/vernemq/vernemq
+## https://hub.docker.com/r/vernemq/vernemq + https://github.com/vernemq/docker-vernemq
+
+---
+
+## volume (Recommended: Comment volume out after first run.)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vernemq-data
+  namespace: default
+  labels:
+    app: vernemq
+spec:
+  accessModes:
+  - ReadWriteOnce
+  volumeMode: Filesystem
+  storageClassName: local-path # change or use: https://github.com/rancher/local-path-provisioner
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vernemq-env-config
+  namespace: default
+  labels:
+    app: vernemq
+data:
+  DOCKER_VERNEMQ_ACCEPT_EULA: "yes"
+  DOCKER_VERNEMQ_log.console.level: "debug"
+  DOCKER_VERNEMQ_allow_anonymous: "off"     # "on" only for testing/development
+  DOCKER_VERNEMQ_plugins.vmq_passwd: "on"
+  DOCKER_VERNEMQ_vmq_passwd.password_file: "./etc/vmq.passwd"
+  DOCKER_VERNEMQ_vmq_passwd.password_reload_interval: "0"
+  DOCKER_VERNEMQ_plugins.vmq_acl: "on"
+  DOCKER_VERNEMQ_vmq_acl.acl_file: "./etc/vmq.acl"
+  DOCKER_VERNEMQ_vmq_acl.acl_reload_interval: "0"
+  # CLUSTER
+  #DOCKER_VERNEMQ_nodename: "VerneMQ@127.0.0.1" # don't work ?
+  DOCKER_VERNEMQ_metadata_plugin: "vmq_plumtree" # 'vmq_plumtree' for existing and 'vmq_swc' for new cluster deployments
+  DOCKER_VERNEMQ_allow_register_during_netsplit: "on"
+  DOCKER_VERNEMQ_allow_publish_during_netsplit: "on"
+  DOCKER_VERNEMQ_allow_subscribe_during_netsplit: "on"
+  DOCKER_VERNEMQ_allow_unsubscribe_during_netsplit: "on"
+  DOCKER_VERNEMQ_coordinate_registrations: "on"
+  DOCKER_VERNEMQ_listener.vmq.clustering: "0.0.0.0:44053"
+  #DOCKER_VERNEMQ_listener.vmq.clustering: "0.0.0.0:18883"
+  DOCKER_VERNEMQ_listener.vmqs.clustering: "0.0.0.0:18884"
+  DOCKER_VERNEMQ_listener.vmqs.cafile: "./etc/cacerts.pem"
+  DOCKER_VERNEMQ_listener.vmqs.certfile: "./etc/cert.pem"
+  DOCKER_VERNEMQ_listener.vmqs.keyfile: "./etc/key.pem"
+  DOCKER_VERNEMQ_listener.vmqs.ciphers: "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
+  #DOCKER_VERNEMQ_listener.vmqs.eccs: "[brainpoolP384r1,secp384r1,sect283k1]"
+  DOCKER_VERNEMQ_listener.vmqs.tls_version: "tlsv1.2"
+  #DOCKER_VERNEMQ_distributed_cookie: "vmq"
+  #DOCKER_VERNEMQ_DISCOVERY_NODE: "<IP-OF-VERNEMQ1>"
+  # WEBSOCKET
+  DOCKER_VERNEMQ_listener.ws.default: "0.0.0.0:8080" # default: 8080
+  #DOCKER_VERNEMQ_listener.wss.wss_default: "0.0.0.0:9002"
+  #DOCKER_VERNEMQ_listener.wss.wss_default.cafile: "./etc/cacerts.pem"
+  #DOCKER_VERNEMQ_listener.wss.wss_default.certfile: "./etc/cert.pem"
+  #DOCKER_VERNEMQ_listener.wss.wss_default.keyfile: "./etc/key.pem"
+  # MQTT
+  DOCKER_VERNEMQ_listener.tcp.default: "0.0.0.0:1883"
+  DOCKER_VERNEMQ_listener.tcp.allowed_protocol_versions: "3,4,5,131"
+  # MQTTS
+  DOCKER_VERNEMQ_listener.ssl.default: "0.0.0.0:8883"
+  DOCKER_VERNEMQ_listener.ssl.allowed_protocol_versions: "3,4,5,131"
+  DOCKER_VERNEMQ_listener.ssl.cafile: "./etc/cacerts.pem"
+  DOCKER_VERNEMQ_listener.ssl.certfile: "./etc/cert.pem"
+  DOCKER_VERNEMQ_listener.ssl.keyfile: "./etc/key.pem"
+  DOCKER_VERNEMQ_listener.ssl.ciphers: "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
+  #DOCKER_VERNEMQ_listener.ssl.eccs: "[brainpoolP384r1,secp384r1,sect283k1]"
+  DOCKER_VERNEMQ_listener.ssl.tls_version: "tlsv1.2"
+  # HTTP
+  DOCKER_VERNEMQ_listener.http.default: "0.0.0.0:9000" # 8888 not working / blocked ?
+  # HTTPS
+  DOCKER_VERNEMQ_listener.https.default: "0.0.0.0:8889"
+  DOCKER_VERNEMQ_listener.https.cafile: "./etc/cacerts.pem"
+  DOCKER_VERNEMQ_listener.https.certfile: "./etc/cert.pem"
+  DOCKER_VERNEMQ_listener.https.keyfile: "./etc/key.pem"
+  DOCKER_VERNEMQ_listener.https.ciphers: "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
+  #DOCKER_VERNEMQ_listener.https.eccs: "[brainpoolP384r1,secp384r1,sect283k1]"
+  DOCKER_VERNEMQ_listener.https.tls_version: "tlsv1.2"
+  # BRIDGE MODE (Server and Client) (replace ssl.br0 with tcp.br0 for no ssl connection)
+  DOCKER_VERNEMQ_plugins.vmq_bridge: "off"
+  #DOCKER_VERNEMQ_vmq_bridge.tcp.br0: "mqtt.example.com:1883"
+  DOCKER_VERNEMQ_vmq_bridge.ssl.br0: "mqtt.example.com:8883"
+  DOCKER_VERNEMQ_vmq_bridge.ssl.br0.cleansession: "off"
+  DOCKER_VERNEMQ_vmq_bridge.ssl.br0.client_id: "auto"
+  DOCKER_VERNEMQ_vmq_bridge.ssl.br0.keepalive_interval: "60"
+  DOCKER_VERNEMQ_vmq_bridge.ssl.br0.username: "bridge-user"
+  DOCKER_VERNEMQ_vmq_bridge.ssl.br0.topic.1: "* out 1"  # use 'in', 'out' or 'both' and set qos
+  DOCKER_VERNEMQ_vmq_bridge.ssl.br0.mqtt_version: "3"
+  DOCKER_VERNEMQ_vmq_bridge.ssl.br0.max_outgoing_buffered_messages: "1000"
+  #DOCKER_VERNEMQ_vmq_bridge.ssl.br0.capath: "/etc/ssl/certs"
+  DOCKER_VERNEMQ_vmq_bridge.ssl.br0.cafile: "./etc/cacerts.pem"
+  #DOCKER_VERNEMQ_vmq_bridge.ssl.br0.certfile: "./etc/cert.pem"
+  #DOCKER_VERNEMQ_vmq_bridge.ssl.br0.keyfile: "./etc/key.pem"
+  DOCKER_VERNEMQ_vmq_bridge.ssl.br0.insecure: "off"
+  DOCKER_VERNEMQ_vmq_bridge.ssl.br0.tls_version: "tlsv1.2"
+
+---
+
+## convert string to base64 in Linux: "echo -n 'value' | base64"
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vernemq-env-secret
+  namespace: default
+  labels:
+    app: vernemq
+data:
+  DOCKER_VERNEMQ_vmq_bridge.ssl.br0.password: cGFzc3cwcmQ=  # passw0rd
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vernemq
+  namespace: default
+  labels:
+    app: vernemq
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: vernemq
+  template:
+    metadata:
+      labels:
+        app: vernemq
+    spec:
+      #imagePullSecrets:
+      #- name: regcred
+      #hostname: vernemq
+      restartPolicy: Always
+      containers:
+      - name: vernemq
+        image: vernemq/vernemq:1.13.0-alpine
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: vernemq-env-config
+        - secretRef:
+            name: vernemq-env-secret
+        ports:
+        - containerPort: 1883
+          name: mqtt
+          protocol: TCP
+        - containerPort: 8883
+          name: mqtts
+          protocol: TCP
+        #- containerPort: 8888
+        #  name: http
+        #  protocol: TCP
+        - containerPort: 9000 # default: 8888
+          name: http
+          protocol: TCP
+        - containerPort: 8889
+          name: https
+          protocol: TCP
+        #- containerPort: 44053
+        #  name: vmq-cluster
+        #  protocol: TCP
+        #- containerPort: 18884
+        #  name: vmqs-cluster
+        #  protocol: TCP
+        - containerPort: 8080
+          name: mqtt-ws
+          protocol: TCP
+        - containerPort: 9002
+          name: mqtt-wss
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 9000 # default: 8888
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 120
+          successThreshold: 1
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 9000 # default: 8888
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 60
+          successThreshold: 1
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "0.1"
+          limits:
+            memory: "1Gi"
+            cpu: "1.0"
+        volumeMounts:
+        - name: vernemq-data
+          mountPath: /vernemq/data
+        - name: vmq-passwd
+          subPath: vmq.passwd
+          mountPath: /vernemq/etc/vmq.passwd
+          #readOnly: true
+        - name: vmq-acl
+          subPath: vmq.acl
+          mountPath: /vernemq/etc/vmq.acl
+          readOnly: true
+        - name: vernemq-ssl
+          subPath: cacerts.pem
+          mountPath: /vernemq/etc/cacerts.pem
+          readOnly: true
+        - name: vernemq-ssl
+          subPath: cert.pem
+          mountPath: /vernemq/etc/cert.pem
+          readOnly: true
+        - name: vernemq-ssl
+          subPath: key.pem
+          mountPath: /vernemq/etc/key.pem
+          readOnly: true
+      volumes:
+      - name: vernemq-data
+        persistentVolumeClaim:
+          claimName: vernemq-data
+      - name: vmq-passwd
+        configMap:
+          name: vernemq-files-passwd-config
+          defaultMode: 420
+      - name: vmq-acl
+        configMap:
+          name: vernemq-files-acl-config
+          defaultMode: 420
+      - name: vernemq-ssl
+        secret:
+          secretName: vernemq-ssl-secret
+          defaultMode: 420
+
+---
+
+## vmq-passwd -U /etc/vernemq/vmq.passwd username
+## https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/config_vernemq/vmq.passwd
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vernemq-files-passwd-config
+  namespace: default
+  labels:
+    app: vernemq
+data:
+  vmq.passwd: |-
+    admin:$6$NzIUXpHiy0KLUDeO$V6jhqWmVwnuzkcJAf7sYfd/HyVXoe6MYfRFLdCrH6CQRoYK/0lK53RQnMsR/TnO835Ml2tX4WxNARI6bKze+lQ==
+    user:$6$Qbq2Uiapg0vw+6i/$QnBECvM0imE4Y2YlsWwj0FKimfhJxu92fpkPYtICtA6dCGPZQBf5FS/rGgA27bq7EaI9z+y5t8wIbYVUEyVf+g==
+    userread:$6$Pfgkr+aOILht0SDZ$QQJFQJHVGoBn8clIZpiceAyATLDUQSpPX2O1LwsaKcyk/cY2uebEiJxqLftDfPoivuXWyye2jFvkwto6xC22uQ==
+    userwrite:$6$e1F8N7XwHhvBFHux$WTglC2esS10TGlk/sxjhvIIeuhxNsorpstTuGxpOVJpTqyfYiZPUePClnOLwKQXSXVzPywGCmDjzKIArY1xptw==
+
+---
+
+## https://github.com/vernemq/vernemq/blob/master/apps/vmq_acl/docs/vmq_acl.rst
+## https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/config_vernemq/vmq.acl
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vernemq-files-acl-config
+  namespace: default
+  labels:
+    app: vernemq
+data:
+  vmq.acl: |-
+    # ACL for user 'admin' (write and read all topics)
+    user admin
+    topic #
+    
+    # ACL for user 'user' (write and read only topic: usertopic)
+    user user
+    topic usertopic/#
+    
+    # ACL for user 'userwrite' (write only topic: usertopic)
+    user userwrite
+    topic write usertopic/#
+    
+    # ACL for user 'userread' (read only topic: usertopic)
+    user userread
+    topic read usertopic/#
+
+---
+
+## help to convert to base64: https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_k8s/ca-files-secret.yaml#L8-L14
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vernemq-ssl-secret
+  namespace: default
+  labels:
+    app: vernemq
+type: Opaque
+data:
+  cacerts.pem: <ca.crt>
+  cert.pem: <ssl.crt>
+  key.pem: <ssl.key>
+
+--- 
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: vernemq-external
+  namespace: default
+  labels:
+    app: vernemq
+spec:
+  type: NodePort
+  ports:
+    - name: "mqtt"
+      protocol: TCP
+      port: 1883
+      targetPort: 1883
+      #nodePort: 31883
+    - name: "mqtts"
+      protocol: TCP
+      port: 8883
+      targetPort: 8883
+      #nodePort: 38883
+  selector:
+    app: vernemq
+
+--- 
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: vernemq
+  namespace: default
+  labels:
+    app: vernemq
+    exporter: vernemq
+spec:
+  type: ClusterIP    # default: "ClusterIP" , set to "NodePort" for access over external-ip (not recommended)
+  ports:
+    - name: "http"
+      protocol: TCP
+      port: 9000
+      targetPort: 9000 # default: 8888
+    - name: "https"
+      protocol: TCP
+      port: 8889
+      targetPort: 8889
+    - name: "mqtt-ws"
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+    - name: "mqtt-wss"
+      protocol: TCP
+      port: 9002
+      targetPort: 9002
+  selector:
+    app: vernemq
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vernemq-status
+  namespace: default
+  labels:
+    app: vernemq
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    #nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    #nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    #nginx.ingress.kubernetes.io/rewrite-target: /$1
+    #nginx.ingress.kubernetes.io/x-forwarded-prefix: "/"
+    #nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    #nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    #nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    ## https://cert-manager.io/docs/
+    #cert-manager.io/cluster-issuer: ingress-tls-secret
+    #cert-manager.io/acme-challenge-type: http01
+    ## https://kubernetes.github.io/ingress-nginx/examples/auth/oauth-external-auth/
+    #nginx.ingress.kubernetes.io/auth-url: "https://$host/oauth2/auth"
+    #nginx.ingress.kubernetes.io/auth-signin: "https://$host/oauth2/start?rd=$escaped_request_uri"
+    ## https://kubernetes.github.io/ingress-nginx/examples/auth/basic/
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - VerneMQ'
+spec:
+  tls:
+  - hosts:
+    - vernemq.example.com
+    secretName: ingress-tls-secret
+  rules:
+  - host: vernemq.example.com
+    http:
+      paths:
+      - path: /status
+        pathType: Prefix
+        backend:
+          service:
+            name: vernemq
+            port:
+              #name: http
+              number: 9000     # default: 8888
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vernemq
+  namespace: default
+  labels:
+    app: vernemq-websocket
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    #nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    #nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    #nginx.ingress.kubernetes.io/rewrite-target: /$1
+    #nginx.ingress.kubernetes.io/x-forwarded-prefix: "/"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    ## https://cert-manager.io/docs/
+    #cert-manager.io/cluster-issuer: ingress-tls-secret
+    #cert-manager.io/acme-challenge-type: http01
+spec:
+  tls:
+  - hosts:
+    - vernemq.example.com
+    secretName: ingress-tls-secret
+  rules:
+  - host: vernemq.example.com
+    http:
+      paths:
+      - path: /mqtt            # wss://vernemq.example.com/mqtt , test with https://mqttboard.flespi.io/
+        pathType: Exact
+        backend:
+          service:
+            name: vernemq
+            port:
+              #name: mqtt-ws
+              number: 8080
+
+---
+
+## After this line ONLY for Monitoring !
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: vernemq
+  namespace: default
+  labels:
+    app: vernemq
+spec:
+  endpoints:
+  - path: /metrics
+    scheme: HTTP
+    port: exporter # 15692
+    targetPort: 15692
+    #metricRelabelings:
+  selector:
+    matchLabels:
+      app: vernemq  # service
+      exporter: vernemq
+
+#--- 
+#
+## Examples: https://samber.github.io/awesome-prometheus-alerts/rules#rabbitmq
+#
+#apiVersion: monitoring.coreos.com/v1
+#kind: PrometheusRule
+#metadata:
+#  name: vernemq
+#  namespace: default
+#  labels:
+#    app: vernemq
+#spec:
+#  groups:
+#    - name: vernemq.rules
+#      rules:
