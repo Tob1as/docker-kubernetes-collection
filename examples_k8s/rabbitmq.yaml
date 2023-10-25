@@ -309,26 +309,26 @@ metadata:
 spec:
   type: NodePort
   ports:
-    - name: "amqp"
-      protocol: TCP
-      port: 5672
-      targetPort: 5672
-      #nodePort: 35672
-    - name: "amqp-tls"
-      protocol: TCP
-      port: 5671
-      targetPort: 5671
-      #nodePort: 35671
-    - name: "mqtt"
-      protocol: TCP
-      port: 1883
-      targetPort: 1883
-      #nodePort: 31883
-    - name: "mqtts"
-      protocol: TCP
-      port: 8883
-      targetPort: 8883
-      #nodePort: 38883
+  - name: "amqp"
+    protocol: TCP
+    port: 5672
+    targetPort: 5672
+    #nodePort: 35672
+  - name: "amqp-tls"
+    protocol: TCP
+    port: 5671
+    targetPort: 5671
+    #nodePort: 35671
+  - name: "mqtt"
+    protocol: TCP
+    port: 1883
+    targetPort: 1883
+    #nodePort: 31883
+  - name: "mqtts"
+    protocol: TCP
+    port: 8883
+    targetPort: 8883
+    #nodePort: 38883
   selector:
     app: rabbitmq
 
@@ -345,26 +345,26 @@ metadata:
 spec:
   type: ClusterIP    # default: "ClusterIP" , set to "NodePort" for access over external-ip (not recommended)
   ports:
-    - name: "http-api"
-      protocol: TCP
-      port: 15672
-      targetPort: 15672
-    - name: "https-api"
-      protocol: TCP
-      port: 15671
-      targetPort: 15671
-    - name: "exporter"
-      protocol: TCP
-      port: 15692
-      targetPort: 15692
-    - name: "mqtt-ws"
-      protocol: TCP
-      port: 15675
-      targetPort: 15675
-    - name: "mqtt-wss"
-      protocol: TCP
-      port: 15676
-      targetPort: 15676
+  - name: "http-api"
+    protocol: TCP
+    port: 15672
+    targetPort: 15672
+  - name: "https-api"
+    protocol: TCP
+    port: 15671
+    targetPort: 15671
+  - name: "exporter"
+    protocol: TCP
+    port: 15692
+    targetPort: 15692
+  - name: "mqtt-ws"
+    protocol: TCP
+    port: 15675
+    targetPort: 15675
+  - name: "mqtt-wss"
+    protocol: TCP
+    port: 15676
+    targetPort: 15676
   selector:
     app: rabbitmq
   
