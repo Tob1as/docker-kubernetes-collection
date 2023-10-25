@@ -5,6 +5,7 @@
 ## |_| \_\___|\__,_|_|___/
 ## 
 
+## Redis - in-memory data structure store, used as a database, cache, and message broker
 ## https://redis.io/ + https://github.com/redis/redis
 ## https://hub.docker.com/_/redis + https://github.com/docker-library/redis
 ## Exporter: https://github.com/oliver006/redis_exporter
