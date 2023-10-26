@@ -49,16 +49,16 @@ services:
       - "DOCKER_VERNEMQ_vmq_acl.acl_file=./etc/vmq.acl"
       - "DOCKER_VERNEMQ_vmq_acl.acl_reload_interval=10"
       # CLUSTER
-      #- "DOCKER_VERNEMQ_nodename=VerneMQ@127.0.0.1" # don't work ?
+      #- DOCKER_VERNEMQ_NODENAME="localhost" # don't work ?
       - "DOCKER_VERNEMQ_metadata_plugin=vmq_plumtree" # 'vmq_plumtree' for existing and 'vmq_swc' for new cluster deployments
       - "DOCKER_VERNEMQ_allow_register_during_netsplit=on"
       - "DOCKER_VERNEMQ_allow_publish_during_netsplit=on"
       - "DOCKER_VERNEMQ_allow_subscribe_during_netsplit=on"
       - "DOCKER_VERNEMQ_allow_unsubscribe_during_netsplit=on"
       - "DOCKER_VERNEMQ_coordinate_registrations=on"
-      - "DOCKER_VERNEMQ_listener.vmq.clustering=0.0.0.0:44053"
+      #- "DOCKER_VERNEMQ_listener.vmq.clustering=0.0.0.0:44053"
       #- "DOCKER_VERNEMQ_listener.vmq.clustering=0.0.0.0:18883"
-      - "DOCKER_VERNEMQ_listener.vmqs.clustering=0.0.0.0:18884"
+      #- "DOCKER_VERNEMQ_listener.vmqs.clustering=0.0.0.0:18884"
       - "DOCKER_VERNEMQ_listener.vmqs.cafile=./etc/cacerts.pem"
       - "DOCKER_VERNEMQ_listener.vmqs.certfile=./etc/cert.pem"
       - "DOCKER_VERNEMQ_listener.vmqs.keyfile=./etc/key.pem"

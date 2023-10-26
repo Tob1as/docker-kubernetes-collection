@@ -48,7 +48,7 @@ data:
   DOCKER_VERNEMQ_vmq_acl.acl_file: "./etc/vmq.acl"
   DOCKER_VERNEMQ_vmq_acl.acl_reload_interval: "0"
   # CLUSTER
-  #DOCKER_VERNEMQ_nodename: "VerneMQ@127.0.0.1" # don't work ?
+  #DOCKER_VERNEMQ_NODENAME: "localhost" # don't work ?
   DOCKER_VERNEMQ_metadata_plugin: "vmq_plumtree" # 'vmq_plumtree' for existing and 'vmq_swc' for new cluster deployments
   DOCKER_VERNEMQ_allow_register_during_netsplit: "on"
   DOCKER_VERNEMQ_allow_publish_during_netsplit: "on"
@@ -157,18 +157,15 @@ spec:
       restartPolicy: Always
       containers:
       - name: vernemq
-        image: vernemq/vernemq:1.12.3-alpine # vernemq/vernemq:1.13.0-alpine # not working, only with StatefulSet?
+        #image: vernemq/vernemq:1.13.0-alpine # not working: https://github.com/vernemq/docker-vernemq/blob/master/bin/vernemq.sh#L288
+        image: vernemq/vernemq:1.12.3-alpine
         imagePullPolicy: Always
         env: 
-        #- name: DOCKER_VERNEMQ_DISCOVERY_KUBERNETES
-        #  value: "0"
-        - name: VMQ_NODENAME
+        - name: DOCKER_VERNEMQ_NODENAME
           valueFrom:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.name
-        #- name: VMQ_HOSTNAME   # not working?
-        #  value: vernemq
         envFrom:
         - configMapRef:
             name: vernemq-env-config
