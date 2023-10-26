@@ -172,7 +172,7 @@ spec:
         - secretRef:
             name: vernemq-env-secret
         # next line (args:) only for workaround for images newer then version 1.12.3
-        # when not use, error: https://github.com/vernemq/docker-vernemq/blob/master/bin/vernemq.sh#L288
+        # when not use, error: https://github.com/vernemq/docker-vernemq/blob/1.13.0/bin/vernemq.sh#L286
         args: ["/bin/sh", "-c", "cp /usr/sbin/start_vernemq /vernemq/start_vernemq ; sed -i 's|/var/run/secrets/kubernetes.io/serviceaccount|/var/run/secrets/kubernetes.io/serviceaccount_not-need|g' /vernemq/start_vernemq ; /vernemq/start_vernemq"]
         ports:
         - containerPort: 1883
