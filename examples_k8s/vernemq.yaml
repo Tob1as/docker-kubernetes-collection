@@ -467,7 +467,7 @@ spec:
   - host: vernemq.example.com
     http:
       paths:
-      - path: /mqtt            # wss://vernemq.example.com/mqtt , test with https://mqttboard.flespi.io/
+      - path: /mqtt            # wss://vernemq.example.com:<NodePort>/mqtt , test with https://mqttboard.flespi.io/
         pathType: Exact
         backend:
           service:
