@@ -501,8 +501,6 @@ spec:
 
 #--- 
 #
-## Examples: https://samber.github.io/awesome-prometheus-alerts/rules#rabbitmq
-#
 #apiVersion: monitoring.coreos.com/v1
 #kind: PrometheusRule
 #metadata:
