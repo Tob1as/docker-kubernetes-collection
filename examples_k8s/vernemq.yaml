@@ -157,8 +157,8 @@ spec:
       restartPolicy: Always
       containers:
       - name: vernemq
-        #image: vernemq/vernemq:1.13.0-alpine # not working: https://github.com/vernemq/docker-vernemq/blob/master/bin/vernemq.sh#L288
-        image: vernemq/vernemq:1.12.3-alpine
+        image: vernemq/vernemq:1.13.0-alpine # only work with workarround (see below)
+        #image: vernemq/vernemq:1.12.3-alpine
         imagePullPolicy: Always
         env: 
         - name: DOCKER_VERNEMQ_NODENAME
@@ -171,6 +171,9 @@ spec:
             name: vernemq-env-config
         - secretRef:
             name: vernemq-env-secret
+        # next line (args:) only for workaround for images newer then version 1.12.3
+        # when not use, error: https://github.com/vernemq/docker-vernemq/blob/master/bin/vernemq.sh#L288
+        args: ["/bin/sh", "-c", "cp /usr/sbin/start_vernemq /vernemq/start_vernemq ; sed -i 's|/var/run/secrets/kubernetes.io/serviceaccount|/var/run/secrets/kubernetes.io/serviceaccount_not-need|g' /vernemq/start_vernemq ; /vernemq/start_vernemq"]
         ports:
         - containerPort: 1883
           name: mqtt
