@@ -1,0 +1,45 @@
+# docker-compose -f mqttx-web.yml up -d
+version: '2.4'
+services:
+
+  # MQTTX: MQTT Web Client Tool (web version only wss:// connection)
+  # https://mqttx.app/  (and MQTT-Broker: https://www.emqx.io/)
+  # https://hub.docker.com/r/emqx/mqttx-web & https://github.com/emqx/MQTTX
+  # https://mqttx.app/docs/web
+  mqttx-web:
+    image: emqx/mqttx-web:latest
+    container_name: mqttx-web
+    restart: unless-stopped
+    #ports:
+    #  - 8080:80/tcp
+    healthcheck:
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 80 || exit 1"]
+      #start_period: 15s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.mqttx-web.loadbalancer.server.port=80"
+      - "traefik.http.services.mqtt-explorer.loadbalancer.server.scheme=http"
+      # http
+      - "traefik.http.routers.mqttx-web-http.rule=Host(`mqttx.example.com`)"
+      - "traefik.http.routers.mqttx-web-http.entrypoints=web"
+      - "traefik.http.routers.mqttx-web-http.service=mqttx-web"
+      # https
+      - "traefik.http.routers.mqttx-web-https.tls=true"
+      - "traefik.http.routers.mqttx-web-https.rule=Host(`mqttx.example.com`)"
+      - "traefik.http.routers.mqttx-web-https.entrypoints=websecure"
+      - "traefik.http.routers.mqttx-web-https.service=mqttx-web"
+      # load middlewares for routes
+      - "traefik.http.routers.mqttx-web-http.middlewares=mqttx-web-https"
+      # http to https redirect      
+      - "traefik.http.middlewares.mqttx-web-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.mqttx-web-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.mqttx-web-https.redirectscheme.port=443"
+
+networks:
+  default:
+    external: true
+    name: mynetwork
