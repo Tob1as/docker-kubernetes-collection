@@ -1,0 +1,213 @@
+##  ____  _            _    _                    _____                       _
+## | __ )| | __ _  ___| | _| |__   _____  __    | ____|_  ___ __   ___  _ __| |_ ___ _ __
+## |  _ \| |/ _` |/ __| |/ / '_ \ / _ \ \/ /____|  _| \ \/ / '_ \ / _ \| '__| __/ _ \ '__|
+## | |_) | | (_| | (__|   <| |_) | (_) >  <_____| |___ >  <| |_) | (_) | |  | ||  __/ |
+## |____/|_|\__,_|\___|_|\_\_.__/ \___/_/\_\    |_____/_/\_\ .__/ \___/|_|   \__\___|_|
+##                                                         |_|
+
+## Prometheus Blackbox Exporter - The blackbox exporter allows blackbox probing of endpoints over HTTP, HTTPS, DNS, TCP, ICMP and gRPC.
+## https://github.com/prometheus/blackbox_exporter
+## https://hub.docker.com/r/prom/blackbox-exporter
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blackbox-exporter
+  namespace: default
+  labels:
+    app: blackbox-exporter
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: blackbox-exporter
+  template:
+    metadata:
+      labels:
+        app: blackbox-exporter
+    spec:
+      #imagePullSecrets:
+      #- name: regcred
+      restartPolicy: Always
+      containers:
+      - name: blackbox-exporter
+        image: prom/blackbox-exporter:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9115
+          name: exporter
+          protocol: TCP
+        readinessProbe:
+          #exec:
+          #  command: ["/bin/sh", "-c", "nc -zvn -w 3 localhost 9115 || exit 1"]
+          tcpSocket:
+            port: 9115
+          initialDelaySeconds: 15
+          periodSeconds: 120
+          timeoutSeconds: 5
+        livenessProbe:
+          #exec:
+          #  command: ["/bin/sh", "-c", "nc -zvn -w 3 localhost 9115 || exit 1"]
+          tcpSocket:
+            port: 9115
+          initialDelaySeconds: 15
+          periodSeconds: 120
+          timeoutSeconds: 5
+        args:
+        #- "--help"
+        - "--config.file=/etc/blackbox_exporter/config.yml" # default command, when use any command set this also!
+        - "--web.route-prefix=/blackbox"
+        - "--web.external-url=https://monitoring.example.com/blackbox"
+        #- "--web.listen-address=:9115"
+        #- "--web.config.file==/config/config.yml"
+        #- "--history.limit=100"
+        #- "--timeout-offset=0.5"
+        #- "--log.level=info"
+        #- "--log.format=logfmt"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "0.1"
+          limits:
+            memory: "512Mi"
+            cpu: "0.5"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: blackbox-exporter
+  namespace: default
+  labels:
+    app: blackbox-exporter
+spec:
+  type: ClusterIP    # default: "ClusterIP" , set to "NodePort" for access over external-ip (not recommended)
+  ports:
+  - name: "exporter"
+    protocol: TCP
+    port: 9115
+    targetPort: 9115
+  selector:
+    app: blackbox-exporter # deployment
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: blackbox-exporter
+  namespace: default
+  labels:
+    app: blackbox-exporter
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    #nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    #nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    ## https://cert-manager.io/docs/
+    #cert-manager.io/cluster-issuer: ingress-tls-secret
+    #cert-manager.io/acme-challenge-type: http01
+    ## https://kubernetes.github.io/ingress-nginx/examples/auth/oauth-external-auth/
+    #nginx.ingress.kubernetes.io/auth-url: "https://$host/oauth2/auth"
+    #nginx.ingress.kubernetes.io/auth-signin: "https://$host/oauth2/start?rd=$escaped_request_uri"
+    ## https://kubernetes.github.io/ingress-nginx/examples/auth/basic/
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - Blackbox-Exporter'
+spec:
+  tls:
+  - hosts:
+    - monitoring.example.com
+    secretName: ingress-tls-secret  # use file: ingress-tls-secret.yaml
+  rules:
+  - host: monitoring.example.com
+    http:
+      paths:
+      - path: /blackbox
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: blackbox-exporter
+            port:
+              #name: exporter
+              number: 9115
+
+---
+
+## After this line ONLY for Monitoring !
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: blackbox-exporter
+  namespace: default
+  labels:
+    app: blackbox-exporter
+spec:
+  endpoints:
+  - path: /blackbox/metrics
+    scheme: HTTP
+    #interval: 60s
+    port: exporter # 9115
+    targetPort: 9115
+  jobLabel: blackbox-exporter
+  selector:
+    matchLabels:
+      app: blackbox-exporter  # service
+
+--- 
+
+# not nice, but works .... :( 
+# need help for multi targets and labels
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: blackbox-exporter-http
+  namespace: default
+  labels:
+    app: blackbox-exporter
+spec:
+  endpoints:
+  - path: /blackbox/probe
+    scheme: HTTP
+    #interval: 60s
+    #scrapeTimeout: 10s
+    port: exporter # 9115
+    targetPort: 9115
+    params:
+      module:
+      - "http_2xx"
+      target:
+      - https://prometheus.io
+    metricRelabelings:
+      - sourceLabels: [instance]
+        targetLabel: instance
+        replacement: https://prometheus.io
+      - sourceLabels: [target]
+        targetLabel: target
+        replacement: Prometheus
+  #jobLabel: blackbox-exporter-http
+  selector:
+    matchLabels:
+      app: blackbox-exporter  # service
+
+#--- 
+#
+## Examples: https://samber.github.io/awesome-prometheus-alerts/rules#blackbox
+#
+#apiVersion: monitoring.coreos.com/v1
+#kind: PrometheusRule
+#metadata:
+#  name: blackbox-exporter
+#  namespace: default
+#  labels:
+#    app: blackbox-exporter
+#spec:
+#  groups:
+#    - name: blackbox-exporter.rules
+#      rules:
