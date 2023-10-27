@@ -204,7 +204,7 @@ spec:
     scheme: HTTP
     port: exporter # 9216
     targetPort: 9216
-    #metricRelabelings:
+    #relabelings:
   selector:
     matchLabels:
       app: mongo  # service

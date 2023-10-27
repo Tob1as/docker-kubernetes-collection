@@ -435,7 +435,7 @@ spec:
     scheme: HTTP
     port: exporter # 15692
     targetPort: 15692
-    #metricRelabelings:
+    #relabelings:
   selector:
     matchLabels:
       app: rabbitmq  # service

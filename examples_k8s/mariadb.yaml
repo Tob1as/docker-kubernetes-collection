@@ -281,7 +281,7 @@ spec:
     scheme: HTTP
     port: exporter # 9104
     targetPort: 9104
-    #metricRelabelings:
+    #relabelings:
   selector:
     matchLabels:
       app: mariadb  # service

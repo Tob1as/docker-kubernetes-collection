@@ -241,7 +241,7 @@ spec:
     scheme: HTTP
     port: exporter # 9187
     targetPort: 9187
-    #metricRelabelings:
+    #relabelings:
   selector:
     matchLabels:
       app: postgres  # service

@@ -272,7 +272,7 @@ spec:
     scheme: HTTP
     port: exporter # 9114
     targetPort: 9114
-    #metricRelabelings:
+    #relabelings:
   selector:
     matchLabels:
       app: elasticsearch  # service

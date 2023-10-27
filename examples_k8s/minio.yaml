@@ -285,6 +285,11 @@ spec:
     #bearerTokenSecret:
     #  name: "minio-env-secret-token"
     #  key: "token"
+    #interval: 60s
+    #params:
+    #  target:
+    #  - ip
+    #relabelings:
     #metricRelabelings:
   - path: /minio/v2/metrics/node
     scheme: HTTP
@@ -295,6 +300,11 @@ spec:
     #bearerTokenSecret:
     #  name: "minio-env-secret-token"
     #  key: "token"
+    #interval: 60s
+    #params:
+    #  target:
+    #  - ip
+    #relabelings:
     #metricRelabelings:
   - path: /minio/v2/metrics/bucket
     scheme: HTTP
@@ -305,6 +315,11 @@ spec:
     #bearerTokenSecret:
     #  name: "minio-env-secret-token"
     #  key: "token"
+    #interval: 60s
+    #params:
+    #  target:
+    #  - ip
+    #relabelings:
     #metricRelabelings:
   selector:
     matchLabels:
