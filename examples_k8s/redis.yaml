@@ -198,7 +198,6 @@ spec:
     scheme: HTTP
     port: exporter # 9121
     targetPort: 9121
-    #relabelings:
   selector:
     matchLabels:
       app: redis  # service

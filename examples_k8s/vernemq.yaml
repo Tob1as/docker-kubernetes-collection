@@ -493,7 +493,6 @@ spec:
     scheme: HTTP
     port: http # 9000
     targetPort: 9000
-    #relabelings:
   selector:
     matchLabels:
       app: vernemq  # service

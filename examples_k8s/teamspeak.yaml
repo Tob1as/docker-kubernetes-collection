@@ -245,7 +245,6 @@ spec:
     scheme: HTTP
     port: exporter # 9189
     targetPort: 9189
-    #relabelings:
   selector:
     matchLabels:
       app: ts3      # service
