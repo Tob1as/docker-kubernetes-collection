@@ -1,0 +1,96 @@
+##                  _   _             _ _            _
+##  _ __ ___   __ _| |_| |_       ___| (_) ___ _ __ | |_
+## | '_ ` _ \ / _` | __| __|____ / __| | |/ _ \ '_ \| __|
+## | | | | | | (_| | |_| ||_____| (__| | |  __/ | | | |_
+## |_| |_| |_|\__, |\__|\__|     \___|_|_|\___|_| |_|\__|
+##               |_|
+##  based on mosquitto client
+
+## (OS: AlpineLinux ; Installed: "apk add --no-cache ca-certificates mosquitto-clients")
+## https://github.com/Tob1as/docker-tools + https://hub.docker.com/r/tobi312/tools
+## https://mosquitto.org/man/mosquitto_sub-1.html - read for more information about mosquitto_sub-command
+## after start see logs: kubectl -n default logs -f deployment/mqtt-client
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mqtt-client-env-config
+  namespace: default
+  labels:
+    app: mqtt-client
+data:
+  MQTT_HOSTNAME: "vernemq"
+  MQTT_PORT: "8883"
+  MQTT_TOPICS: "-t '#'"  # "-t '#'" for all! or use '-t topic1/# -t topic2/# -t topic3/#'
+  MQTT_CLIENTNAME: "mqtt-client-0815"
+
+---
+
+## convert string to base64 in Linux: "echo -n 'value' | base64"
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mqtt-client-env-secret
+  namespace: default
+  labels:
+    app: mqtt-client
+data:
+    MQTT_USERNAME: YWRtaW4=      # admin         
+    MQTT_PASSWORD: cGFzc3cwcmQ=  # passw0rd
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mqtt-client
+  namespace: default
+  labels:
+    app: mqtt-client
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mqtt-client
+  template:
+    metadata:
+      labels:
+        app: mqtt-client
+    spec:
+      #imagePullSecrets:
+      #- name: regcred
+      restartPolicy: Always
+      containers:
+      - name: mqtt-client
+        image: docker.artifactory/ops/mqtt-client:latest
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: mqtt-client-env-config
+        - secretRef:
+            name: mqtt-client-env-secret
+        command: [ "/bin/sh", "-c", "--" ]
+        args: [ "sub -h $(MQTT_HOSTNAME) -p $(MQTT_PORT) -u $(MQTT_USERNAME) --pw '$(MQTT_PASSWORD)' $(MQTT_TOPICS) --insecure --cafile /ssl/ca.crt --tls-version tlsv1.2 -i $(MQTT_CLIENTNAME) -F '%I %t %p'" ]
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "0.1"
+          limits:
+            memory: "512Mi"
+            cpu: "0.5"
+        volumeMounts:
+        - name: mqtt-ca
+          subPath: ca.crt
+          mountPath: /ssl/ca.crt
+          readOnly: true
+      volumes:
+      - name: mqtt-ca
+        secret:
+          secretName: ca-files-secret  # see: ca-files-secret.yaml
+          defaultMode: 420
+          optional: true

@@ -1,0 +1,183 @@
+##  __  __  ___ _____ _____     _____            _
+## |  \/  |/ _ \_   _|_   _|   | ____|_  ___ __ | | ___  _ __ ___ _ __
+## | |\/| | | | || |   | |_____|  _| \ \/ / '_ \| |/ _ \| '__/ _ \ '__|
+## | |  | | |_| || |   | |_____| |___ >  <| |_) | | (_) | | |  __/ |
+## |_|  |_|\__\_\|_|   |_|     |_____/_/\_\ .__/|_|\___/|_|  \___|_|
+##                                        |_|
+
+## MQTT-Explorer - MQTT Web Client Tool (wss:// and mqtt:// connections) 
+## https://github.com/thomasnordquist/MQTT-Explorer
+## https://hub.docker.com/r/smeagolworms4/mqtt-explorer & https://github.com/Smeagolworms4/MQTT-Explorer
+## https://github.com/Tob1as/docker-mqtt-explorer
+
+---
+
+## volume (Recommended: Comment volume out after first run.)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mqtt-explorer-data
+  namespace: default
+  labels:
+    app: mqtt-explorer
+spec:
+  accessModes:
+  - ReadWriteOnce
+  volumeMode: Filesystem
+  storageClassName: local-path # change or use: https://github.com/rancher/local-path-provisioner
+  resources:
+    requests:
+      storage: 256Mi
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mqtt-explorer-env-config
+  namespace: default
+  labels:
+    app: mqtt-explorer
+data:
+  HTTP_USER: "admin"
+  #HTTP_PASSWORD: ""  # see secret
+  #HTTP_PORT: "4000"
+  #CONFIG_PATH: "/mqtt-explorer/config"
+  SSL_KEY_PATH: ""
+  SSL_CERT_PATH: ""
+  INITIAL_CONFIG: ""
+  #NODE_EXTRA_CA_CERTS: "/ssl/ca.crt"
+
+---
+
+## convert string to base64 in Linux: "echo -n 'value' | base64"
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mqtt-explorer-env-secret
+  namespace: default
+  labels:
+    app: mqtt-explorer
+data:
+  HTTP_PASSWORD: cGFzc3cwcmQ=  # passw0rd
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mqtt-explorer
+  namespace: default
+  labels:
+    app: mqtt-explorer
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mqtt-explorer
+  template:
+    metadata:
+      labels:
+        app: mqtt-explorer
+    spec:
+      #imagePullSecrets:
+      #- name: regcred
+      restartPolicy: Always
+      securityContext:
+        fsGroup: 1000
+      containers:
+      - name: mqtt-explorer
+        image: smeagolworms4/mqtt-explorer:latest
+        #image: ghcr.io/tob1as/docker-mqtt-explorer:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4000
+          name: mqtt-explorer
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: mqtt-explorer-env-config
+        - secretRef:
+            name: mqtt-explorer-env-secret
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "0.1"
+          limits:
+            memory: "512Mi"
+            cpu: "0.5"
+        volumeMounts:
+        - name: mqtt-explorer-data
+          mountPath: /mqtt-explorer/config
+        - name: mqtt-ca
+          subPath: ca.crt
+          mountPath: /ssl/ca.crt
+          readOnly: true
+      volumes:
+      - name: mqtt-explorer-data
+        persistentVolumeClaim:
+          claimName: mqtt-explorer-data
+      - name: mqtt-ca
+        secret:
+          secretName: ca-files-secret  # see: ca-files-secret.yaml
+          defaultMode: 420
+          optional: true
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mqtt-explorer
+  namespace: default
+  labels:
+    app: mqtt-explorer
+spec:
+  type: ClusterIP
+  ports:
+  - name: mqtt-explorer
+    protocol: TCP
+    port: 4000
+    targetPort: 4000
+  selector:
+    app: mqtt-explorer
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mqtt-explorer
+  namespace: default
+  labels:
+    app: mqtt-explorer
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    #nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    #cert-manager.io/cluster-issuer: ingress-tls-secret
+    #cert-manager.io/acme-challenge-type: http01
+    ## https://kubernetes.github.io/ingress-nginx/examples/auth/basic/
+    #nginx.ingress.kubernetes.io/auth-type: basic
+    #nginx.ingress.kubernetes.io/auth-secret: basic-auth
+    #nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - MQTT-Explorer'
+spec:
+  tls:
+  - hosts:
+    - mqtt-explorer.example.com
+    secretName: ingress-tls-secret
+  rules:
+  - host: mqtt-explorer.example.com
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: mqtt-explorer
+            port:
+              #name: mqtt-explorer
+              number: 4000
+
