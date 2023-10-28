@@ -7,6 +7,7 @@ services:
   # https://github.com/postgres/pgadmin4
   # https://hub.docker.com/r/dpage/pgadmin4
   # https://github.com/Tob1asDocker/tools#pgadmin4
+  # Docs: https://www.pgadmin.org/docs/pgadmin4/latest/container_deployment.html
   # URL: http://localhost:5050/pgadmin
   # fix permission problem before startup: "mkdir ./data_pgadmin && chmod 777 ./data_pgadmin"
   pgadmin:

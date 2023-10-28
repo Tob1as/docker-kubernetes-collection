@@ -1,0 +1,144 @@
+##  ____          _ _           _   _ ___
+## |  _ \ ___  __| (_)___      | | | |_ _|
+## | |_) / _ \/ _` | / __|_____| | | || |
+## |  _ <  __/ (_| | \__ \_____| |_| || |
+## |_| \_\___|\__,_|_|___/      \___/|___|
+## 
+
+## https://www.corifeus.com/redis-ui
+## https://github.com/patrikx3/redis-ui
+## https://hub.docker.com/r/patrikx3/p3x-redis-ui
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-ui-file-config
+  namespace: default
+  labels:
+    app: redis-ui
+data:
+  .p3xrs-conns.json: |
+    {
+      "list": [
+        {
+          "name": "redis",
+          "host": "redis",
+          "port": 6379,
+          "password": "passw0rd",
+          "id": "unique"
+        }
+      ],
+      "license": ""
+    }
+
+# "password": "YOUR_REDIS_PASSWORD_OR_EMPTY",
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-ui
+  namespace: default
+  labels:
+    app: redis-ui
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: redis-ui
+  template:
+    metadata:
+      labels:
+        app: redis-ui
+    spec:
+      #imagePullSecrets:
+      #- name: regcred
+      restartPolicy: Always
+      containers:
+      - name: redis-ui
+        image: patrikx3/p3x-redis-ui:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7843
+          name: redis-ui
+          protocol: TCP
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "0.1"
+          limits:
+            memory: "128Mi"
+            cpu: "0.1"
+        volumeMounts:
+        - name: redis-ui-data
+          mountPath: /settings
+        - name: config
+          subPath: .p3xrs-conns.json
+          mountPath: /settings/.p3xrs-conns.json
+      volumes:
+      - name: redis-ui-data
+        emptyDir: {}
+      - name: config
+        configMap:
+          name: redis-ui-file-config
+          optional: true
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-ui
+  namespace: default
+  labels:
+    app: redis-ui
+spec:
+  type: ClusterIP
+  ports:
+    - name: "redis-ui"
+      protocol: TCP
+      port: 7843
+      targetPort: 7843
+  selector:
+    app: redis-ui
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-redis-ui
+  namespace: default
+  labels:
+    app: redis-ui
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    #nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    #cert-manager.io/cluster-issuer: ingress-tls-secret
+    #cert-manager.io/acme-challenge-type: http01
+    ## https://kubernetes.github.io/ingress-nginx/examples/auth/basic/
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - Redis-UI'
+spec:
+  tls:
+  - hosts:
+    - redis-ui.example.com
+    secretName: ingress-tls-secret
+  rules:
+  - host: redis-ui.example.com
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: redis-ui
+            port:
+              #name: redis-ui
+              number: 7843

@@ -1,0 +1,189 @@
+##  _ __ ___   ___  _ __   __ _  ___         _____  ___ __  _ __ ___  ___ ___
+## | '_ ` _ \ / _ \| '_ \ / _` |/ _ \ _____ / _ \ \/ / '_ \| '__/ _ \/ __/ __|
+## | | | | | | (_) | | | | (_| | (_) |_____|  __/>  <| |_) | | |  __/\__ \__ \
+## |_| |_| |_|\___/|_| |_|\__, |\___/       \___/_/\_\ .__/|_|  \___||___/___/
+##                        |___/                      |_|
+
+## mongo-express - Web-based MongoDB admin interface
+## https://github.com/mongo-express/mongo-express
+## https://hub.docker.com/_/mongo-express + https://github.com/mongo-express/mongo-express-docker
+
+## Docs:
+## https://github.com/mongo-express/mongo-express-docker#configuration
+## https://github.com/mongo-express/mongo-express#usage-docker
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongo-express-env-config
+  namespace: default
+  labels:
+    app: mongo-express
+data:
+  #TZ: "Europe/Berlin"
+  #ME_CONFIG_MONGODB_URL: "mongodb://mongo:27017"  # if mongo use auth, then comment in and use "ME_CONFIG_MONGODB_URL with auth" in Deployment
+  ME_CONFIG_OPTIONS_EDITORTHEME: "default"
+  #ME_CONFIG_REQUEST_SIZE: "100kb"
+  #ME_CONFIG_SITE_BASEURL: "/mongo-express/"
+  #ME_CONFIG_SITE_SSL_ENABLED: "false"
+  #ME_CONFIG_SITE_SSL_CRT_PATH: ""
+  #ME_CONFIG_SITE_SSL_KEY_PATH: ""
+  #ME_CONFIG_MONGODB_SSLVALIDATE: "true"
+  #ME_CONFIG_OPTIONS_READONLY: "false"
+  #ME_CONFIG_OPTIONS_NO_DELETE: "false"
+  ME_CONFIG_MONGODB_ENABLE_ADMIN: "true" 
+
+---
+
+## convert string to base64 in Linux: "echo -n 'value' | base64"
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongo-express-env-secret
+  namespace: default
+  labels:
+    app: mongo-express
+data:
+  # values encode in base64
+  ME_CONFIG_BASICAUTH_USERNAME: YWRtaW4=      # admin
+  ME_CONFIG_BASICAUTH_PASSWORD: cGFzc3cwcmQ=  # passw0rd
+  #ME_CONFIG_SITE_COOKIESECRET: "cookiesecret"
+  #ME_CONFIG_SITE_SESSIONSECRET: "sessionsecret"
+  #ME_CONFIG_MONGODB_AUTH_DATABASE: "db"     # only needed if ME_CONFIG_MONGODB_ENABLE_ADMIN is "false"
+  #ME_CONFIG_MONGODB_AUTH_USERNAME: "admin"  # only needed if ME_CONFIG_MONGODB_ENABLE_ADMIN is "false"
+  #ME_CONFIG_MONGODB_AUTH_PASSWORD: "pass"   # only needed if ME_CONFIG_MONGODB_ENABLE_ADMIN is "false"
+  ## for Mongo connection it used secret from mongo.yaml in deployment
+
+--- 
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-express
+  namespace: default
+  labels:
+    app: mongo-express
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: mongo-express
+  template:
+    metadata:
+      labels:
+        app: mongo-express
+    spec:
+      #imagePullSecrets:
+      #- name: regcred
+      restartPolicy: Always
+      containers:
+      - name: mongo-express
+        image: mongo-express:latest
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: mongo-express-env-config
+        - secretRef:
+            name: mongo-express-env-secret
+        ## "ME_CONFIG_MONGODB_URL with auth" beginn ##
+        env:
+        - name: MONGO_USER
+          valueFrom:
+            secretKeyRef:
+              name: mongo-env-secret
+              key: MONGO_INITDB_ROOT_USERNAME
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongo-env-secret
+              key: MONGO_INITDB_ROOT_PASSWORD
+        - name: ME_CONFIG_MONGODB_URL
+          value: "mongodb://$(MONGO_USER):$(MONGO_PASSWORD)@mongo:27017"
+        ## "ME_CONFIG_MONGODB_URL with auth" end ##
+        ports:
+        - containerPort: 8081
+          name: mongo-express
+          protocol: TCP
+        readinessProbe:
+          #exec:
+          #  command: ["/bin/sh", "-c", "nc -zvn -w 3 localhost 8081 || exit 1"]
+          tcpSocket:
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 120
+          timeoutSeconds: 5
+        livenessProbe:
+          #exec:
+          #  command: ["/bin/sh", "-c", "nc -zvn -w 3 localhost 8081 || exit 1"]
+          tcpSocket:
+            port: 9115
+          initialDelaySeconds: 15
+          periodSeconds: 120
+          timeoutSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "0.1"
+          limits:
+            memory: "512Mi"
+            cpu: "0.5"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-express
+  namespace: default
+  labels:
+    app: mongo-express
+spec:
+  type: ClusterIP
+  ports:
+    - name: "mongo-express"
+      protocol: TCP
+      port: 8081
+      targetPort: 8081
+  selector:
+    app: mongo-express
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mongo-express
+  namespace: default
+  labels:
+    app: mongo-express
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    #nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    #cert-manager.io/cluster-issuer: ingress-tls-secret
+    #cert-manager.io/acme-challenge-type: http01
+    ## https://kubernetes.github.io/ingress-nginx/examples/auth/basic/
+    #nginx.ingress.kubernetes.io/auth-type: basic
+    #nginx.ingress.kubernetes.io/auth-secret: basic-auth
+    #nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - Mongo-Express'
+spec:
+  tls:
+  - hosts:
+    - mongo-express.example.com
+    secretName: ingress-tls-secret
+  rules:
+  - host: mongo-express.example.com
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: mongo-express
+            port:
+              #name: mongo-express
+              number: 8081

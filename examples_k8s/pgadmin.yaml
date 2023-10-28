@@ -1,0 +1,189 @@
+##                 _       _           _       _  _
+##  _ __   __ _   / \   __| |_ __ ___ (_)_ __ | || |
+## | '_ \ / _` | / _ \ / _` | '_ ` _ \| | '_ \| || |_
+## | |_) | (_| |/ ___ \ (_| | | | | | | | | | |__   _|
+## | .__/ \__, /_/   \_\__,_|_| |_| |_|_|_| |_|  |_|
+## |_|    |___/
+## 
+
+## pgAdmin - graphical management tool for PostgreSQL and derivative relational databases
+## https://www.pgadmin.org/
+## https://github.com/postgres/pgadmin4
+## https://hub.docker.com/r/dpage/pgadmin4
+## Docs: https://www.pgadmin.org/docs/pgadmin4/latest/container_deployment.html
+
+---
+
+## volume (Recommended: Comment volume out after first run.)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pgadmin-data
+  namespace: default
+  labels:
+    app: pgadmin
+spec:
+  accessModes:
+  - ReadWriteOnce
+  volumeMode: Filesystem
+  storageClassName: local-path # change or use: https://github.com/rancher/local-path-provisioner
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgadmin-env-config
+  namespace: default
+  labels:
+    app: pgadmin
+data:
+  PGADMIN_LISTEN_ADDRESS: "0.0.0.0"
+  PGADMIN_LISTEN_PORT: "5050"
+  #SCRIPT_NAME: "/pgadmin"
+  # INFO: the PGADMIN_CONFIG_ prefix to any variable name from config.py
+  PGADMIN_CONFIG_LOGIN_BANNER: "\"pgAdmin4 ;-)\""
+  #PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: "10"
+
+---
+
+## convert string to base64 in Linux: "echo -n 'value' | base64"
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pgadmin-env-secret
+  namespace: default
+  labels:
+    app: pgadmin
+data:
+  PGADMIN_DEFAULT_EMAIL: YWRtaW5AZW1haWwubG9jYWw=    # admin@email.local
+  PGADMIN_DEFAULT_PASSWORD: cGFzc3cwcmQ=             # passw0rd
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgadmin
+  namespace: default
+  labels:
+    app: pgadmin
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: pgadmin
+  template:
+    metadata:
+      labels:
+        app: pgadmin
+    spec:
+      #imagePullSecrets:
+      #- name: regcred
+      restartPolicy: Always
+      securityContext:
+        fsGroup: 5050
+      containers:
+      - name: pgadmin
+        image: dpage/pgadmin4:latest
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: pgadmin-env-config
+        - secretRef:
+            name: pgadmin-env-secret
+        ports:
+        #- containerPort: 80
+        - containerPort: 5050
+          name: pgadmin
+          protocol: TCP
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "0.1"
+          limits:
+            memory: "512Mi"
+            cpu: "0.5"
+        volumeMounts:
+        - name: pgadmin-data
+          mountPath: /var/lib/pgadmin
+      #initContainers:
+      #- name: volume-mount-chmod
+      #  image: busybox
+      #  command: ["sh", "-c", "mkdir -p /var/lib/pgadmin; chmod 777 /var/lib/pgadmin; exit"]
+      #  volumeMounts:
+      #  - name: pgadmin-data
+      #    mountPath: /var/lib/pgadmin
+      #  resources:
+      #    requests:
+      #      memory: "64Mi"
+      #      cpu: "0.1"
+      #    limits:
+      #      memory: "128Mi"
+      #      cpu: "0.1"
+      volumes:
+        - name: pgadmin-data
+          persistentVolumeClaim:
+            claimName: pgadmin-data
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgadmin
+  namespace: default
+  labels:
+    app: pgadmin
+spec:
+  type: ClusterIP
+  ports:
+    - name: pgadmin
+      protocol: TCP
+      port: 5050
+      #targetPort: 80
+      targetPort: 5050
+  selector:
+    app: pgadmin
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-pgadmin
+  namespace: default
+  labels:
+    app: pgadmin
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    #nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    #cert-manager.io/cluster-issuer: ingress-tls-secret
+    #cert-manager.io/acme-challenge-type: http01
+    ## https://kubernetes.github.io/ingress-nginx/examples/auth/basic/
+    #nginx.ingress.kubernetes.io/auth-type: basic
+    #nginx.ingress.kubernetes.io/auth-secret: basic-auth
+    #nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - pgadmin'
+spec:
+  tls:
+  - hosts:
+    - pgadmin.example.com
+    secretName: ingress-tls-secret
+  rules:
+  - host: pgadmin.example.com
+    http:
+      paths:
+      - path: /pgadmin
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: pgadmin
+            port:
+              #name: pgadmin
+              number: 5050
