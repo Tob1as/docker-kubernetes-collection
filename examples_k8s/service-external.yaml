@@ -1,0 +1,56 @@
+## Endpoints and Service
+## https://kubernetes.io/docs/concepts/services-networking/service/#services-without-selectors
+
+---
+
+## EXAMPLE
+
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: service-external
+  namespace: default
+  labels:
+    servicename: service-external
+subsets:
+  - addresses:
+      - ip: 10.0.0.100
+    ports:
+      - name: webport
+        protocol: TCP
+        port: 8080
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-external
+  namespace: default
+  labels:
+    servicename: service-external
+spec:
+  ports:
+    - name: webport
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+
+---
+
+## https://kubernetes.io/docs/concepts/services-networking/service/#externalname
+
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: service-external-dns
+#  namespace: default
+#  labels:
+#    servicename: service-external
+#spec:
+#  type: ExternalName
+#  externalName: external.example.com
+##  ports:
+##  - port: 443
+##    protocol: TCP
+##    targetPort: 443
