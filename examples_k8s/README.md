@@ -57,6 +57,22 @@ For this Examples i used also self signed certificate create with easy-rsa ([#1]
 
 You can find other examples (e.g. databases) in my other Docker [Projects](https://github.com/Tob1as) beginn with `docker-*`.
 
+## Help
+
+### Secrets
+
+https://kubernetes.io/docs/concepts/configuration/secret/
+
+Convert String to base64:
+```powershell
+# Windows Powershell
+[System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes('value'))
+```
+```sh
+# Linux Shell
+echo -n 'value' | base64
+```
+
 ## Feedback
 
 If you have feedback, questions or improvements, create an issue or an MR.
