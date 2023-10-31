@@ -1,0 +1,124 @@
+  # docker-compose -f keycloak.yml up -d
+version: '2.4'
+services:
+
+  # Keycloak - identity and access management solution
+  # https://www.keycloak.org/
+  # https://github.com/keycloak/keycloak
+  # https://hub.docker.com/r/jboss/keycloak + https://github.com/keycloak/keycloak/tree/main/quarkus/container
+  # Docs:
+  # * https://www.keycloak.org/guides + https://www.keycloak.org/documentation
+  # * Container: https://www.keycloak.org/server/containers
+  # * All configuration: https://www.keycloak.org/server/all-config
+  # * Features: https://www.keycloak.org/server/features
+  # Supported architectures: amd64, arm64
+  # URL: http://localhost:8080/auth
+  # Requirements: setup database (mariadb or other database) before start keycloak!
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0
+    #image: keycloak/keycloak:22.0
+    container_name: keycloak
+    restart: unless-stopped
+    #hostname: keycloak
+    environment:
+      #TZ: Europe/Berlin
+      # Admin User
+      KEYCLOAK_ADMIN: "admin"
+      KEYCLOAK_ADMIN_PASSWORD: "passw0rd"
+      # Database
+      KC_DB: "mariadb"                                 # or postgres or other db ...
+      KC_DB_URL: "jdbc:mariadb://keycloak-db/keycloak" # jdbc:postgresql://keycloak-db/keycloak
+      KC_DB_USERNAME: "keycloak"
+      KC_DB_PASSWORD: "passw0rd"
+      # Feature
+      #KC_FEATURES: ""
+      #KC_FEATURES_DISABLED: ""
+      # Hostname
+      #KC_HOSTNAME: "example.com"  # or set KC_HOSTNAME_URL
+      KC_HOSTNAME_URL: "https://example.com/auth" # "http://example.com:8080/auth" / "https://example.com:8443/auth"
+      # Proxy
+      KC_PROXY: "edge"
+      # HTTP/TLS
+      KC_HTTP_RELATIVE_PATH: "/auth"  # default: "/"
+      KC_HTTP_ENABLED: "true"         # default: false, but we use this for Proxy
+      KC_HTTP_PORT: "8080"
+      #KC_HTTPS_PORT: "8443"
+      #KC_HTTPS_CERTIFICATE_FILE: "/ssl/ssl.crt"      # or use KC_HTTPS_KEY_STORE_FILE
+      #KC_HTTPS_CERTIFICATE_KEY_FILE: "/ssl/ssl.key"
+      #KC_HTTPS_KEY_STORE_FILE: "/ssl/keystore.jks"   # or use KC_HTTPS_CERTIFICATE_FILE
+      #KC_HTTPS_KEY_STORE_PASSWORD: "passw0rd"
+      #KC_HTTPS_CIPHER_SUITES: ""
+      #KC_HTTPS_PROTOCOLS: "TLSv1.3,TLSv1.2"
+      #KC_HTTPS_TRUST_STORE_FILE: "/ssl/cacerts.jks"
+      #KC_HTTPS_TRUST_STORE_PASSWORD: "changeit"
+      #KC_HTTPS_TRUST_STORE_TYPE: "jks"
+      # Healt & Metrics
+      KC_HEALTH_ENABLED: "true"   # /auth/health
+      KC_METRICS_ENABLED: "true"  # /auth/metrics
+      # Logging
+      KC_LOG_LEVEL: "info"
+      # JAVA_OPTS
+      #JAVA_OPTS_APPEND: "-Xms64m -Xmx512m -Djava.******"
+    #volumes:
+    #  - ./ssl:/ssl:ro
+    command: ["start"]  # or for development mode: start-dev
+    #mem_limit: 512m
+    #mem_reservation: 64m
+    #cpus: 2.0
+    #ports:
+    #  - 8080:8080/tcp
+    #  - 8443:8443/tcp
+    depends_on:
+      - keycloak-db
+    labels:
+      # Explicitly tell Traefik to expose this container
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
+      - "traefik.http.services.keycloak.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.keycloak-http.rule=(Host(`example.com`) && PathPrefix(`/auth`))"
+      - "traefik.http.routers.keycloak-http.entrypoints=web"
+      - "traefik.http.routers.keycloak-http.service=keycloak"
+      # https
+      - "traefik.http.routers.keycloak-https.tls=true"
+      - "traefik.http.routers.keycloak-https.rule=(Host(`example.com`) && PathPrefix(`/auth`))"
+      - "traefik.http.routers.keycloak-https.entrypoints=websecure"
+      - "traefik.http.routers.keycloak-https.service=keycloak"
+      # load middlewares for routes
+      - "traefik.http.routers.keycloak-http.middlewares=keycloak-https,keycloak-blockpath"
+      - "traefik.http.routers.keycloak-https.middlewares=keycloak-blockpath"
+      # http to https redirect      
+      - "traefik.http.middlewares.keycloak-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.keycloak-https.redirectscheme.permanent=false"
+      #- "traefik.http.middlewares.keycloak-https.redirectscheme.port=443"
+      # "/auth/metrics" deny from external, need plugin: https://plugins.traefik.io/plugins/62947354108ecc83915d778e/block-path
+      - "traefik.http.middlewares.keycloak-blockpath.plugin.blockpath.Regex=/auth/metrics"
+
+  # MariaDB <https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/mariadb.yml>
+  keycloak-db:
+    image: mariadb:10.11
+    container_name: keycloak-db
+    restart: unless-stopped
+    volumes:
+      - ./data_keycloak-db:/var/lib/mysql:rw
+    environment:
+      #TZ: Europe/Berlin
+      MARIADB_ROOT_PASSWORD: passw0rd
+      MARIADB_DATABASE: keycloak
+      MARIADB_USER: keycloak
+      MARIADB_PASSWORD: passw0rd
+      #MARIADB_AUTO_UPGRADE: 1
+    #ports:
+    #  - 127.0.0.1:3306:3306/tcp
+    healthcheck:
+      test:  mysqladmin ping -h 127.0.0.1 -u $$MARIADB_USER --password=$$MARIADB_PASSWORD || exit 1
+      start_period: 30s
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+networks:
+  default:
+    external: true
+    name: mynetwork
