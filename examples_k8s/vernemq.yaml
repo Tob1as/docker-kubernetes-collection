@@ -259,15 +259,15 @@ spec:
       - name: vmq-passwd
         configMap:
           name: vernemq-files-passwd-config
-          defaultMode: 420
+          defaultMode: 420 # decimal equivalent of octal 0644
       - name: vmq-acl
         configMap:
           name: vernemq-files-acl-config
-          defaultMode: 420
+          defaultMode: 420 # decimal equivalent of octal 0644
       - name: vernemq-ssl
         secret:
           secretName: vernemq-ssl-secret
-          defaultMode: 420
+          defaultMode: 420 # decimal equivalent of octal 0644
 
 ---
 
