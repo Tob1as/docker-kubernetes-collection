@@ -260,8 +260,8 @@ spec:
   - host: example.com
     http:
       paths:
-      - path: /auth
-        pathType: ImplementationSpecific
+      - path: /auth               # https://example.com/auth/
+        pathType: Prefix
         backend:
           service:
             name: keycloak
