@@ -136,6 +136,7 @@ spec:
         #- name: KC_DB_URL
         #  value: "jdbc:mariadb://mariadb/$(DATABASE_NAME)"
         ## END: import from Database secret ##
+        args: ["start"]
         ports:
         - containerPort: 8080
           name: http
@@ -195,20 +196,20 @@ spec:
           defaultMode: 420 # decimal equivalent of octal 0644
           optional: true
 
----
-
-## help to convert to base64: https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_k8s/ca-files-secret.yaml#L8-L14
-apiVersion: v1
-kind: Secret
-metadata:
-  name: keycloak-ssl-secret
-  namespace: default
-  labels:
-    app: keycloak
-type: Opaque
-data:
-  ssl.crt: <ssl.crt>
-  ssl.key: <ssl.key>
+#---
+#
+### help to convert to base64: https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_k8s/ca-files-secret.yaml#L8-L14
+#apiVersion: v1
+#kind: Secret
+#metadata:
+#  name: keycloak-ssl-secret
+#  namespace: default
+#  labels:
+#    app: keycloak
+#type: Opaque
+#data:
+#  ssl.crt: <ssl.crt>
+#  ssl.key: <ssl.key>
 
 ---
 
@@ -246,6 +247,7 @@ metadata:
     kubernetes.io/ingress.class: nginx
     #nginx.ingress.kubernetes.io/ssl-redirect: "false"
     #nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     nginx.ingress.kubernetes.io/proxy-buffer-size: 16k
     nginx.ingress.kubernetes.io/proxy-buffering: "on"
     nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
@@ -255,17 +257,17 @@ spec:
     - example.com
     secretName: ingress-tls-secret
   rules:
-    - host: example.com
-      http:
-        paths:
-        - path: /auth
-          pathType: ImplementationSpecific
-          backend:
-            service:
-              name: keycloak
-              port:
-                #name: http
-                number: 8080
+  - host: example.com
+    http:
+      paths:
+      - path: /auth
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: keycloak
+            port:
+              #name: http
+              number: 8080
        
 ---
 
@@ -273,7 +275,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: keycloak
+  name: keycloak-metrics
   namespace: default
   labels:
     app: keycloak
@@ -281,6 +283,7 @@ metadata:
     kubernetes.io/ingress.class: nginx
     #nginx.ingress.kubernetes.io/ssl-redirect: "false"
     #nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     #nginx.ingress.kubernetes.io/proxy-buffer-size: 16k
     #nginx.ingress.kubernetes.io/proxy-buffering: "on"
     #nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
@@ -293,17 +296,25 @@ spec:
     - example.com
     secretName: ingress-tls-secret
   rules:
-    - host: example.com
-      http:
-        paths:
-        - path: /auth/metrics
-          pathType: Exact
-          backend:
-            service:
-              name: keycloak
-              port:
-                #name: http
-                number: 8080
+  - host: example.com
+    http:
+      paths:
+      - path: /auth/metrics
+        pathType: Exact
+        backend:
+          service:
+            name: keycloak
+            port:
+              #name: http
+              number: 8080
+      - path: /auth/health
+        pathType: Prefix
+        backend:
+          service:
+            name: keycloak
+            port:
+              #name: http
+              number: 8080
 
 ---
 
