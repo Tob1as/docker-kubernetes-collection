@@ -29,7 +29,7 @@ data:
   #TZ: Europe/Berlin
   # Database OR import in deployment from Database secret
   KC_DB: "mariadb"                                 # or postgres or other db ...
-  KC_DB_URL: "jdbc:mariadb://keycloak-db/keycloak" # jdbc:postgresql://keycloak-db/keycloak
+  KC_DB_URL: "jdbc:mariadb://mariadb/keycloak" # jdbc:postgresql://postgres/keycloak
   # Feature
   #KC_FEATURES: ""
   #KC_FEATURES_DISABLED: ""
@@ -134,7 +134,7 @@ spec:
         #      name: mariadb-env-config
         #      key: MARIADB_DATABASE
         #- name: KC_DB_URL
-        #  value: "jdbc:mariadb://keycloak-db/$(DATABASE_NAME)"
+        #  value: "jdbc:mariadb://mariadb/$(DATABASE_NAME)"
         ## END: import from Database secret ##
         ports:
         - containerPort: 8080
