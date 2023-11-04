@@ -126,6 +126,7 @@ metadata:
     nginx.ingress.kubernetes.io/auth-secret: basic-auth
     nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - Redis-UI'
 spec:
+  ingressClassName: nginx
   tls:
   - hosts:
     - redis-ui.example.com

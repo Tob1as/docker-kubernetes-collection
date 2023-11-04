@@ -171,6 +171,7 @@ metadata:
     #nginx.ingress.kubernetes.io/auth-secret: basic-auth
     #nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - Mongo-Express'
 spec:
+  ingressClassName: nginx
   tls:
   - hosts:
     - mongo-express.example.com

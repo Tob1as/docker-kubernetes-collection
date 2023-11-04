@@ -419,6 +419,7 @@ metadata:
     nginx.ingress.kubernetes.io/auth-secret: basic-auth
     nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - VerneMQ'
 spec:
+  ingressClassName: nginx
   tls:
   - hosts:
     - vernemq.example.com
@@ -459,6 +460,7 @@ metadata:
     #cert-manager.io/cluster-issuer: ingress-tls-secret
     #cert-manager.io/acme-challenge-type: http01
 spec:
+  ingressClassName: nginx
   tls:
   - hosts:
     - vernemq.example.com

@@ -125,6 +125,7 @@ metadata:
     #nginx.ingress.kubernetes.io/auth-secret: basic-auth
     #nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - Adminer'
 spec:
+  ingressClassName: nginx
   tls:
   - hosts:
     - adminer.example.com

@@ -391,6 +391,7 @@ metadata:
     #cert-manager.io/cluster-issuer: ingress-tls-secret
     #cert-manager.io/acme-challenge-type: http01
 spec:
+  ingressClassName: nginx
   tls:
   - hosts:
     - rabbitmq.example.com

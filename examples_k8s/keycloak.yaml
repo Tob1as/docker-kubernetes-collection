@@ -252,6 +252,7 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-buffering: "on"
     nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
 spec:
+  ingressClassName: nginx
   tls:
   - hosts:
     - example.com
@@ -291,6 +292,7 @@ metadata:
     nginx.ingress.kubernetes.io/auth-secret: basic-auth
     nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - Keycloak'
 spec:
+  ingressClassName: nginx
   tls:
   - hosts:
     - example.com

@@ -164,6 +164,7 @@ metadata:
     #nginx.ingress.kubernetes.io/auth-secret: basic-auth
     #nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - MQTT-Explorer'
 spec:
+  ingressClassName: nginx
   tls:
   - hosts:
     - mqtt-explorer.example.com

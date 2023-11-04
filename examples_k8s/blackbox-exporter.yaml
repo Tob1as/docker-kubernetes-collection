@@ -119,6 +119,7 @@ metadata:
     nginx.ingress.kubernetes.io/auth-secret: basic-auth
     nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - Blackbox-Exporter'
 spec:
+  ingressClassName: nginx
   tls:
   - hosts:
     - monitoring.example.com
