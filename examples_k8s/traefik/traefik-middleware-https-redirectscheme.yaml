@@ -1,0 +1,13 @@
+## redirect http to https
+
+## https://doc.traefik.io/traefik/middlewares/http/redirectscheme/ (Tabs: Kubernetes)
+apiVersion: traefik.containo.us/v1alpha1   # not work: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: https-redirectscheme
+  namespace: default
+spec:
+  redirectScheme:
+    scheme: https
+    #port: "443"
+    #permanent: true

@@ -1,0 +1,81 @@
+## Traefik Dashboard
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-dashboard
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/instance: traefik
+    app.kubernetes.io/name: traefik-dashboard
+spec:
+  type: ClusterIP
+  ports:
+  - name: traefik
+    port: 9000
+    targetPort: traefik # 9000
+    protocol: TCP
+  selector:
+    app.kubernetes.io/instance: traefik-kube-system
+    app.kubernetes.io/name: traefik
+    
+---
+
+## https://doc.traefik.io/traefik/routing/providers/kubernetes-ingress/
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: traefik-ingress
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/instance: traefik
+    app.kubernetes.io/name: traefik-dashboard
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    # for next line see also files: traefik-middleware-basicauth.yaml , traefik-middleware-https-redirectscheme.yaml
+    # Format: <NAMESAPCE>-<MIDDLEWARE-NAME>@kubernetescrd
+    # or disable/remove next line, when not needed ... but not recommended
+    traefik.ingress.kubernetes.io/router.middlewares: 'default-basic-auth@kubernetescrd,default-https-redirectscheme@kubernetescrd'
+spec:
+  ingressClassName: traefik
+  tls:
+  - hosts:
+    - traefik.example.com
+    secretName: ingress-tls-secret  # use file: ingress-tls-secret.yaml
+  rules:
+    - host: traefik.example.com     # https://traefik.example.com/dashboard/ (note the trailing slash!)
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: traefik-dashboard
+                port:
+                  number: 9000
+                  
+#---
+#
+### https://doc.traefik.io/traefik/routing/providers/kubernetes-crd/#kind-ingressroute
+#apiVersion: traefik.containo.us/v1alpha1
+#kind: IngressRoute
+#metadata:
+#  name: dashboard
+#  namespace: kube-system
+#  labels:
+#    app.kubernetes.io/instance: traefik
+#    app.kubernetes.io/name: traefik-dashboard
+#spec:
+#  entryPoints:
+#    - web 
+#    - websecure
+#  routes:
+#    - match: Host(`traefik.example.com`)
+#      kind: Rule
+#      services:
+#        - name: api@internal
+#          kind: TraefikService
+#      middlewares:
+#        - name: basic-auth
+#  tls:
+#    secretName: ingress-tls-secret
