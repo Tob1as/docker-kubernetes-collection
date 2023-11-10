@@ -1,0 +1,26 @@
+---
+service:
+  # Address to listen on, default: localhost:9883
+  listen: '0.0.0.0:9883'
+  # URL path for metrics exposure, default: /metrics
+  metrics_path: '/metrics'
+mqtt:
+  # MQTT authentication
+  auth:
+    user: 'mosquitto-exporter'
+    password: 'passw0rd'
+  # MQTT broker address, scheme://address
+  # Valid schemes are tcp and ssl
+  broker: 'tcp://mosquitto:1883'
+  # CA file to use for server certificate validation, default: /etc/ssl/certs/ca-certificates.crt
+  ca_file: '/etc/ssl/certs/ca-certificates.crt'
+  # Disable verification of servers SSL certificate
+  insecure_ssl: false
+  # maximal time in seconds for reconnect in seconds
+  retry_interval: 60
+  # timeout for connection establishment in seconds
+  timeout: 5
+  # other:
+  client_id: 'mosquitto-exporter-rust'
+  qos: 0
+

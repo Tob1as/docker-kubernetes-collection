@@ -99,6 +99,24 @@ services:
     depends_on:
       - mosquitto
 
+#  # https://github.com/Bobobo-bo-Bo-bobo/prometheus-mosquitto-exporter      
+#  mosquitto-exporter-rust:
+#    image: tobi312/tools:prometheus-mosquitto-exporter
+#    build:
+#      context: https://github.com/Tob1as/docker-tools/raw/main/prometheus-mosquitto-exporter.debian.Dockerfile
+#      dockerfile: prometheus-mosquitto-exporter.debian.Dockerfile
+#    container_name: mosquitto-exporter-rust
+#    restart: unless-stopped
+#    #ports:
+#    #  - 127.0.0.1:9883:9883/tcp
+#    volumes:
+#      - ./config_mosquitto-exporter-rust/config.yaml:/etc/prometheus-mosquitto-exporter/config.yaml:ro
+#      #- /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+#    #command:
+#    #  - "--config=/etc/prometheus-mosquitto-exporter/config.yaml"
+#    depends_on:
+#      - mosquitto
+
 networks:
   default:
     external: true
