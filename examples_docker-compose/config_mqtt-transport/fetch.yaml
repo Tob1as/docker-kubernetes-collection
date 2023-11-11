@@ -1,0 +1,37 @@
+---
+global:
+  # Scrape interval
+  interval: 300
+  # Compress data (gzip) before sending it to the MQTT broker
+  compress: true
+mqtt:
+  # Broker URL, ssl:// for MQTTS or tcp:// for MQTT without TLS
+  broker: 'ssl://mosquitto.example.com:8883'
+  ca_cert: '/etc/ssl/certs/ca-certificates.crt'
+  user: 'admin'
+  password: 'passw0rd'
+  qos: 0
+  insecure_ssl: false
+  topic: 'prometheus'
+  # connect and send timeout in seconds
+  timeout: 5
+  # reconnect timeout
+  reconnect_timeout: 60
+scrape:
+  - name: 'system1_node_exporter'
+    url: 'http://node-exporter:9100/metrics'
+    labels:
+      hostname: 'system1'
+      exporter: 'node_exporter'
+    # don't add label prom2mqtt_fetch_scrape="<scrape_name"> label to the metrics
+    suppress_scrape_name: true
+    # interval for this particular scrape
+    interval: 60
+  - name: 'system1_mariadb_exporter'
+    url: 'http://mariadb-exporter:9104/metrics'
+    # use defined labels
+    labels:
+      hostname: 'system1'
+      exporter: 'mariadb_exporter'
+    # scrape timeout in seconds
+    timeout: 15

@@ -1,0 +1,50 @@
+# docker-compose -f mqtt-transport.yml up -d
+version: '2.4'
+services:
+  
+  # prometheus-mqtt-transport - Scrape Prometheus exporter, transport data over MQTT and expose transported metric data to Prometheus 
+  # https://github.com/Bobobo-bo-Bo-bobo/prometheus-mqtt-transport
+  # https://github.com/Tob1as/docker-tools/blob/main/prometheus-mqtt-transport.debian.Dockerfile
+  
+  mqtt-transport-fetch:
+    image: tobi312/tools:mqtt-transport
+    build:
+      context: https://github.com/Tob1as/docker-tools/raw/main/prometheus-mqtt-transport.debian.Dockerfile
+      dockerfile: prometheus-mqtt-transport.debian.Dockerfile
+    container_name: mqtt-transport-fetch
+    restart: unless-stopped
+    volumes:
+      - ./config_mqtt-transport/fetch.yaml:/etc/prometheus-mqtt-transport/fetch.yaml:ro
+      #- /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    entrypoint: ["prom2mqtt-fetch"]
+    command:
+      - "--config=/etc/prometheus-mqtt-transport/fetch.yaml"
+    #depends_on:
+    #  - mosquitto
+    #  - vernemq
+    #  - rabbitmq
+    
+  mqtt-transport-export:
+    image: tobi312/tools:mqtt-transport
+    build:
+      context: https://github.com/Tob1as/docker-tools/raw/main/prometheus-mqtt-transport.debian.Dockerfile
+      dockerfile: prometheus-mqtt-transport.debian.Dockerfile
+    container_name: mqtt-transport-export
+    restart: unless-stopped
+    #ports:
+    #  - "127.0.0.1:9991:9991/tcp"    # http://127.0.0.1:9991/metrics
+    volumes:
+      - ./config_mqtt-transport/export.yaml:/etc/prometheus-mqtt-transport/export.yaml:ro
+      #- /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    entrypoint: ["prom2mqtt-export"]
+    command:
+      - "--config=/etc/prometheus-mqtt-transport/export.yaml"
+    #depends_on:
+    #  - mosquitto
+    #  - vernemq
+    #  - rabbitmq
+
+networks:
+  default:
+    external: true
+    name: mynetwork

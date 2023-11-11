@@ -1,0 +1,18 @@
+---
+mqtt:
+  # Broker URL, ssl:// for MQTTS or tcp:// for MQTT without TLS
+  broker: 'ssl://mosquitto.example.com:8883'
+  user: 'admin'
+  password: 'passw0rd'
+  ca_file: '/etc/ssl/certs/ca-certificates.crt'
+  insecure_ssl: false
+  topic: 'prometheus/+'
+  # connect and send timeout in seconds
+  timeout: 5
+  # reconnect timeout
+  reconnect_timeout: 60
+  qos: 0
+prometheus:
+  listen: '0.0.0.0:9991'
+  path: '/metrics'
+
