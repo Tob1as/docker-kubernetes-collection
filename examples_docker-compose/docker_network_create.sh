@@ -5,7 +5,7 @@
 ## Variables
 NETWORK_NAME="mynetwork"
 NETWORK_SUBNET_IPV4="172.20.0.0/24"
-NETWORK_SUBNET_IPV6="fd00:dead:beef::/48"
+NETWORK_SUBNET_IPV6="fd00:dead:beef::/48"  # fd00:cafe:1111::/48
 
 ## docker network create <https://docs.docker.com/engine/reference/commandline/network_create/>
 docker network create \
