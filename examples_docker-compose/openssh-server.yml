@@ -4,7 +4,7 @@ services:
 
   # https://www.openssh.com/
   # https://github.com/linuxserver/docker-openssh-server + https://hub.docker.com/r/linuxserver/openssh-server
-  # Supported architectures: amd64, arm64v8, arm32v7
+  # Supported architectures: amd64, arm64v8
   openssh-server:
     #image: ghcr.io/linuxserver/openssh-server:latest
     image: linuxserver/openssh-server:latest
