@@ -18,6 +18,24 @@ After installing docker-compose-plugin, you can use it with `docker compose` (wi
 echo 'alias docker-compose="docker compose"' >> ~/.bashrc
 ```
 (`~/.bash_aliases` or `~/.bashrc`)  
+
+Add user to docker group:
+```sh
+sudo usermod -aG docker <USERNAME>
+```
+
+optional: [IPv6](https://docs.docker.com/config/daemon/ipv6/#use-ipv6-for-the-default-bridge-network):
+```sh
+sudo sh -c 'cat << EOF > /etc/docker/daemon.json
+{
+  "experimental": true,
+  "ip6tables": true,
+  "ipv6": true,
+  "fixed-cidr-v6": "fd00:dead:cafe::/48"
+}'
+# restart
+sudo systemctl restart docker
+```
   
 Note: If you want to use this on Windows, [Docker Desktop](https://www.docker.com/products/docker-desktop/) with WSL2 ([#1](https://docs.docker.com/desktop/wsl/), [#2](https://learn.microsoft.com/en-us/windows/wsl/)) is recommended.
 
