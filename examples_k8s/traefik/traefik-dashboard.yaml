@@ -31,7 +31,7 @@ metadata:
     app.kubernetes.io/instance: traefik
     app.kubernetes.io/name: traefik-dashboard
   annotations:
-    kubernetes.io/ingress.class: traefik
+    #kubernetes.io/ingress.class: traefik
     # for next line see also files: traefik-middleware-basicauth.yaml , traefik-middleware-https-redirectscheme.yaml
     # Format: <NAMESAPCE>-<MIDDLEWARE-NAME>@kubernetescrd
     # or disable/remove next line, when not needed ... but not recommended
