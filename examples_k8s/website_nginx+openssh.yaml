@@ -16,7 +16,7 @@
 ## https://github.com/linuxserver/docker-openssh-server + https://hub.docker.com/r/linuxserver/openssh-server
 
 ## ======= WARNING =======
-## This setup with OpenSSh is not recommended in a productive environment! (Before delete OpenSSH Container and Settings.)
+## This setup with OpenSSH is not recommended in a productive environment! (Before delete OpenSSH Container and Settings.)
 ## If you want to copy files (website data) into a running NGINX container volume, it is recommended to use the "kubectl cp" command.
 ## ======= WARNING =======
 
