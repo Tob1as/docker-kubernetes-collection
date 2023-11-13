@@ -2,7 +2,7 @@
 
 My recommendation for Kubernetes: **Rancher** by SUSE:
 * https://rancher.com/ | https://github.com/rancher (CNCF-certified)
-* [Rancher](https://rancher.com/products/rancher) - Dashbaord/GUI for cluster operations, monitoring and more (AMD64/x86_64 & ARM64)
+* [Rancher](https://rancher.com/products/rancher) - Dashbaord/GUI for cluster operations, monitoring and more (AMD64/x86_64 & ARM64) [Docs](https://ranchermanager.docs.rancher.com/pages-for-subheaders/install-upgrade-on-a-kubernetes-cluster)/[GitHub](https://github.com/rancher/rancher)
 * [RKE](https://rancher.com/products/rke) - Rancher Kubernetes Engine (AMD64/x86_64) for on-premise installation
   * RKE v1: [Docs](https://rke.docs.rancher.com/installation) , [GitHub](https://github.com/rancher/rke)
   * RKE v2: [Docs](https://docs.rke2.io/install/quickstart/) , [GitHub](https://github.com/rancher/rke2/) - Recommended! (used k3s in background)
