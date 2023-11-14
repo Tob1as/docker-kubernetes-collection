@@ -218,7 +218,7 @@ networks:
 #      device: /data/ssl
 #      o: bind
 
-## create file "./config_traefik/traefik-config.yaml" with content:
+## create file "./config_traefik/ssl.yaml" with content:
 #tls:
 #  stores:
 #    default:
