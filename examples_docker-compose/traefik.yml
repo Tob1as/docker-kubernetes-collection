@@ -196,8 +196,11 @@ services:
       ##- traefik.http.routers.blog.tls.domains[0].main=whoami.example.net
       ##- traefik.http.routers.blog.tls.domains[0].sans=whoami.example.com
       
-      # load middlewares for routers
+      # load middlewares for routers (separated by a comma)
       #- "traefik.http.routers.whoami-http.middlewares=whoami-https"
+      # Middleware: (only) oAuth2-Proxy
+      #- "traefik.http.routers.whoami-http.middlewares=oauth@file"
+      #- "traefik.http.routers.whoami-https.middlewares=oauth@file"
 
       # http to https redirect
       #- "traefik.http.middlewares.whoami-https.redirectscheme.scheme=https"
