@@ -199,12 +199,13 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
-    #devices:
-    #  - /dev/kmsg
+    devices:
+      - /dev/kmsg
     #privileged: true
     environment:
       - CADVISOR_HEALTHCHECK_URL=http://localhost:8080/cadvisor/healthz
     command:
+    ## https://github.com/google/cadvisor/blob/master/docs/runtime_options.md
     #  - '-port=8080'
       - '-url_base_prefix=/cadvisor'
     #ports:
