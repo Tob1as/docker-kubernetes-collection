@@ -76,6 +76,7 @@ services:
       #- "traefik.docker.network=mynetwork"  # set when more then one networks
       - "traefik.http.services.oauth2-proxy-test.loadbalancer.server.port=80"
       - "traefik.http.services.oauth2-proxy-test.loadbalancer.server.scheme=http"
+      - "traefik.http.routers.oauth2-proxy-test-http.rule=Host(`auth-test.examle.com`) && PathPrefix(`/`)"
       - "traefik.http.routers.oauth2-proxy-test-http.entrypoints=web"
       - "traefik.http.routers.oauth2-proxy-test-http.service=oauth2-proxy-test"
       - "traefik.http.routers.oauth2-proxy-test-https.tls=true"
