@@ -35,7 +35,7 @@ services:
       #OAUTH2_PROXY_PROVIDER_CA_FILE: ""
       #OAUTH2_PROXY_SSL_INSECURE_SKIP_VERIFY: "false"
       #OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: "true"  # not working? Show Link with Name "Found".
-      OAUTH2_PROXY_PROVIDER_DISPLAY_NAME: "\"Azure/Office365\""
+      OAUTH2_PROXY_PROVIDER_DISPLAY_NAME: "\"Azure\""
       OAUTH2_PROXY_REVERSE_PROXY: "true"  # need when behind proxy
       OAUTH2_PROXY_REAL_CLIENT_IP_HEADER: X-Forwarded-For  # or: X-Real-IP
       OAUTH2_PROXY_PASS_ACCESS_TOKEN: true
