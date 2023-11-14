@@ -1,0 +1,95 @@
+# docker-compose -f oauth2-proxy.yml up -d
+version: '2.4'
+services:
+
+  # oAuth2-Proxy - A reverse proxy that provides authentication with Google, Azure, OpenID Connect and many more identity providers. 
+  # https://github.com/oauth2-proxy/oauth2-proxy
+  # Docs:
+  # * https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview#environment-variables
+  # * https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/oauth_provider#azure-auth-provider
+  # * https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#forwardauth-with-401-errors-middleware
+  oauth2-proxy:
+    container_name: oauth2-proxy
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.5.1  # or (but without healthcheck): bitnami/oauth2-proxy:7.5.1
+    restart: unless-stopped
+    #ports:
+    #  - "4180:4180/tcp"
+    environment:
+      OAUTH2_PROXY_PROVIDER: azure
+      OAUTH2_PROXY_AZURE_TENANT: <AZURE_ID>
+      OAUTH2_PROXY_OIDC_ISSUER_URL: https://login.microsoftonline.com/<AZURE_ID>/v2.0
+      OAUTH2_PROXY_OIDC_JWKS_URL: https://login.microsoftonline.com/common/discovery/v2.0/keys
+      OAUTH2_PROXY_CLIENT_ID: <AZURE_CLIENT_ID>
+      OAUTH2_PROXY_CLIENT_SECRET: <AZURE_CLIENT_SECRET>
+      #OAUTH2_PROXY_SCOPE: email profile openid
+      #OAUTH2_PROXY_REDIRECT_URL: https://auth.examle.com/oauth2/callback
+      # create COOKIE_SECRET: openssl rand -base64 32 | tr -- '+/' '-_'
+      OAUTH2_PROXY_COOKIE_SECRET: 2Z6ok80aioj8719l4E4YqG-HcfeT2iI8s48q6-kBu_U=
+      OAUTH2_PROXY_HTTP_ADDRESS: :4180
+      OAUTH2_PROXY_EMAIL_DOMAINS: "*"
+      OAUTH2_PROXY_SILENCE_PING_LOGGING: "true"
+      OAUTH2_PROXY_PING_PATH: "/ping"
+      OAUTH2_PROXY_READY_PATH: "/ready"
+      OAUTH2_PROXY_PROXY_PREFIX: "/oauth2"
+      #OAUTH2_PROXY_METRICS_ADDRESS: ":4185"
+      #OAUTH2_PROXY_PROVIDER_CA_FILE: ""
+      #OAUTH2_PROXY_SSL_INSECURE_SKIP_VERIFY: "false"
+      #OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: "true"  # not working? Show Link with Name "Found".
+      OAUTH2_PROXY_PROVIDER_DISPLAY_NAME: "\"Azure/Office365\""
+      OAUTH2_PROXY_REVERSE_PROXY: "true"  # need when behind proxy
+      OAUTH2_PROXY_REAL_CLIENT_IP_HEADER: X-Forwarded-For  # or: X-Real-IP
+      OAUTH2_PROXY_PASS_ACCESS_TOKEN: true
+    healthcheck:
+      test:  wget --quiet --tries=1 --spider http://localhost:4180/ping || exit 1
+      #start_period: 30s
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.oauth2-proxy.loadbalancer.server.port=4180"
+      - "traefik.http.services.oauth2-proxy.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.oauth2-proxy-http.rule=(Host(`auth.examle.com`) && PathPrefix(`/oauth2/`)) || (PathPrefix(`/oauth2/`))"
+      - "traefik.http.routers.oauth2-proxy-http.entrypoints=web"
+      - "traefik.http.routers.oauth2-proxy-http.service=oauth2-proxy"
+      # https
+      - "traefik.http.routers.oauth2-proxy-https.tls=true"
+      - "traefik.http.routers.oauth2-proxy-https.rule=(Host(`auth.examle.com`) && PathPrefix(`/oauth2/`)) || (PathPrefix(`/oauth2/`))"
+      - "traefik.http.routers.oauth2-proxy-https.entrypoints=websecure"
+      - "traefik.http.routers.oauth2-proxy-https.service=oauth2-proxy"
+      # load middlewares for routes
+      - "traefik.http.routers.oauth2-proxy-http.middlewares=oauth2-proxy-https"
+      # http to https redirect      
+      - "traefik.http.middlewares.oauth2-proxy-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.oauth2-proxy-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.oauth2-proxy-https.redirectscheme.port=443"
+
+  # https://github.com/traefik/whoami
+  oauth2-proxy-test:
+    image: traefik/whoami:latest
+    container_name: oauth2-proxy-test
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"  # set when more then one networks
+      - "traefik.http.services.oauth2-proxy-test.loadbalancer.server.port=80"
+      - "traefik.http.services.oauth2-proxy-test.loadbalancer.server.scheme=http"
+      - "traefik.http.routers.oauth2-proxy-test-http.entrypoints=web"
+      - "traefik.http.routers.oauth2-proxy-test-http.service=oauth2-proxy-test"
+      - "traefik.http.routers.oauth2-proxy-test-https.tls=true"
+      - "traefik.http.routers.oauth2-proxy-test-https.rule=Host(`auth-test.examle.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.oauth2-proxy-test-https.entrypoints=websecure"
+      - "traefik.http.routers.oauth2-proxy-test-https.service=oauth2-proxy-test"
+      # load Middleware "oauth@file" for oAuth2-Proxy !
+      - "traefik.http.routers.oauth2-proxy-test-http.middlewares=oauth@file"
+      - "traefik.http.routers.oauth2-proxy-test-https.middlewares=oauth@file"
+
+      # add URL https://auth-test.examle.com/oauth2/callback to Azure App-Registration and then...
+      # call: https://auth-test.examle.com/whoami
+
+networks:
+  default:
+    external: true
+    name: mynetwork

@@ -1,0 +1,37 @@
+# https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#forwardauth-with-401-errors-middleware
+# https://doc.traefik.io/traefik/middlewares/http/forwardauth/ & https://doc.traefik.io/traefik/middlewares/http/chain/
+
+http:
+  middlewares:
+    oauth:
+      chain:
+        middlewares:
+          - oauth-errors
+          - oauth-auth
+
+    oauth-auth:
+      forwardAuth:
+        address: "http://oauth2-proxy:4180/oauth2/auth"
+        trustForwardHeader: true
+        #tls:
+        #  #ca: "/etc/ssl/certs/ca-certificates.crt"
+        #  insecureSkipVerify: true
+    oauth-errors:
+      errors:
+        status:
+        - "401-403"
+        service: oauth2-proxy@docker
+        query: "/oauth2/sign_in?rd={url}"
+
+
+    #auth-headers:
+    #  headers:
+    #    sslRedirect: true
+    #    stsSeconds: 315360000
+    #    browserXssFilter: true
+    #    contentTypeNosniff: true
+    #    forceSTSHeader: true
+    #    sslHost: example.com
+    #    stsIncludeSubdomains: true
+    #    stsPreload: true
+    #    frameDeny: true
