@@ -1,0 +1,83 @@
+# docker-compose -f geoserver.yml up -d
+version: '2.4'
+services:
+
+  # GeoServer - server for sharing geospatial data
+  # http://geoserver.org/
+  # https://github.com/geoserver/geoserver
+  # https://hub.docker.com/r/kartoza/geoserver + https://github.com/kartoza/docker-geoserver
+  # Supported architectures: amd64, arm64
+  # URL: http://localhost:8080/geoserver
+  # fix permission problem before startup: "mkdir ./data_geoserver/ && chmod 777 ./data_geoserver/"
+  geoserver:
+    image: kartoza/geoserver:2.24.0
+    container_name: geoserver
+    restart: unless-stopped
+    #ports:
+    #  - 8080:8080/tcp
+    volumes:
+      - ./data_geoserver:/opt/geoserver/data_dir:rw
+      #- ./config_geoserver:/settings:ro
+      #- ./ssl:/etc/certs:ro
+    environment:
+      - TZ=Europe/Berlin
+      # https://github.com/kartoza/docker-geoserver/blob/develop/.env
+      - TIMEZONE='Europe/Berlin'
+      - GEOSERVER_DATA_DIR=/opt/geoserver/data_dir
+      - GEOWEBCACHE_CACHE_DIR=/opt/geoserver/data_dir/gwc
+      - GEOSERVER_ADMIN_USER=admin
+      - GEOSERVER_ADMIN_PASSWORD=geoserver  # change passw0rd 
+      - RESET_ADMIN_CREDENTIALS=FALSE
+      - GEOSERVER_CONTEXT_ROOT=geoserver
+      - HTTP_PORT=8080
+      - HTTP_PROXY_NAME=example.com
+      - HTTP_PROXY_PORT=443
+      - HTTP_SCHEME=https
+      - INITIAL_MEMORY=2G
+      - MAXIMUM_MEMORY=4G
+      - TOMCAT_EXTRAS=false
+      - ROOT_WEBAPP_REDIRECT=true
+      #- SAMPLE_DATA=true
+      # https://docs.geoserver.org/main/en/user/security/webadmin/csrf.html
+      #- GEOSERVER_CSRF_DISABLED=false
+    mem_reservation: 2g
+    mem_limit: 4g
+    cpus: 2
+    healthcheck:
+      test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null -u $${GEOSERVER_ADMIN_USER}:$${GEOSERVER_ADMIN_PASSWORD} http://localhost:8080/geoserver/rest/about/version.xml"
+      #start_period: 45s
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+    labels:
+      # Explicitly tell Traefik to expose this container
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      # Tell Traefik to use the http port 8080 to connect to geoserver container
+      - "traefik.http.services.geoserver.loadbalancer.server.port=8080"
+      - "traefik.http.services.geoserver.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.geoserver-http.rule=Host(`example.com`) && PathPrefix(`/geoserver`)"
+      - "traefik.http.routers.geoserver-http.entrypoints=web"
+      - "traefik.http.routers.geoserver-http.service=geoserver"
+      # https
+      - "traefik.http.routers.geoserver-https.tls=true"
+      - "traefik.http.routers.geoserver-https.rule=Host(`example.com`) && PathPrefix(`/geoserver`)"
+      - "traefik.http.routers.geoserver-https.entrypoints=websecure"
+      - "traefik.http.routers.geoserver-https.service=geoserver"
+      # load middlewares for routes
+      - "traefik.http.routers.geoserver-http.middlewares=geoserver-https"
+      - "traefik.http.routers.geoserver-https.middlewares=geoserver-add-proxy-protocol-header"
+      # http to https redirect      
+      - "traefik.http.middlewares.geoserver-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.geoserver-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.geoserver-https.redirectscheme.port=443"
+      # Proxy Header
+      - "traefik.http.middlewares.geoserver-add-proxy-protocol-header.headers.customrequestheaders.x-forwarded-proto: https"
+
+  # optional: add PostgreSQL with PostGIS extension
+
+networks:
+  default:
+    external: true
+    name: mynetwork
