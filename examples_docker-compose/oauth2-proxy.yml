@@ -14,6 +14,8 @@ services:
     restart: unless-stopped
     #ports:
     #  - "4180:4180/tcp"
+    #volumes:
+    #- ./config_oauth2-proxy/templates:/templates:ro
     environment:
       OAUTH2_PROXY_PROVIDER: azure
       OAUTH2_PROXY_AZURE_TENANT: <AZURE_ID>
@@ -39,6 +41,10 @@ services:
       OAUTH2_PROXY_REVERSE_PROXY: "true"  # need when behind proxy
       OAUTH2_PROXY_REAL_CLIENT_IP_HEADER: X-Forwarded-For  # or: X-Real-IP
       OAUTH2_PROXY_PASS_ACCESS_TOKEN: true
+      #OAUTH2_PROXY_CUSTOM_TEMPLATES_DIR: "/templates"   # see https://github.com/oauth2-proxy/oauth2-proxy/tree/master/pkg/app/pagewriter/*.html
+      #OAUTH2_PROXY_CUSTOM_SIGN_IN_LOGO: "-" # path, url or "-" for disable
+      OAUTH2_PROXY_BANNER: "-"               # Text or "-" for disable
+      OAUTH2_PROXY_FOOTER: "-"
     healthcheck:
       test:  wget --quiet --tries=1 --spider http://localhost:4180/ping || exit 1
       #start_period: 30s
