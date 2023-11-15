@@ -34,8 +34,8 @@ services:
       #KC_FEATURES: ""
       #KC_FEATURES_DISABLED: ""
       # Hostname
-      #KC_HOSTNAME: "example.com"  # or set KC_HOSTNAME_URL
-      KC_HOSTNAME_URL: "https://example.com/auth" # "http://example.com:8080/auth" / "https://example.com:8443/auth"
+      #KC_HOSTNAME: "auth.example.com"  # or set KC_HOSTNAME_URL
+      KC_HOSTNAME_URL: "https://auth.example.com/auth" # "https://example.com/auth" "http://example.com:8080/auth" / "https://example.com:8443/auth"
       # Proxy
       KC_PROXY: "edge"
       # HTTP/TLS
@@ -77,12 +77,12 @@ services:
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
       - "traefik.http.services.keycloak.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
       # http
-      - "traefik.http.routers.keycloak-http.rule=(Host(`example.com`) && PathPrefix(`/auth`))"
+      - "traefik.http.routers.keycloak-http.rule=(Host(`auth.example.com`) && PathPrefix(`/auth`))"
       - "traefik.http.routers.keycloak-http.entrypoints=web"
       - "traefik.http.routers.keycloak-http.service=keycloak"
       # https
       - "traefik.http.routers.keycloak-https.tls=true"
-      - "traefik.http.routers.keycloak-https.rule=(Host(`example.com`) && PathPrefix(`/auth`))"
+      - "traefik.http.routers.keycloak-https.rule=(Host(`auth.example.com`) && PathPrefix(`/auth`))"
       - "traefik.http.routers.keycloak-https.entrypoints=websecure"
       - "traefik.http.routers.keycloak-https.service=keycloak"
       # load middlewares for routes
