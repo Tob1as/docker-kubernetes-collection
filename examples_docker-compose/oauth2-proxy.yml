@@ -14,6 +14,7 @@ services:
     restart: unless-stopped
     #ports:
     #  - "4180:4180/tcp"
+    #  - "127.0.0.1:44180:44180/tcp"
     #volumes:
     #- ./config_oauth2-proxy/templates:/templates:ro
     environment:
@@ -33,7 +34,7 @@ services:
       OAUTH2_PROXY_PING_PATH: "/ping"
       OAUTH2_PROXY_READY_PATH: "/ready"
       OAUTH2_PROXY_PROXY_PREFIX: "/oauth2"
-      #OAUTH2_PROXY_METRICS_ADDRESS: ":4185"
+      OAUTH2_PROXY_METRICS_ADDRESS: ":44180"
       #OAUTH2_PROXY_PROVIDER_CA_FILE: ""
       #OAUTH2_PROXY_SSL_INSECURE_SKIP_VERIFY: "false"
       #OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: "true"  # not working? https://github.com/oauth2-proxy/oauth2-proxy/issues/334
