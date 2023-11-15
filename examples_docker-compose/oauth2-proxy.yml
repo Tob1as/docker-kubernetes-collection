@@ -7,6 +7,7 @@ services:
   # Docs:
   # * https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview#environment-variables
   # * https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/oauth_provider#azure-auth-provider
+  # * https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/oauth_provider/#keycloak-oidc-auth-provider
   # * https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#forwardauth-with-401-errors-middleware
   oauth2-proxy:
     container_name: oauth2-proxy
