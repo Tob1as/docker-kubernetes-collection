@@ -9,6 +9,8 @@ services:
   # * https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/oauth_provider#azure-auth-provider
   # * https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/oauth_provider/#keycloak-oidc-auth-provider
   # * https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview/#forwardauth-with-401-errors-middleware
+  # * https://joeeey.com/blog/selfhosting-sso-with-traefik-oauth2-proxy-part-2/
+  # Userinfo after Login: https://auth.examle.com/oauth2/userinfo
   oauth2-proxy:
     container_name: oauth2-proxy
     image: quay.io/oauth2-proxy/oauth2-proxy:v7.5.1  # or (but without healthcheck): bitnami/oauth2-proxy:7.5.1
@@ -18,25 +20,38 @@ services:
     #  - "127.0.0.1:44180:44180/tcp"
     #volumes:
     #- ./config_oauth2-proxy/templates:/templates:ro
+    #- ./ssl:/ssl:ro
+    #- /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
     environment:
+      # AZURE SETTINGS (or use Keycloak) #
       OAUTH2_PROXY_PROVIDER: azure
       OAUTH2_PROXY_AZURE_TENANT: <AZURE_ID>
       OAUTH2_PROXY_OIDC_ISSUER_URL: https://login.microsoftonline.com/<AZURE_ID>/v2.0
       OAUTH2_PROXY_OIDC_JWKS_URL: https://login.microsoftonline.com/common/discovery/v2.0/keys
       OAUTH2_PROXY_CLIENT_ID: <AZURE_CLIENT_ID>
       OAUTH2_PROXY_CLIENT_SECRET: <AZURE_CLIENT_SECRET>
-      #OAUTH2_PROXY_SCOPE: email profile openid
+      # KEYCLOAK SETTINGS (or user Azure) #
+      #OAUTH2_PROXY_PROVIDER: keycloak-oidc
+      #OAUTH2_PROXY_OIDC_ISSUER_URL: https://<keycloak host>/auth/realms/<your realm>
+      #OAUTH2_PROXY_CLIENT_ID: <KEYCLOAK_CLIENT_ID>
+      #OAUTH2_PROXY_CLIENT_SECRET: <KEYCLOAK_CLIENT_SECRET>
+      #OAUTH2_PROXY_ALLOWED_ROLES: <realm role name>              # Optional, required realm role
+      #OAUTH2_PROXY_ALLOWED_ROLES: <client id>:<client role name> # Optional, required client role
+      #OAUTH2_PROXY_ALLOWED_GROUPS: </group name>                 # Optional, requires group client scope
+      #OAUTH2_PROXY_CODE_CHALLENGE_METHOD: S256                   # PKCE
+      # MORE SETTINGS #
+      #OAUTH2_PROXY_SCOPE: "openid profile email"
       #OAUTH2_PROXY_REDIRECT_URL: https://auth.examle.com/oauth2/callback
       # create COOKIE_SECRET: openssl rand -base64 32 | tr -- '+/' '-_'
       OAUTH2_PROXY_COOKIE_SECRET: 2Z6ok80aioj8719l4E4YqG-HcfeT2iI8s48q6-kBu_U=
-      OAUTH2_PROXY_HTTP_ADDRESS: :4180
+      OAUTH2_PROXY_HTTP_ADDRESS: ":4180"
       OAUTH2_PROXY_EMAIL_DOMAINS: "*"
       OAUTH2_PROXY_SILENCE_PING_LOGGING: "true"
       OAUTH2_PROXY_PING_PATH: "/ping"
       OAUTH2_PROXY_READY_PATH: "/ready"
       OAUTH2_PROXY_PROXY_PREFIX: "/oauth2"
       OAUTH2_PROXY_METRICS_ADDRESS: ":44180"
-      #OAUTH2_PROXY_PROVIDER_CA_FILE: ""
+      #OAUTH2_PROXY_PROVIDER_CA_FILES: "/ssl/ca.crt"
       #OAUTH2_PROXY_SSL_INSECURE_SKIP_VERIFY: "false"
       #OAUTH2_PROXY_SKIP_PROVIDER_BUTTON: "true"  # not working? https://github.com/oauth2-proxy/oauth2-proxy/issues/334
       OAUTH2_PROXY_PROVIDER_DISPLAY_NAME: "\"Azure\""
