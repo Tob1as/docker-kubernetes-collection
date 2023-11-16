@@ -7,6 +7,13 @@
     <title>Sign In</title>
     <link rel="stylesheet" href="{{.ProxyPrefix}}/static/css/bulma.min.css">
 
+    <!-- workarround: redirect directly to provider login -->
+    <!--
+    <script>
+      window.location = "{{.ProxyPrefix}}/start?rd=" + encodeURI(window.location)
+    </script>
+    -->
+
     <style>
       body {
         height: 100vh;
@@ -44,7 +51,7 @@
         text-decoration: underline;
       }
 	  
-	    /* change button color (overwrite: bulma.min.css) */
+      /* change button color to red (overwrite: bulma.min.css) */
       .button.is-primary[disabled],
       fieldset[disabled] .button.is-primary {
         background-color: #ec0016 !important;
