@@ -1,0 +1,33 @@
+# docker-compose -f autossh.yml up -d
+version: '2.4'
+services:
+
+  # AutoSSH - Automatically restart SSH sessions and tunnels.
+  # https://www.harding.motd.ca/autossh/ + https://github.com/Autossh/autossh
+  # generate key: ssh-keygen -t rsa -b 4096 -C "autossh" -f ./autossh_id_rsa
+  autossh:
+    image: tobi312/tools:autossh
+    container_name: autossh
+    restart: unless-stopped
+    user: nobody
+    environment:
+      - SSH_REMOTE_USER=sshuser
+      - SSH_REMOTE_HOST=example.com
+      - SSH_REMOTE_PORT=2222  # 2222 when use openssh-server.yml example
+      - SSH_BIND_IP=0.0.0.0
+      - SSH_TUNNEL_PORT=8080  # example call on remote host: http://localhost:8080
+      - SSH_TARGET_HOST=somewebsite-container-local
+      - SSH_TARGET_PORT=80
+      - SSH_MODE=-R           # make something under a local port reachable on a remote host
+      - SSH_KEYFILE=/id_rsa
+    volumes:
+      - ./autossh_id_rsa:/id_rsa
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["/usr/bin/autossh -M 0 -N -o StrictHostKeyChecking=no -o UserKnownHostsFile=/tmp/known_hosts -o ServerAliveInterval=10 -o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes -t -t -R $${SSH_BIND_IP}:$${SSH_TUNNEL_PORT}:$${SSH_TARGET_HOST}:$${SSH_TARGET_PORT} -i $${SSH_KEYFILE} -p $${SSH_REMOTE_PORT} $${SSH_REMOTE_USER}@$${SSH_REMOTE_HOST}"]
+
+  # Alternative use docker image: https://github.com/jnovack/autossh !
+
+networks:
+  default:
+    external: true
+    name: mynetwork
