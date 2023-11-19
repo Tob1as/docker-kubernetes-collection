@@ -20,7 +20,7 @@ services:
       - SUDO_ACCESS=false
       - PASSWORD_ACCESS=true
       - USER_NAME=sshuser
-      - USER_PASSWORD=Passw0rd
+      - USER_PASSWORD=passw0rd
       #- USER_PASSWORD_FILE=/path/to/file
     volumes:
       - ./data_openssh-server:/config:rw
