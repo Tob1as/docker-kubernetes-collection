@@ -22,7 +22,7 @@ services:
       - SSH_KEYFILE=/id_rsa
     volumes:
       - ./autossh_id_rsa:/id_rsa
-    entrypoint: ["/bin/sh", "-c"]
+    #entrypoint: ["/bin/sh", "-c"]
     command: ["/usr/bin/autossh -M 0 -N -o StrictHostKeyChecking=no -o UserKnownHostsFile=/tmp/known_hosts -o ServerAliveInterval=10 -o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes -t -t -R $${SSH_BIND_IP}:$${SSH_TUNNEL_PORT}:$${SSH_TARGET_HOST}:$${SSH_TARGET_PORT} -i $${SSH_KEYFILE} -p $${SSH_REMOTE_PORT} $${SSH_REMOTE_USER}@$${SSH_REMOTE_HOST}"]
 
   # Alternative use docker image: https://github.com/jnovack/autossh !
