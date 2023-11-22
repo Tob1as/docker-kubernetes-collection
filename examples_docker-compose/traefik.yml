@@ -8,6 +8,7 @@ services:
   # https://hub.docker.com/_/traefik
   # Supported architectures: arm32v6, arm64v8, amd64, ...
   # https://doc.traefik.io/traefik/
+  # https://doc.traefik.io/traefik/reference/static-configuration/ (file, cli, env)
   # https://medium.com/@clintcolding/use-your-own-certificates-with-traefik-a31d785a6441
   # https://community.traefik.io/t/enable-a-secure-dashboard-using-a-pathprefix/3763/6
   # https://github.com/traefik/traefik/issues/5853
@@ -18,7 +19,7 @@ services:
     #network_mode: "host"
     environment:
       - TZ=Europe/Berlin
-    command: 
+    command:
       - "--accesslog.fields.names.StartUTC=drop" # for TZ
       - "--log.level=debug"
       #- "--log.format=json"
