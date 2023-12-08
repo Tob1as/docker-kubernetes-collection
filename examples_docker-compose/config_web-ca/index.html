@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Authority (CA)</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+        }
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        footer a {
+            color: #fff; /* Weiße Textfarbe für Links im Footer */
+            text-decoration: none; /* Keine Unterstreichung für Links */
+        }
+
+        footer a:hover {
+            color: #ddd; /* Leichte Hervorhebung für Hover-Effekt */
+        }
+
+        footer a:visited {
+            color: #fff; /* Weiße Textfarbe für bereits besuchte Links im Footer */
+        }
+
+        .container {
+            max-width: 90%;
+            margin: 0 auto;
+        }
+
+        .ca-table, .crl-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .ca-table th, .ca-table td, .crl-table th, .crl-table td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .ca-table th, .crl-table th {
+            background-color: #f2f2f2; /* Grauer Hintergrund für Tabellenüberschriften */
+        }
+
+        .ca-table a, .crl-table a {
+            color: #333; /* Textfarbe für Links in den Tabellen */
+            text-decoration: none; /* Keine Unterstreichung für Links */
+        }
+
+        .ca-table a:hover, .crl-table a:hover {
+            background-color: #f9f9f9; /* Leichte Hervorhebung für Hover-Effekt */
+        }
+
+        .grey-text {
+            color: #808080; /* Graue Textfarbe für Tabelleninhalte */
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Certificate Authority (CA)</h1>
+</header>
+
+<div class="container">
+
+    <h2>CA Certificates</h2>
+
+    <!-- CA Certificate Table -->
+    <table class="ca-table">
+        <thead>
+            <tr>
+                <th>Certificate</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><a href="pki/ca.crt" target="_blank">Root-CA Certificate</a></td>
+                <td>The Root-CA certificate representing the highest level of the certificate chain.</td>
+            </tr>
+            <tr>
+                <td><a href="pki/intermediate-ca.crt" target="_blank">Intermediate-CA Certificate</a></td>
+                <td>An Intermediate-CA certificate signed by the Root-CA, representing another level in the certificate chain.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><a href="pki/fullca.crt" target="_blank">full-CA Certificate</a></td>
+                <td>A file containing both the Root CA and Intermediate CA certificates.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- CRL Table -->
+	<!--
+    <h2>Certificate Revocation Lists (CRLs)</h2>
+    <table class="crl-table">
+        <thead>
+            <tr>
+                <th>Certificate</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><a href="pki/ca.crl" target="_blank">Root-CA CRL</a></td>
+                <td>The Certificate Revocation List for the Root-CA certificate.</td>
+            </tr>
+            <tr>
+                <td><a href="pki/intermediate-ca.crl" target="_blank">Intermediate-CA CRL</a></td>
+                <td>The Certificate Revocation List for the Intermediate-CA certificate.</td>
+            </tr>
+        </tbody>
+    </table>
+	-->
+
+</div>
+
+<!-- Footer -->
+<footer>
+    <a href="https://example.com/legalnotice.html" target="_blank">Legal notice</a> | <a href="https://example.com" target="_blank">Website</a> | <a href="mailto:ca[at]example[dot].com">E-Mail: ca[at]example[dot].com</a> 
+</footer>
+
+</body>
+</html>
