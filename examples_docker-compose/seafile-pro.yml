@@ -59,12 +59,12 @@ services:
       - ./data_seafile-elasticsearch:/usr/share/elasticsearch/data:rw  # Requested, specifies the path to Elasticsearch data persistent store.
     networks:
       - seafile-net
-    healthcheck:
-        test: ["CMD-SHELL", "curl --silent --fail -XGET 'http://127.0.0.1:9200/_cluster/health?pretty' || exit 1"]
-        #start_period: 30s
-        interval: 60s
-        timeout: 10s
-        retries: 3
+    #healthcheck:
+    #    test: ["CMD-SHELL", "curl --silent --fail -XGET 'http://127.0.0.1:9200/_cluster/health?pretty' || exit 1"]
+    #    #start_period: 30s
+    #    interval: 60s
+    #    timeout: 10s
+    #    retries: 3
 
   # Seafile - file sync and share solution
   # https://www.seafile.com/ & https://github.com/haiwen/seafile
@@ -151,9 +151,6 @@ services:
 #    container_name: seafile-oods
 #    restart: unless-stopped
 #    volumes:
-#      - ./data_seafile-oods/logs:/var/log/onlyoffice
-#      - ./data_seafile-oods/data:/var/www/onlyoffice/Data
-#      - ./data_seafile-oods/lib:/var/lib/onlyoffice
 #      - ./data_seafile-oods/local-production-linux.json:/etc/onlyoffice/documentserver/local-production-linux.json
 #    networks:
 #      - seafile-net
