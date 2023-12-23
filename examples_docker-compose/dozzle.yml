@@ -13,7 +13,8 @@ services:
     container_name: dozzle
     restart: unless-stopped
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro  # change :ro to :rw when DOZZLE_ENABLE_ACTIONS=true
+      - ./data_dozzle:/data:rw
     ports:
       - "8080:8080/tcp"
     environment:
@@ -21,10 +22,13 @@ services:
       #- "DOZZLE_BASE=/logs"
       - "DOZZLE_BASE=/"
       #- "DOZZLE_HOSTNAME="
+      #- "DOZZLE_REMOTE_HOST="
+      #- "DOZZLE_ENABLE_ACTIONS=false"
       #- "DOZZLE_LEVEL=info"
       #- "DOZZLE_FILTER="
-      - "DOZZLE_USERNAME=dozzle"
-      - "DOZZLE_PASSWORD=passw0rd"
+      #- "DOZZLE_USERNAME=dozzle"
+      #- "DOZZLE_PASSWORD=passw0rd"
+      - "DOZZLE_AUTH_PROVIDER=simple"  # set to false to disable auth
       #- "DOZZLE_NO_ANALYTICS=false"
     healthcheck:
       test: ["CMD", "/dozzle", "healthcheck"]
