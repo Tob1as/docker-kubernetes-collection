@@ -19,55 +19,135 @@ services:
     #  - "8080:80/tcp"
     environment:
       - 'TZ=Europe/Berlin'
-      - 'DOMAIN=https://vaultwarden.example.com' # https://github.com/dani-garcia/vaultwarden/wiki/Using-an-alternate-base-dir
-      #- 'ROCKET_TLS={certs="/ssl/ssl.crt",key="/ssl/ssl.key"}' # pem format
-      #- 'SIGNUPS_ALLOWED=false'
-      #- 'SIGNUPS_DOMAINS_WHITELIST=example.com'
-      #- 'INVITATIONS_ALLOWED=false'
-      #- 'ADMIN_TOKEN='  # openssl rand -base64 48
-      #- 'DISABLE_ADMIN_TOKEN=false'
-      #- 'PUSH_ENABLED=true' # Id & Key https://bitwarden.com/host/ (only us)
-      #- 'PUSH_INSTALLATION_ID='
-      #- 'PUSH_INSTALLATION_KEY='
-      #- 'YUBICO_SERVER='  # optional, default: YubiCloud servers https://upgrade.yubico.com/getapikey/
-      #- 'YUBICO_CLIENT_ID=12345'
-      #- 'YUBICO_SECRET_KEY=ABCDEABCDEABCDEABCDE='
-      #- 'DATA_FOLDER=/data'
+      # https://github.com/dani-garcia/vaultwarden/blob/main/.env.template
+      #- 'DATA_FOLDER=data'
       #- 'DATABASE_URL=$DATA_FOLDER/db.sqlite3'
-      #- 'ATTACHMENTS_FOLDER=$DATA_FOLDER/attachments'
+      #- 'DATABASE_URL=mysql://user:password@host[:port]/database_name' # default: sqlite3
+      #- 'DATABASE_URL=postgresql://user:password@host[:port]/database_name' # default: sqlite3
+      #- 'DATABASE_MAX_CONNS=10'
+      #- 'DATABASE_TIMEOUT=30'
+      #- 'DATABASE_CONN_INIT='
+      #- 'RSA_KEY_FILENAME=$DATA_FOLDER/rsa_key'
       #- 'ICON_CACHE_FOLDER=$DATA_FOLDER/icon_cache'
+      #- 'ATTACHMENTS_FOLDER=$DATA_FOLDER/attachments'
+      #- 'SENDS_FOLDER=$DATA_FOLDER/sends'
+      #- 'TMP_FOLDER=$DATA_FOLDER/tmp'
       #- 'TEMPLATES_FOLDER=$DATA_FOLDER/templates'
-      #- 'ROCKET_LIMITS={json=10485760}'  # 10MB API request size limit
-      #- 'ROCKET_WORKERS=10'  # 2 * <number of cpu cores>
-      #- 'SMTP_HOST=<smtp.domain.tld>'
-      #- 'SMTP_FROM=<vaultwarden@domain.tld>'
-      #- 'SMTP_PORT=587'
-      #- 'SMTP_SECURITY=starttls'  # starttls, force_tls and off
-      #- 'SMTP_USERNAME=<username>'
-      #- 'SMTP_PASSWORD=<password>'
-      #- 'SHOW_PASSWORD_HINT=true'
-      #- 'WEB_VAULT_ENABLED=true'
+      #- 'RELOAD_TEMPLATES=false'
+      #- 'IP_HEADER=X-Real-IP'
+      #- 'ICON_CACHE_TTL=2592000'
+      #- 'ICON_CACHE_NEGTTL=259200'
       #- 'WEB_VAULT_FOLDER=web-vault/'
-      #- 'LOG_FILE=/data/vaultwarden.log' # stdout by default
+      #- 'WEB_VAULT_ENABLED=true'
+      #- 'WEBSOCKET_ENABLED=false'
+      #- 'WEBSOCKET_ADDRESS=0.0.0.0'
+      #- 'WEBSOCKET_PORT=3012'
+      #- 'PUSH_ENABLED=true'
+      #- 'PUSH_INSTALLATION_ID=CHANGEME'
+      #- 'PUSH_INSTALLATION_KEY=CHANGEME'
+      #- 'PUSH_RELAY_URI=https://push.bitwarden.com'
+      #- 'SENDS_ALLOWED=true'
+      #- 'EMERGENCY_ACCESS_ALLOWED=true'
+      #- 'ORG_EVENTS_ENABLED=false'
+      #- 'EMAIL_CHANGE_ALLOWED=true'
+      #- 'EVENTS_DAYS_RETAIN='
+      #- 'ORG_GROUPS_ENABLED=false'
+      #- 'JOB_POLL_INTERVAL_MS=30000'
+      #- 'SEND_PURGE_SCHEDULE=0 5 * * * *'
+      #- 'TRASH_PURGE_SCHEDULE=0 5 0 * * *'
+      #- 'INCOMPLETE_2FA_SCHEDULE=30 * * * * *'
+      #- 'EMERGENCY_NOTIFICATION_REMINDER_SCHEDULE=0 3 * * * *'
+      #- 'EMERGENCY_REQUEST_TIMEOUT_SCHEDULE=0 7 * * * *'
+      #- 'EVENT_CLEANUP_SCHEDULE=0 10 0 * * *'
+      #- 'EXTENDED_LOGGING=true'
+      #- 'LOG_TIMESTAMP_FORMAT=%Y-%m-%d %H:%M:%S.%3f'
+      #- 'LOG_FILE=$DATA_FOLDER/vaultwarden.log' # stdout by default
       #- 'USE_SYSLOG=false'
-      #- 'EXTENDED_LOGGING=false'
-      #- 'LOG_LEVEL=info' # "trace", "debug", "info", "warn", "error" or "off"
-      #- 'RUST_BACKTRACE=1'
+      #- 'LOG_LEVEL=Info' # "trace", "debug", "info", "warn", "error" or "off"
       #- 'ENABLE_DB_WAL=true'
-      #- 'DATABASE_URL=mysql://vaultwarden:passw0rd@mariadb:3306/vaultwarden'       # default: sqlite3
-      #- 'DATABASE_URL=postgresql://vaultwarden:passw0rd@postgres:5432/vaultwarden' # default: sqlite3
+      #- 'DB_CONNECTION_RETRIES=15'
+      #- 'ICON_SERVICE=internal'
+      #- 'ICON_REDIRECT_CODE=302'
+      #- 'DISABLE_ICON_DOWNLOAD=false'
+      #- 'ICON_DOWNLOAD_TIMEOUT=10'
+      #- 'ICON_BLACKLIST_REGEX=^(192\.168\.0\.[0-9]+|192\.168\.1\.[0-9]+)$'
+      #- 'ICON_BLACKLIST_NON_GLOBAL_IPS=true'
+      #- 'DISABLE_2FA_REMEMBER=false'
+      #- 'EMAIL_ATTEMPTS_LIMIT=3'
+      #- 'EMAIL_EXPIRATION_TIME=600'
+      #- 'EMAIL_TOKEN_SIZE=6'
+      #- 'SIGNUPS_ALLOWED=true'
+      #- 'SIGNUPS_VERIFY=false'
+      #- 'SIGNUPS_VERIFY_RESEND_TIME=3600'
+      #- 'SIGNUPS_VERIFY_RESEND_LIMIT=6'
+      #- 'SIGNUPS_DOMAINS_WHITELIST=example.com,example.net,example.org'
+      #- 'ORG_CREATION_USERS='
+      #- 'ORG_CREATION_USERS=none'
+      #- 'ORG_CREATION_USERS=admin1@example.com,admin2@example.com'
+      # https://github.com/dani-garcia/vaultwarden/wiki/Enabling-admin-page#secure-the-admin_token
+      #- 'ADMIN_TOKEN=$argon2id$v=19$m=65540,t=3,p=4$MmeKRnGK5RW5mJS7h3TOL89GrpLPXJPAtTK8FTqj9HM$DqsstvoSAETl9YhnsXbf43WeaUwJC6JhViIvuPoig78'
+      #- 'ADMIN_TOKEN=Vy2VyYTTsKPv8W5aEOWUbB/Bt3DEKePbHmI4m9VcemUMS2rEviDowNAFqYi1xjmp' # openssl rand -base64 48
+      #- 'DISABLE_ADMIN_TOKEN=false'
+      #- 'INVITATIONS_ALLOWED=true'
+      #- 'INVITATION_ORG_NAME=Vaultwarden'
+      #- 'INVITATION_EXPIRATION_HOURS=120'
+      #- 'ORG_ATTACHMENT_LIMIT='
+      #- 'USER_ATTACHMENT_LIMIT='
+      #- 'TRASH_AUTO_DELETE_DAYS='
+      #- 'INCOMPLETE_2FA_TIME_LIMIT=3'
+      #- 'PASSWORD_ITERATIONS=350000'
+      #- 'PASSWORD_HINTS_ALLOWED=true'
+      #- 'SHOW_PASSWORD_HINT=false'
+      - 'DOMAIN=https://vault.example.com' # https://github.com/dani-garcia/vaultwarden/wiki/Using-an-alternate-base-dir
+      #- 'ALLOWED_IFRAME_ANCESTORS='
+      #- 'LOGIN_RATELIMIT_SECONDS=60'
+      #- 'LOGIN_RATELIMIT_MAX_BURST=10'
+      #- 'ADMIN_RATELIMIT_SECONDS=300'
+      #- 'ADMIN_RATELIMIT_MAX_BURST=3'
+      #- 'ADMIN_SESSION_LIFETIME=20'
+      #- 'YUBICO_CLIENT_ID=11111'
+      #- 'YUBICO_SECRET_KEY=AAAAAAAAAAAAAAAAAAAAAAAA'
+      #- 'YUBICO_SERVER=http://yourdomain.com/wsapi/2.0/verify' # optional, default: YubiCloud servers https://upgrade.yubico.com/getapikey/
+      #- 'DUO_IKEY=<Integration Key>'
+      #- 'DUO_SKEY=<Secret Key>'
+      #- 'DUO_HOST=<API Hostname>'
+      #- 'AUTHENTICATOR_DISABLE_TIME_DRIFT=false'
+      #- 'ROCKET_LIMITS={json=10485760}' # 10MB API request size limit
+      #- 'ROCKET_ADDRESS=0.0.0.0'
+      #- 'ROCKET_PORT=80'
+      #- 'ROCKET_WORKERS=10' # 2 * <number of cpu cores>
+      #- 'ROCKET_TLS={certs="/ssl/ssl.crt",key="/ssl/ssl.key"}' # pem format
+      #- 'SMTP_HOST=smtp.example.com'
+      #- 'SMTP_FROM=vault@example.com'
+      #- 'SMTP_FROM_NAME=Vault'
+      #- 'SMTP_SECURITY=starttls' # starttls, force_tls and off
+      #- 'SMTP_PORT=587'
+      #- 'SMTP_USERNAME=username'
+      #- 'SMTP_PASSWORD=password'
+      #- 'SMTP_TIMEOUT=15'
+      #- 'USE_SENDMAIL=false'
+      #- 'SENDMAIL_COMMAND=/path/to/sendmail'
+      #- 'SMTP_AUTH_MECHANISM=Plain'
+      #- 'HELO_NAME='
+      #- 'SMTP_EMBED_IMAGES=false'
+      #- 'SMTP_DEBUG=false'
+      #- 'SMTP_ACCEPT_INVALID_HOSTNAMES=false'
+      #- 'SMTP_ACCEPT_INVALID_CERTS=false'
+      #- 'REQUIRE_DEVICE_EMAIL=false'
+      #- 'HIBP_API_KEY='
     labels:
       - "traefik.enable=true"
       #- "traefik.docker.network=mynetwork"
+      # GUI
       - "traefik.http.services.vaultwarden.loadbalancer.server.port=80"
       - "traefik.http.services.vaultwarden.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
       # http
-      - "traefik.http.routers.vaultwarden-http.rule=Host(`vaultwarden.example.com`)"
+      - "traefik.http.routers.vaultwarden-http.rule=Host(`vault.example.com`)"
       - "traefik.http.routers.vaultwarden-http.entrypoints=web"
       - "traefik.http.routers.vaultwarden-http.service=vaultwarden"
       # https
       - "traefik.http.routers.vaultwarden-https.tls=true"
-      - "traefik.http.routers.vaultwarden-https.rule=Host(`vaultwarden.example.com`)"
+      - "traefik.http.routers.vaultwarden-https.rule=Host(`vault.example.com`)"
       - "traefik.http.routers.vaultwarden-https.entrypoints=websecure"
       - "traefik.http.routers.vaultwarden-https.service=vaultwarden"
       # load middlewares for routers
@@ -75,7 +155,25 @@ services:
       # http to https redirect
       - "traefik.http.middlewares.vaultwarden-https.redirectscheme.scheme=https"
       #- "traefik.http.middlewares.vaultwarden-https.redirectscheme.permanent=true"
-      #- "traefik.http.middlewares.vaultwarden-https.redirectscheme.port=443"
+      - "traefik.http.middlewares.vaultwarden-https.redirectscheme.port=443"
+      # WEBSOCKET
+      - "traefik.http.services.vaultwarden-ws.loadbalancer.server.port=3012"
+      - "traefik.http.services.vaultwarden-ws.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.vaultwarden-ws-http.rule=Host(`vault.example.com`) && Path(`/notifications/hub`)"
+      - "traefik.http.routers.vaultwarden-ws-http.entrypoints=web"
+      - "traefik.http.routers.vaultwarden-ws-http.service=vaultwarden-ws"
+      # https
+      - "traefik.http.routers.vaultwarden-ws-https.tls=true"
+      - "traefik.http.routers.vaultwarden-ws-https.rule=Host(`vault.example.com`) && Path(`/notifications/hub`)"
+      - "traefik.http.routers.vaultwarden-ws-https.entrypoints=websecure"
+      - "traefik.http.routers.vaultwarden-ws-https.service=vaultwarden-ws"
+      # load middlewares for routers
+      - "traefik.http.routers.vaultwarden-ws-http.middlewares=vaultwarden-ws-https"
+      # http to https redirect
+      - "traefik.http.middlewares.vaultwarden-ws-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.vaultwarden-ws-https.redirectscheme.permanent=true"
+      - "traefik.http.middlewares.vaultwarden-ws-https.redirectscheme.port=443"
       
   # Alternatively use offical Bitwarden:
   # * https://bitwarden.com + https://github.com/bitwarden/server
