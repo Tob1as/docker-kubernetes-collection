@@ -1,0 +1,182 @@
+##  _   _                                 _       _           ____  ____
+## | | | | ___  _ __  _ __  ___  ___ ___ | |_ ___| |__       |  _ \| __ )
+## | |_| |/ _ \| '_ \| '_ \/ __|/ __/ _ \| __/ __| '_ \ _____| | | |  _ \
+## |  _  | (_) | |_) | |_) \__ \ (_| (_) | || (__| | | |_____| |_| | |_) |
+## |_| |_|\___/| .__/| .__/|___/\___\___/ \__\___|_| |_|     |____/|____/
+##             |_|   |_|
+
+## For Postgres see also: https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_k8s/postgres.yaml
+
+---
+
+## volume (Recommended: Comment volume out after first run.)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hoppscotch-db-data
+  namespace: default
+  labels:
+    app: hoppscotch-db
+spec:
+  accessModes:
+  - ReadWriteOnce
+  volumeMode: Filesystem
+  storageClassName: local-path # change or use: https://github.com/rancher/local-path-provisioner
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hoppscotch-db-config
+  namespace: default
+  labels:
+    app: hoppscotch-db
+data:
+  TZ: "Europe/Berlin"
+  POSTGRES_DB: hoppscotch
+
+---
+
+## convert string to base64 in Linux: "echo -n 'value' | base64"
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hoppscotch-db-secret
+  namespace: default
+  labels:
+    app: hoppscotch-db
+data:
+  POSTGRES_USER: cG9zdGdyZXM=        # postgres
+  POSTGRES_PASSWORD: cGFzc3cwcmQ=    # passw0rd
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hoppscotch-db
+  namespace: default
+  labels:
+    app: hoppscotch-db
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: hoppscotch-db
+  template:
+    metadata:
+      labels:
+        app: hoppscotch-db
+      annotations: {}
+    spec:
+      #imagePullSecrets:
+      #- name: regcred
+      securityContext:
+        fsGroup: 70
+      restartPolicy: Always
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: hoppscotch-db-config
+        - secretRef:
+            name: hoppscotch-db-secret
+        ports:
+        - containerPort: 5432
+          name: postgres
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command: ["/bin/sh", "-c", "pg_isready -U postgres -h 127.0.0.1 -p 5432"]
+          #tcpSocket:
+          #  port: 5432
+          initialDelaySeconds: 15
+          periodSeconds: 60
+          timeoutSeconds: 5
+        livenessProbe:
+          exec:
+            command: ["/bin/sh", "-c", "pg_isready -U postgres -h localhost -p 5432"]
+          #tcpSocket:
+          #  port: 3306
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          timeoutSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "0.5"
+          limits:
+            memory: "512Mi"
+            cpu: "0.5"
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data/
+          name: postgres-data
+          subPath: data
+      - name: exporter
+        image: prometheuscommunity/postgres-exporter:latest
+        env:
+        - name: EXPORTER_USER
+          valueFrom:
+            secretKeyRef:
+              name: hoppscotch-db-secret
+              key: POSTGRES_USER
+        - name: EXPORTER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hoppscotch-db-secret
+              key: POSTGRES_PASSWORD
+        - name: EXPORTER_DB
+          valueFrom:
+            configMapKeyRef:
+              name: hoppscotch-db-config
+              key: POSTGRES_DB
+        - name: DATA_SOURCE_NAME
+          value: "postgresql://$(EXPORTER_USER):$(EXPORTER_PASSWORD)@localhost:5432/$(EXPORTER_DB)?sslmode=disable"
+        args: ["--web.listen-address", ":9187", "--web.telemetry-path", "/metrics"]
+        ports:
+        - containerPort: 9187
+          name: exporter
+          protocol: TCP
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "0.1"
+          limits:
+            memory: "128Mi"
+            cpu: "0.5"
+      volumes:
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: hoppscotch-db-data
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: hoppscotch-db
+  namespace: default
+  labels:
+    app: hoppscotch-db
+spec:
+  type: ClusterIP
+  ports:
+  - name: "postgres"
+    protocol: TCP
+    port: 5432
+    targetPort: 5432
+  - name: "exporter"
+    protocol: TCP
+    port: 9187
+    targetPort: 9187
+  selector:
+    app: hoppscotch-db

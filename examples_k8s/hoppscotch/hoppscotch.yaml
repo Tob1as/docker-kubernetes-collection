@@ -1,0 +1,229 @@
+##  _   _                                 _       _
+## | | | | ___  _ __  _ __  ___  ___ ___ | |_ ___| |__
+## | |_| |/ _ \| '_ \| '_ \/ __|/ __/ _ \| __/ __| '_ \
+## |  _  | (_) | |_) | |_) \__ \ (_| (_) | || (__| | | |
+## |_| |_|\___/| .__/| .__/|___/\___\___/ \__\___|_| |_|
+##             |_|   |_|
+
+## Hoppscotch - Open source API development ecosystem
+## https://hoppscotch.io/
+## https://github.com/hoppscotch/hoppscotch + https://hub.docker.com/r/hoppscotch/hoppscotch
+## https://docs.hoppscotch.io/documentation/self-host/community-edition/install-and-build#using-the-aio-container
+## https://github.com/hoppscotch/hoppscotch/blob/main/.env.example
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hoppscotch-config
+  namespace: default
+  labels:
+    app: hoppscotch
+data:
+  TOKEN_SALT_COMPLEXITY: "10"
+  MAGIC_LINK_TOKEN_VALIDITY: "3"
+  REFRESH_TOKEN_VALIDITY: "604800000"                                           # Default validity is 7 days (604800000 ms) in ms
+  ACCESS_TOKEN_VALIDITY: "86400000"                                             # Default validity is 1 day (86400000 ms) in ms
+  VITE_ALLOWED_AUTH_PROVIDERS: "EMAIL"                                          # Supported: GOOGLE,GITHUB,MICROSOFT,EMAIL
+  MAILER_ADDRESS_FROM: '"Hoppscotch" <hoppscotch@example.com>'
+  RATE_LIMIT_TTL: "60"                                                          # In seconds
+  RATE_LIMIT_MAX: "100"                                                         # Max requests per IP
+  VITE_APP_TOS_LINK: "https://docs.hoppscotch.io/support/terms"                 # Terms Of Service And Privacy Policy Links (Optional)
+  VITE_APP_PRIVACY_POLICY_LINK: "https://docs.hoppscotch.io/support/privacy"    # Terms Of Service And Privacy Policy Links (Optional)
+  HOPPSCOTCH_FQDN: "hoppscotch.example.com"                                     # SET DNS/DOMAIN/FQDN Name
+
+---
+
+## convert string to base64 in Linux: "echo -n 'value' | base64"
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hoppscotch-secret
+  namespace: default
+  labels:
+    app: hoppscotch
+data:
+  #DATABASE_URL: < see Deployment >
+  JWT_SECRET: K1Z6OVlsZm1CcGtZYjR3c2tRL1BJK0lsYUM1RDVid0hDdXFzODVBWnlqST0=                      # +Vz9YlfmBpkYb4wskQ/PI+IlaC5D5bwHCuqs85AZyjI=  (Token generate with: "openssl rand -base64 32 | tr -d '\ n'")
+  SESSION_SECRET: OGpJbE00bThTMVorZTI1N0lUZFB2SU56djlCNVVRR2ZZeXo3SlAyWU5EWT0=                  # 8jIlM4m8S1Z+e257ITdPvINzv9B5UQGfYyz7JP2YNDY=
+  MAILER_SMTP_URL: c210cHM6Ly9ob3Bwc2NvdGNoQGV4YW1wbGUuY29tOnBhc3N3MHJkQG1haWwuZXhhbXBsZS5jb20= # smtps://hoppscotch@example.com:passw0rd@mail.example.com
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hoppscotch
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: hoppscotch
+  template:
+    metadata:
+      labels:
+        app: hoppscotch
+      annotations: {}
+    spec:
+      #imagePullSecrets:
+      #- name: regcred
+      restartPolicy: Always
+      containers:
+      - name: hoppscotch
+        image: hoppscotch/hoppscotch:latest  # 2023.12.2
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: hoppscotch-config
+        - secretRef:
+            name: hoppscotch-secret
+        env:
+        - name: ENABLE_SUBPATH_BASED_ACCESS
+          value: "true"   #  Do NOT change !
+        ## Database
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: hoppscotch-db-secret
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hoppscotch-db-secret
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: hoppscotch-db-config
+              key: POSTGRES_DB
+        - name: DATABASE_URL
+          value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@hoppscotch-db:5432/$(POSTGRES_DB)"
+        ## URls (Base and Backend) config
+        - name: REDIRECT_URL
+          value: "https://$(HOPPSCOTCH_FQDN)"
+        - name: WHITELISTED_ORIGINS
+          value: "https://$(HOPPSCOTCH_FQDN)"
+        - name: VITE_BASE_URL
+          value: "https://$(HOPPSCOTCH_FQDN)"
+        - name: VITE_SHORTCODE_BASE_URL
+          value: "https://$(HOPPSCOTCH_FQDN)"
+        - name: VITE_ADMIN_URL
+          value: "https://$(HOPPSCOTCH_FQDN)/admin"
+        - name: VITE_BACKEND_GQL_URL
+          value: "https://$(HOPPSCOTCH_FQDN)/backend/graphql"
+        - name: VITE_BACKEND_WS_URL
+          value: "wss://$(HOPPSCOTCH_FQDN)/backend/graphql"
+        - name: VITE_BACKEND_API_URL
+          value: "https://$(HOPPSCOTCH_FQDN)/backend/v1"
+        ## Microsoft Auth Config
+        #- name: MICROSOFT_CALLBACK_URL
+        #  value: "https://$(HOPPSCOTCH_FQDN)/backend/v1/auth/microsoft/callback"
+        #- name: MICROSOFT_SCOPE
+        #  value: "user.read"
+        #- name: MICROSOFT_CLIENT_ID
+        #  valueFrom:
+        #    secretKeyRef:
+        #      name: oauth2-secret
+        #      key: MICROSOFT_CLIENT_ID
+        #- name: MICROSOFT_CLIENT_SECRET
+        #  valueFrom:
+        #    secretKeyRef:
+        #      name: oauth2-secret
+        #      key: MICROSOFT_CLIENT_SECRET
+        #- name: MICROSOFT_TENANT
+        #  valueFrom:
+        #    secretKeyRef:
+        #      name: oauth2-secret
+        #      key: MICROSOFT_AZURE_TENANT
+        ports:
+        - containerPort: 80
+          name: hoppscotch
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command: ["/bin/sh", "-c", "curl --fail --insecure http://localhost:3170/ping"]
+          #tcpSocket:
+          #  port: 3170
+          initialDelaySeconds: 15
+          periodSeconds: 60
+          timeoutSeconds: 5
+        livenessProbe:
+          exec:
+            command: ["/bin/sh", "-c", "curl --fail --insecure http://localhost:3170/ping"]
+          #tcpSocket:
+          #  port: 3170
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          timeoutSeconds: 5
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "0.5"
+          limits:
+            memory: "1Gi"
+            cpu: "1.0"
+        ## IMPORTANT: USE FOR FIRST RUN ! (to create database tables)
+        #command: [ "/bin/sh", "-c", "--" ]
+        #args: [ "pnpx prisma migrate deploy" ]
+        ##args: [ "while true; do sleep 60; done;" ]  # then execute in pod: "pnpx prisma migrate deploy"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: hoppscotch
+  namespace: default
+  labels:
+    app: hoppscotch
+spec:
+  type: ClusterIP
+  ports:
+  - name: "hoppscotch"
+    protocol: TCP
+    port: 80
+    targetPort: 80
+  selector:
+    app: hoppscotch
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hoppscotch
+  namespace: default
+  labels:
+    app: hoppscotch
+  annotations:
+    #kubernetes.io/ingress.class: nginx
+    ##nginx.ingress.kubernetes.io/backend-protocol: "HTTP" # Do NOT set, because wss then not working !
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    ## https://cert-manager.io/docs/
+    #cert-manager.io/cluster-issuer: ingress-tls-secret
+    #cert-manager.io/acme-challenge-type: http01
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - hoppscotch.example.com
+    secretName: ingress-tls-secret
+  rules:
+  - host: hoppscotch.example.com
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name:  hoppscotch
+            port:
+              #name: hoppscotch
+              number: 80

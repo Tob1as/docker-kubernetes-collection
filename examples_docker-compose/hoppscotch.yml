@@ -1,0 +1,76 @@
+# docker-compose -f hoppscotch.yml up -d
+version: '2.4'
+services:
+
+  # Hoppscotch - Open source API development ecosystem
+  # https://hoppscotch.io/
+  # https://github.com/hoppscotch/hoppscotch + https://hub.docker.com/r/hoppscotch/hoppscotch
+  # https://docs.hoppscotch.io/documentation/self-host/community-edition/install-and-build#using-the-aio-container
+  hoppscotch:
+    image: hoppscotch/hoppscotch:latest  # 2023.12.2
+    container_name: hoppscotch
+    restart: unless-stopped
+    env_file:
+      - ./envs/hoppscotch.env  # https://github.com/hoppscotch/hoppscotch/blob/main/.env.example
+    #ports:
+    #  - 80/tcp
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--insecure", "http://localhost:3170/ping"]
+      #start_period: 30s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.hoppscotch.loadbalancer.server.port=80"
+      # http
+      - "traefik.http.routers.hoppscotch-http.rule=Host(`hoppscotch.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.hoppscotch-http.entrypoints=web"
+      - "traefik.http.routers.hoppscotch-http.service=hoppscotch"
+      # https
+      - "traefik.http.routers.hoppscotch-https.tls=true"
+      - "traefik.http.routers.hoppscotch-https.rule=Host(`hoppscotch.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.hoppscotch-https.entrypoints=websecure"
+      - "traefik.http.routers.hoppscotch-https.service=hoppscotch"
+      # load middlewares for routes
+      - "traefik.http.routers.hoppscotch-http.middlewares=hoppscotch-https,hoppscotch-headers"
+      - "traefik.http.routers.hoppscotch-https.middlewares=hoppscotch-headers"
+      # http to https redirect      
+      - "traefik.http.middlewares.hoppscotch-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.hoppscotch-https.redirectscheme.permanent=true"
+      - "traefik.http.middlewares.hoppscotch-https.redirectscheme.port=443"
+      
+      # CORS
+      - "traefik.http.middlewares.hoppscotch-headers.headers.accesscontrolallowmethods=GET,OPTIONS,PUT"
+      - "traefik.http.middlewares.hoppscotch-headers.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.hoppscotch-headers.headers.accesscontrolalloworiginlist=https://hoppscotch.example.com"
+      - "traefik.http.middlewares.hoppscotch-headers.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.hoppscotch-headers.headers.addvaryheader=true"
+    depends_on:
+      - hoppscotch-db
+      
+  hoppscotch-db:
+    image: postgres:15-alpine 
+    container_name: hoppscotch-db
+    restart: unless-stopped
+    volumes:
+      - ./data_hoppscotch-db:/var/lib/postgresql/data:rw
+    environment:
+      TZ: Europe/Berlin
+      POSTGRES_PASSWORD: passw0rd
+      POSTGRES_DB: hoppscotch
+      POSTGRES_USER: postgres
+      #PGDATA: /var/lib/postgresql/data/pgdata
+    #ports:
+    #  - 127.0.0.1:5432:5432/tcp
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+networks:
+  default:
+    external: true
+    name: mynetwork
