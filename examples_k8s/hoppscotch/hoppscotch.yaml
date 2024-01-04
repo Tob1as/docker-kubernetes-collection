@@ -202,13 +202,16 @@ metadata:
     app: hoppscotch
   annotations:
     #kubernetes.io/ingress.class: nginx
-    ##nginx.ingress.kubernetes.io/backend-protocol: "HTTP" # Do NOT set, because wss then not working !
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
     ## https://cert-manager.io/docs/
     #cert-manager.io/cluster-issuer: ingress-tls-secret
     #cert-manager.io/acme-challenge-type: http01
+    # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#enable-cors
+    #nginx.ingress.kubernetes.io/enable-cors: "true"
+    #nginx.ingress.kubernetes.io/cors-allow-origin: "https://hoppscotch.example.com, https://*.example.com, https://*.example.net"
 spec:
   ingressClassName: nginx
   tls:

@@ -41,7 +41,7 @@ services:
       #- "traefik.http.middlewares.hoppscotch-https.redirectscheme.permanent=true"
       - "traefik.http.middlewares.hoppscotch-https.redirectscheme.port=443"
       
-      # CORS
+      # CORS https://doc.traefik.io/traefik/middlewares/http/headers/#cors-headers
       - "traefik.http.middlewares.hoppscotch-headers.headers.accesscontrolallowmethods=GET,OPTIONS,PUT"
       - "traefik.http.middlewares.hoppscotch-headers.headers.accesscontrolallowheaders=*"
       - "traefik.http.middlewares.hoppscotch-headers.headers.accesscontrolalloworiginlist=https://hoppscotch.example.com"
