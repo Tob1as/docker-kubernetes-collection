@@ -202,11 +202,21 @@ services:
       # Middleware: (only) oAuth2-Proxy
       #- "traefik.http.routers.whoami-http.middlewares=oauth@file"
       #- "traefik.http.routers.whoami-https.middlewares=oauth@file"
+      # Middleware: (only) cors
+      #- "traefik.http.routers.whoami-http.middlewares=whoami-headers@docker"
+      #- "traefik.http.routers.whoami-https.middlewares=whoami-headers@docker"
 
       # http to https redirect
       #- "traefik.http.middlewares.whoami-https.redirectscheme.scheme=https"
       #- "traefik.http.middlewares.whoami-https.redirectscheme.permanent=false"
       #- "traefik.http.middlewares.whoami-https.redirectscheme.port=443"
+
+      # CORS https://doc.traefik.io/traefik/middlewares/http/headers/#cors-headers
+      #- "traefik.http.middlewares.whoami-headers.headers.accesscontrolallowmethods=GET,OPTIONS,PUT"
+      #- "traefik.http.middlewares.whoami-headers.headers.accesscontrolallowheaders=*"
+      #- "traefik.http.middlewares.whoami-headers.headers.accesscontrolalloworiginlist=https://hoppscotch.example.com"
+      #- "traefik.http.middlewares.whoami-headers.headers.accesscontrolmaxage=100"
+      #- "traefik.http.middlewares.whoami-headers.headers.addvaryheader=true"
       
 networks:
   default:
