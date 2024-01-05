@@ -212,6 +212,9 @@ metadata:
     # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#enable-cors
     #nginx.ingress.kubernetes.io/enable-cors: "true"
     #nginx.ingress.kubernetes.io/cors-allow-origin: "https://hoppscotch.example.com, https://*.example.com, https://*.example.net"
+    # https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#allow-snippet-annotations
+    # https://docs.nginx.com/nginx-ingress-controller/configuration/ingress-resources/advanced-configuration-with-snippets/
+    # https://github.com/kubernetes/ingress-nginx/issues/3746#issuecomment-676357961
     nginx.org/location-snippets: |
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection upgrade;
