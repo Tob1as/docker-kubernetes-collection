@@ -84,7 +84,10 @@ services:
       - "--experimental.plugins.plugin-rewritebody.version=v0.3.1"
       # https://plugins.traefik.io/plugins/62947354108ecc83915d778e/block-path
       - "--experimental.plugins.blockpath.modulename=github.com/traefik/plugin-blockpath"
-      - "--experimental.plugins.blockpath.version=v0.2.1" 
+      - "--experimental.plugins.blockpath.version=v0.2.1"
+      # https://plugins.traefik.io/plugins/62947302108ecc83915d7781/geoblock
+      #- "--experimental.plugins.geoblock.modulename=github.com/nscuro/traefik-plugin-geoblock"
+      #- "--experimental.plugins.geoblock.version=v0.11.0"
 
       # Metrics https://doc.traefik.io/traefik/observability/metrics/prometheus/
       - "--metrics.prometheus=true"
@@ -150,6 +153,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # Mount the dynamic configuration
       - ./config_traefik/:/etc/traefik/dynamic/
+      # Mount local plugins
+      - ./config_traefik-plugins/:/plugins-local/
       # Mount the directory containing the certs
       #- ssl/:/etc/certs/:ro
       - ./ssl/:/etc/certs/:ro
