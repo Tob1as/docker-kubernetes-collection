@@ -1,0 +1,76 @@
+# docker-compose -f baikal.yml up -d
+version: '2.4'
+services:
+
+  # Baïkal - is a lightweight CalDAV+CardDAV server. 
+  # https://sabre.io/baikal/
+  # https://github.com/sabre-io/Baikal
+  # https://github.com/ckulka/baikal-docker
+  # https://hub.docker.com/r/ckulka/baikal
+  # example client for Android: https://www.davx5.com/ 
+  # Supported architectures: amd64, arm32v7, arm64v8, ...
+  # URL: http://localhost:80/
+  baikal:
+    image: ckulka/baikal:apache # 0.9.4-apache
+    container_name: baikal
+    restart: unless-stopped
+    volumes:
+      - ./config_baikal/80-my-baikal-entrypoint.sh:/docker-entrypoint.d/80-my-baikal-entrypoint.sh:ro
+      - ./data_baikal/config:/var/www/baikal/config:rw
+      - ./data_baikal/data:/var/www/baikal/Specific:rw
+    #ports:
+    #  - "80:80/tcp"
+    #  - "443:443/tcp"
+    environment:
+      BAIKAL_SERVERNAME: dav.example.com
+      #BAIKAL_SERVERALIAS: dav.example.org dav.example.net
+      #MSMTPRC: |
+      #  defaults
+      #  auth           on
+      #  tls            on
+      #  tls_trust_file /etc/ssl/certs/ca-certificates.crt
+      #  account        default
+      #  host           <smtp host>
+      #  port           587
+      #  from           baikal@example.com
+      #  user           <user>
+      #  password       <password>
+      #BAIKAL_SKIP_CHOWN: FALSE
+    healthcheck:
+      test:  curl --fail http://127.0.0.1:80/server-status || exit 1  
+      #test:  curl --fail --insecure https://127.0.0.1:443/server-status || exit 1
+      #start_period: 30s
+      interval: 60s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.baikal.loadbalancer.server.port=80"
+      - "traefik.http.services.baikal.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.baikal-http.rule=Host(`dav.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.baikal-http.entrypoints=web"
+      - "traefik.http.routers.baikal-http.service=baikal"
+      # https
+      - "traefik.http.routers.baikal-https.tls=true"
+      - "traefik.http.routers.baikal-https.rule=Host(`dav.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.baikal-https.entrypoints=websecure"
+      - "traefik.http.routers.baikal-https.service=baikal"
+      # load middlewares for routers
+      - "traefik.http.routers.baikal-http.middlewares=baikal-https"
+      #- "traefik.http.routers.baikal-http.middlewares=baikal-https,baikal-redirectregex"
+      #- "traefik.http.routers.baikal-https.middlewares=baikal-redirectregex"
+      # http to https redirect
+      - "traefik.http.middlewares.baikal-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.baikal-https.redirectscheme.permanent=true"
+      - "traefik.http.middlewares.baikal-https.redirectscheme.port=443"
+      # redirectRegex <https://github.com/ckulka/baikal-docker/blob/master/examples/docker-compose.ssl.yaml>
+      #- traefik.http.middlewares.baikal-redirectregex.redirectregex.regex="https://(.*)/.well-known/(card|cal)dav"
+      #- traefik.http.middlewares.baikal-redirectregex.redirectregex.replacement="https://$$1/dav.php/"
+      #- traefik.http.middlewares.baikal-redirectregex.redirectregex.permanent="true"
+
+networks:
+  default:
+    external: true
+    name: mynetwork
