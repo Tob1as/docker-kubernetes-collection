@@ -210,6 +210,9 @@ services:
       # Middleware: (only) cors
       #- "traefik.http.routers.whoami-http.middlewares=whoami-headers@docker"
       #- "traefik.http.routers.whoami-https.middlewares=whoami-headers@docker"
+      # Middleware: (only) GeoBlock
+      #- "traefik.http.routers.whoami-http.middlewares=geoblock@file"
+      #- "traefik.http.routers.whoami-https.middlewares=geoblock@file"
 
       # http to https redirect
       #- "traefik.http.middlewares.whoami-https.redirectscheme.scheme=https"
