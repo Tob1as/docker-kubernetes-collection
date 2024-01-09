@@ -1,0 +1,93 @@
+# docker-compose -f yourls.yml up -d
+version: '2.4'
+services:
+
+  # YOURLS - is a set of PHP scripts that will allow you to run Your Own URL Shortener, on your server. 
+  # https://yourls.org/
+  # https://github.com/YOURLS/YOURLS
+  # https://github.com/YOURLS/images/tree/dist/apache
+  # https://hub.docker.com/_/yourls
+  # Supported architectures: amd64, arm32v7, arm64v8, ...
+  # URL: http://localhost:8080/admin/
+  yourls:
+    image: yourls:apache # 1.9.2-apache
+    container_name: yourls
+    restart: unless-stopped
+    environment:
+      # Yourls
+      - "YOURLS_SITE=https://yourls.example.com"
+      - "YOURLS_USER=admin"
+      - "YOURLS_PASS=passw0rd"
+      # DB
+      - "YOURLS_DB_HOST=yourls-db:3306"
+      - "YOURLS_DB_NAME=yourls"
+      - "YOURLS_DB_USER=yourls"
+      - "YOURLS_DB_PASS=passw0rd"
+      - "YOURLS_DB_PREFIX=yourls_"
+    #ports:
+    #  - '8080:80/tcp'
+    healthcheck:
+      test:  curl --fail http://127.0.0.1:80/admin/ || exit 1  
+      start_period: 30s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=traefik"
+      - "traefik.http.services.yourls.loadbalancer.server.port=80"
+      - "traefik.http.services.yourls.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.yourls-http.rule=Host(`yourls.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.yourls-http.entrypoints=web"
+      - "traefik.http.routers.yourls-http.service=yourls"
+      # https
+      - "traefik.http.routers.yourls-https.tls=true"
+      - "traefik.http.routers.yourls-https.rule=Host(`yourls.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.yourls-https.entrypoints=websecure"
+      - "traefik.http.routers.yourls-https.service=yourls"
+      # load middlewares for routers
+      - "traefik.http.routers.yourls-http.middlewares=yourls-https"
+      # http to https redirect
+      - "traefik.http.middlewares.yourls-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.yourls-https.redirectscheme.permanent=true"
+      - "traefik.http.middlewares.yourls-https.redirectscheme.port=443"
+    networks:
+      - yourls-net
+      - traefik
+    depends_on:
+      - yourls-db
+
+  # https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/mariadb.yml    
+  yourls-db:
+    image: mariadb:10.11                      # Supported architectures: amd64, arm64v8
+    # image: tobi312/rpi-mariadb:10.11-alpine # Supported architectures: arm32v7 (RaspberryPi)
+    container_name: yourls-db
+    restart: unless-stopped
+    volumes:
+      - ./data_yourls-db:/var/lib/mysql:rw
+    environment:
+      TZ: Europe/Berlin
+      MARIADB_ROOT_PASSWORD: passw0rd
+      MARIADB_DATABASE: yourls
+      MARIADB_USER: yourls
+      MARIADB_PASSWORD: passw0rd
+      #MARIADB_AUTO_UPGRADE: 1
+    #ports:
+    #  - 127.0.0.1:3306:3306/tcp
+    healthcheck:
+      #test:  mysqladmin ping -h 127.0.0.1 -u root --password=$$MARIADB_ROOT_PASSWORD || exit 1
+      test:  mysqladmin ping -h 127.0.0.1 -u $$MARIADB_USER --password=$$MARIADB_PASSWORD || exit 1
+      #start_period: 30s
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    networks:
+      - yourls-net
+
+networks:
+  yourls-net:
+    name: yourls-net
+  traefik:
+    external: true
+    name: mynetwork
