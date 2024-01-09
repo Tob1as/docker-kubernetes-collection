@@ -22,7 +22,7 @@ services:
       retries: 3
     labels:
       - "traefik.enable=true"
-      #- "traefik.docker.network=mynetwork"
+      #- "traefik.docker.network=traefik"
       - "traefik.http.services.hoppscotch.loadbalancer.server.port=80"
       # http
       - "traefik.http.routers.hoppscotch-http.rule=Host(`hoppscotch.example.com`) && PathPrefix(`/`)"
@@ -47,9 +47,13 @@ services:
       - "traefik.http.middlewares.hoppscotch-headers.headers.accesscontrolalloworiginlist=https://hoppscotch.example.com"
       - "traefik.http.middlewares.hoppscotch-headers.headers.accesscontrolmaxage=100"
       - "traefik.http.middlewares.hoppscotch-headers.headers.addvaryheader=true"
+    networks:
+      - hoppscotch-net
+      - traefik
     depends_on:
       - hoppscotch-db
-      
+  
+  # https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/postgres.yml
   hoppscotch-db:
     image: postgres:15-alpine 
     container_name: hoppscotch-db
@@ -69,8 +73,12 @@ services:
       interval: 30s
       timeout: 5s
       retries: 5
+    networks:
+      - hoppscotch-net
 
 networks:
-  default:
+  hoppscotch-net:
+    name: hoppscotch-net
+  traefik:
     external: true
     name: mynetwork
