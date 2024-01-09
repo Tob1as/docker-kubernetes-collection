@@ -1,0 +1,60 @@
+# docker-compose -f privatebin.yml up -d
+version: '2.4'
+services:
+
+  # PrivateBin - open source online pastebin
+  # https://privatebin.info/
+  # https://github.com/PrivateBin/PrivateBin
+  # https://github.com/PrivateBin/docker-nginx-fpm-alpine
+  # https://hub.docker.com/r/privatebin/nginx-fpm-alpine/
+  # Supported architectures: amd64, arm32v7, arm64v8, ...
+  # Docs: https://github.com/PrivateBin/PrivateBin/wiki/Docker
+  # URL: http://localhost:8080/
+  privatebin:
+    image: privatebin/nginx-fpm-alpine:stable # 1.6.2
+    container_name: privatebin
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Berlin
+      PHP_TZ: Europe/Berlin
+    volumes:
+      - ./config_privatebin/nginx_remoteip.conf:/etc/nginx/server.d/remoteip.conf:ro
+      - ./config_privatebin/nginx_status.conf:/etc/nginx/server.d/status.conf:ro
+      - ./config_privatebin/php-fpm_status.conf:/etc/php/php-fpm.d/50-status.conf:ro
+    #  - ./config_privatebin/conf.php:/srv/cfg/conf.php:ro # example: https://github.com/PrivateBin/PrivateBin/blob/master/cfg/conf.sample.php
+      - ./data_privatebin:/srv/data:rw
+    #read_only: true
+    #ports:
+    #  - '8080:8080/tcp'
+    healthcheck:
+      #test:  wget --quiet --tries=1 --spider http://localhost:8080/ || exit 1
+      test:  wget --quiet --tries=1 --spider http://localhost:8080/ping || exit 1
+      start_period: 30s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.privatebin.loadbalancer.server.port=8080"
+      - "traefik.http.services.privatebin.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.privatebin-http.rule=Host(`privatebin.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.privatebin-http.entrypoints=web"
+      - "traefik.http.routers.privatebin-http.service=privatebin"
+      # https
+      - "traefik.http.routers.privatebin-https.tls=true"
+      - "traefik.http.routers.privatebin-https.rule=Host(`privatebin.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.privatebin-https.entrypoints=websecure"
+      - "traefik.http.routers.privatebin-https.service=privatebin"
+      # load middlewares for routers
+      - "traefik.http.routers.privatebin-http.middlewares=privatebin-https"
+      # http to https redirect
+      - "traefik.http.middlewares.privatebin-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.privatebin-https.redirectscheme.permanent=true"
+      - "traefik.http.middlewares.privatebin-https.redirectscheme.port=443"
+
+networks:
+  default:
+    external: true
+    name: mynetwork
