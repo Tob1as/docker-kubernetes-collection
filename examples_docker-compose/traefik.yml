@@ -87,7 +87,7 @@ services:
       - "--experimental.plugins.blockpath.version=v0.2.1"
       # https://plugins.traefik.io/plugins/62947302108ecc83915d7781/geoblock
       #- "--experimental.plugins.geoblock.modulename=github.com/nscuro/traefik-plugin-geoblock"
-      #- "--experimental.plugins.geoblock.version=v0.11.0"
+      #- "--experimental.plugins.geoblock.version=v0.13.0"
 
       # Metrics https://doc.traefik.io/traefik/observability/metrics/prometheus/
       - "--metrics.prometheus=true"
@@ -155,6 +155,8 @@ services:
       - ./config_traefik/:/etc/traefik/dynamic/
       # Mount local plugins
       - ./config_traefik-plugins/:/plugins-local/
+      # Lets Encrypt <https://doc.traefik.io/traefik/user-guides/docker-compose/acme-tls/> <https://doc.traefik.io/traefik/https/acme/>
+      - ./data_traefik/letsencrypt:/letsencrypt:rw
       # Mount the directory containing the certs
       #- ssl/:/etc/certs/:ro
       - ./ssl/:/etc/certs/:ro

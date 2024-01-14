@@ -262,6 +262,10 @@ http:
           #- ZA # South Africa
           #- ZM # Zambia
           #- ZW # Zimbabwe
+          # Blocklist of countries to block (ISO 3166-1 alpha-2)
+          blockedCountries: [ "RU" ]
+          # Default allow indicates that if an IP is in neither block list nor allow lists, it should be allowed.
+          defaultAllow: false
           # Allow requests from private / internal networks?
           allowPrivate: true
           # HTTP status code to return for disallowed requests (default: 403)
