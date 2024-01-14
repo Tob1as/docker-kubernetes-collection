@@ -271,4 +271,6 @@ http:
           # HTTP status code to return for disallowed requests (default: 403)
           disallowedStatusCode: 403
           # Add CIDR to be whitelisted, even if in a non-allowed country
-          allowedIPBlocks: ["8.8.8.8/32"]
+          allowedIPBlocks: ["66.249.64.0/19"]
+          # Add CIDR to be blacklisted, even if in an allowed country or IP block
+          blockedIPBlocks: ["66.249.64.5/32"]
