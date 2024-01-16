@@ -1,0 +1,147 @@
+# docker-compose -f git-server.yml up -d
+version: '2.4'
+services:
+
+  # Git-Server: Gitea OR Forgejo
+  # difference between Forgejo and Gitea: https://forgejo.org/compare/
+  # Gitea: https://about.gitea.com/
+  # * https://github.com/go-gitea/gitea
+  # * https://docs.gitea.com/installation/install-with-docker
+  # * https://docs.gitea.com/administration/config-cheat-sheet
+  # Forgejo: https://forgejo.org/
+  # * https://codeberg.org/forgejo/forgejo
+  # * https://forgejo.org/docs/latest/admin/installation-docker/
+  # * https://forgejo.org/docs/latest/admin/config-cheat-sheet/
+  # Supported architectures: amd64, arm64
+  git-server:
+    image: gitea/gitea:1.21
+    #image: codeberg.org/forgejo/forgejo:1.21
+    container_name: git-server
+    restart: unless-stopped
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      # use GITEA__ OR FORGEJO__ !
+      # Gitea
+      - GITEA__DEFAULT__APP_NAME=Git
+      - GITEA__time__DEFAULT_UI_LOCATION=Europe/Berlin
+      - GITEA__server__DOMAIN=git.example.com
+      - GITEA__server__ROOT_URL=https://git.example.com
+      - GITEA__server__HTTP_PORT=3000
+      - GITEA__server__SSH_DOMAIN=git.example.com
+      - GITEA__server__SSH_PORT=2222
+      - GITEA__server__SSH_LISTEN_PORT=22
+      - GITEA__database__DB_TYPE=mysql  # sqlite3, mysql, postgres, mssql
+      - GITEA__database__HOST=git-server-db:3306
+      - GITEA__database__NAME=git
+      - GITEA__database__USER=git
+      - GITEA__database__PASSWD=passw0rd
+      - GITEA__cache__ENABLED=true
+      - GITEA__cache__ADAPTER=redis  # memory, redis, redis-cluster, twoqueue or memcache
+      - GITEA__cache__HOST=redis://:passw0rd@git-server-cache:6379/0?pool_size=100&idle_timeout=180s
+      - GITEA__cache__ITEM_TTL=24h
+      - GITEA__mailer__ENABLED=true
+      - GITEA__mailer__PROTOCOL=smtps # "smtp", "smtps", "smtp+starttls", "smtp+unix", "sendmail", "dummy"
+      - GITEA__mailer__SMTP_ADDR=mail.example.com
+      - GITEA__mailer__SMTP_PORT=465
+      - GITEA__mailer__USER=git@example.com
+      - GITEA__mailer__PASSWD=passw0rd
+      - GITEA__mailer__FROM=git@example.com
+      - GITEA__service__REGISTER_EMAIL_CONFIRM=true
+      - GITEA__service__ENABLE_NOTIFY_MAIL=true
+      #- GITEA__service__DISABLE_REGISTRATION=false
+      - GITEA__log__LEVEL=Info # Trace, Debug, Info, Warn, Error, Critical, Fatal, None
+    volumes:
+      - ./data_git-server:/data:rw
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      #- "3000:3000"
+      - "2222:22"
+    networks:
+      - git-net
+      - traefik
+    depends_on:
+      git-server-db:
+        condition: service_healthy # service_healthy or service_started
+      git-server-cache:
+        condition: service_healthy # service_healthy or service_started
+    healthcheck:
+      test:  wget --quiet --tries=1 --spider --no-check-certificate http://127.0.0.1:3000/api/healthz || exit 1
+      #start_period: 30s
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.services.git-server.loadbalancer.server.port=3000"
+      - "traefik.http.services.git-server.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.git-server-http.rule=Host(`git.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.git-server-http.entrypoints=web"
+      - "traefik.http.routers.git-server-http.service=git-server"
+      # https
+      - "traefik.http.routers.git-server-https.tls=true"
+      - "traefik.http.routers.git-server-https.rule=Host(`git.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.git-server-https.entrypoints=websecure"
+      - "traefik.http.routers.git-server-https.service=git-server"
+      # load middlewares for routers
+      - "traefik.http.routers.git-server-http.middlewares=git-server-https"
+      # http to https redirect
+      - "traefik.http.middlewares.git-server-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.git-server-https.redirectscheme.permanent=true"
+      - "traefik.http.middlewares.git-server-https.redirectscheme.port=443"
+      # https://docs.gitea.com/administration/reverse-proxies#traefik-with-a-sub-path
+      #- "traefik.http.middlewares.git-server-stripprefix.stripprefix.prefixes=/gitea"
+
+  # https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/mariadb.yml    
+  git-server-db:
+    image: docker.io/library/mariadb:10.11
+    container_name: git-server-db
+    restart: unless-stopped
+    volumes:
+      - ./data_git-server-db:/var/lib/mysql:rw
+    environment:
+      TZ: Europe/Berlin
+      MARIADB_ROOT_PASSWORD: passw0rd
+      MARIADB_DATABASE: git
+      MARIADB_USER: git
+      MARIADB_PASSWORD: passw0rd
+      #MARIADB_AUTO_UPGRADE: 1
+    #ports:
+    #  - 127.0.0.1:3306:3306/tcp
+    healthcheck:
+      #test:  mysqladmin ping -h 127.0.0.1 -u root --password=$$MARIADB_ROOT_PASSWORD || exit 1
+      test:  mysqladmin ping -h 127.0.0.1 -u $$MARIADB_USER --password=$$MARIADB_PASSWORD || exit 1
+      #start_period: 30s
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - git-net
+       
+  # https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/redis.yml       
+  git-server-cache:
+    image: docker.io/library/redis:alpine
+    container_name: git-server-cache
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Berlin
+      REDIS_PASSWORD: passw0rd
+    command: ["sh", "-c", "exec redis-server --loglevel warning --requirepass $${REDIS_PASSWORD}"]
+    healthcheck:
+      test: ["CMD","sh","-c","exec redis-cli --no-auth-warning -a $${REDIS_PASSWORD} ping"]
+      #start_period: 30s
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - git-net
+
+networks:
+  git-net:
+    name: git-net
+  traefik:
+    external: true
+    name: mynetwork
