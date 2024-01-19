@@ -32,6 +32,7 @@ services:
       - GITEA__server__SSH_DOMAIN=git.example.com
       - GITEA__server__SSH_PORT=2222
       - GITEA__server__SSH_LISTEN_PORT=22
+      - GITEA__server__DISABLE_REGISTRATION=false
       - GITEA__database__DB_TYPE=mysql  # sqlite3, mysql, postgres, mssql
       - GITEA__database__HOST=git-server-db:3306
       - GITEA__database__NAME=git
@@ -140,9 +141,36 @@ services:
     networks:
       - git-net
 
+#  # https://docs.gitea.com/usage/actions/act-runner
+#  # An extra host for the Runner is recommended. ;)
+#  # * mkdir ./data_git-server-runner
+#  # * docker run --entrypoint="" --rm -it gitea/act_runner:latest act_runner generate-config > ./data_git-server-runner/config.yaml
+#  git-server-runner:
+#    image: gitea/act_runner:latest
+#    container_name: git-server-runner
+#    restart: unless-stopped
+#    #privileged: true
+#    environment:
+#      CONFIG_FILE: /config.yaml
+#      GITEA_INSTANCE_URL: "https://git.example.com"
+#      GITEA_RUNNER_REGISTRATION_TOKEN: "TOKEN"
+#      GITEA_RUNNER_NAME: "GIT-Runner-0"
+#      GITEA_RUNNER_LABELS: ""
+#    volumes:
+#      - ./data_git-server-runner/config.yaml:/config.yaml
+#      - ./data_git-server-runner/data:/data:rw
+#      - /var/run/docker.sock:/var/run/docker.sock
+#    networks:
+#      - git-runner-net
+#    #depends_on:
+#    #  git-server:
+#    #    condition: service_healthy # or service_started
+
 networks:
   git-net:
     name: git-net
+#  git-runner-net:
+#    name: git-runner-net
   traefik:
     external: true
     name: mynetwork
