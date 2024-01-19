@@ -145,6 +145,7 @@ services:
 #  # An extra host for the Runner is recommended. ;)
 #  # * mkdir ./data_git-server-runner
 #  # * docker run --entrypoint="" --rm -it gitea/act_runner:latest act_runner generate-config > ./data_git-server-runner/config.yaml
+#  # or: https://forgejo.codeberg.page/docs/latest/admin/actions/#installation-of-the-oci-image
 #  git-server-runner:
 #    image: gitea/act_runner:latest
 #    container_name: git-server-runner
@@ -157,9 +158,10 @@ services:
 #      GITEA_RUNNER_NAME: "GIT-Runner-0"
 #      GITEA_RUNNER_LABELS: ""
 #    volumes:
-#      - ./data_git-server-runner/config.yaml:/config.yaml
-#      - ./data_git-server-runner/data:/data:rw
+#      - ./config_git-server-runner/config.yaml:/config.yaml
+#      - ./data_git-server-runner:/data:rw
 #      - /var/run/docker.sock:/var/run/docker.sock
+#      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro  # when need other certs (e.g.: self-signed certificate)
 #    networks:
 #      - git-runner-net
 #    #depends_on:
