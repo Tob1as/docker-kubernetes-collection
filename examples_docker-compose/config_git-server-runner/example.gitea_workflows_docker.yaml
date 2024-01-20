@@ -55,7 +55,7 @@ jobs:
         with:
           config-inline: |
             [registry."${{steps.script.outputs.gittea_url}}"]
-              insecure = true
+              #insecure = true
               ca=["/etc/ssl/certs/ca-certificates.crt"]
 
       - name: Login to Gitea Container Registry
