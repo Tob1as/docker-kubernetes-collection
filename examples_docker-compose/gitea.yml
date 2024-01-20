@@ -1,4 +1,4 @@
-# docker-compose -f git-server.yml up -d
+# docker-compose -f gitea.yml up -d
 version: '2.4'
 services:
 
@@ -13,10 +13,10 @@ services:
   # * https://forgejo.org/docs/latest/admin/installation-docker/
   # * https://forgejo.org/docs/latest/admin/config-cheat-sheet/
   # Supported architectures: amd64, arm64
-  git-server:
+  gitea:
     image: gitea/gitea:1.21
     #image: codeberg.org/forgejo/forgejo:1.21
-    container_name: git-server
+    container_name: gitea
     restart: unless-stopped
     environment:
       - USER_UID=1000
@@ -34,13 +34,13 @@ services:
       - GITEA__server__SSH_LISTEN_PORT=22
       - GITEA__server__DISABLE_REGISTRATION=false
       - GITEA__database__DB_TYPE=mysql  # sqlite3, mysql, postgres, mssql
-      - GITEA__database__HOST=git-server-db:3306
+      - GITEA__database__HOST=gitea-db:3306
       - GITEA__database__NAME=git
       - GITEA__database__USER=git
       - GITEA__database__PASSWD=passw0rd
       - GITEA__cache__ENABLED=true
       - GITEA__cache__ADAPTER=redis  # memory, redis, redis-cluster, twoqueue or memcache
-      - GITEA__cache__HOST=redis://:passw0rd@git-server-cache:6379/0?pool_size=100&idle_timeout=180s
+      - GITEA__cache__HOST=redis://:passw0rd@gitea-cache:6379/0?pool_size=100&idle_timeout=180s
       - GITEA__cache__ITEM_TTL=24h
       - GITEA__mailer__ENABLED=true
       - GITEA__mailer__PROTOCOL=smtps # "smtp", "smtps", "smtp+starttls", "smtp+unix", "sendmail", "dummy"
@@ -54,7 +54,7 @@ services:
       #- GITEA__service__DISABLE_REGISTRATION=false
       - GITEA__log__LEVEL=Info # Trace, Debug, Info, Warn, Error, Critical, Fatal, None
     volumes:
-      - ./data_git-server:/data:rw
+      - ./data_gitea:/data:rw
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
@@ -64,9 +64,9 @@ services:
       - git-net
       - traefik
     depends_on:
-      git-server-db:
+      gitea-db:
         condition: service_healthy # service_healthy or service_started
-      git-server-cache:
+      gitea-cache:
         condition: service_healthy # service_healthy or service_started
     healthcheck:
       test:  wget --quiet --tries=1 --spider --no-check-certificate http://127.0.0.1:3000/api/healthz || exit 1
@@ -77,33 +77,33 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"
-      - "traefik.http.services.git-server.loadbalancer.server.port=3000"
-      - "traefik.http.services.git-server.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      - "traefik.http.services.gitea.loadbalancer.server.port=3000"
+      - "traefik.http.services.gitea.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
       # http
-      - "traefik.http.routers.git-server-http.rule=Host(`git.example.com`) && PathPrefix(`/`)"
-      - "traefik.http.routers.git-server-http.entrypoints=web"
-      - "traefik.http.routers.git-server-http.service=git-server"
+      - "traefik.http.routers.gitea-http.rule=Host(`git.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.gitea-http.entrypoints=web"
+      - "traefik.http.routers.gitea-http.service=gitea"
       # https
-      - "traefik.http.routers.git-server-https.tls=true"
-      - "traefik.http.routers.git-server-https.rule=Host(`git.example.com`) && PathPrefix(`/`)"
-      - "traefik.http.routers.git-server-https.entrypoints=websecure"
-      - "traefik.http.routers.git-server-https.service=git-server"
+      - "traefik.http.routers.gitea-https.tls=true"
+      - "traefik.http.routers.gitea-https.rule=Host(`git.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.gitea-https.entrypoints=websecure"
+      - "traefik.http.routers.gitea-https.service=gitea"
       # load middlewares for routers
-      - "traefik.http.routers.git-server-http.middlewares=git-server-https"
+      - "traefik.http.routers.gitea-http.middlewares=gitea-https"
       # http to https redirect
-      - "traefik.http.middlewares.git-server-https.redirectscheme.scheme=https"
-      #- "traefik.http.middlewares.git-server-https.redirectscheme.permanent=true"
-      - "traefik.http.middlewares.git-server-https.redirectscheme.port=443"
+      - "traefik.http.middlewares.gitea-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.gitea-https.redirectscheme.permanent=true"
+      - "traefik.http.middlewares.gitea-https.redirectscheme.port=443"
       # https://docs.gitea.com/administration/reverse-proxies#traefik-with-a-sub-path
-      #- "traefik.http.middlewares.git-server-stripprefix.stripprefix.prefixes=/gitea"
+      #- "traefik.http.middlewares.gitea-stripprefix.stripprefix.prefixes=/gitea"
 
   # https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/mariadb.yml    
-  git-server-db:
+  gitea-db:
     image: docker.io/library/mariadb:10.11
-    container_name: git-server-db
+    container_name: gitea-db
     restart: unless-stopped
     volumes:
-      - ./data_git-server-db:/var/lib/mysql:rw
+      - ./data_gitea-db:/var/lib/mysql:rw
     environment:
       TZ: Europe/Berlin
       MARIADB_ROOT_PASSWORD: passw0rd
@@ -124,9 +124,9 @@ services:
       - git-net
        
   # https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/redis.yml       
-  git-server-cache:
+  gitea-cache:
     image: docker.io/library/redis:alpine
-    container_name: git-server-cache
+    container_name: gitea-cache
     restart: unless-stopped
     environment:
       TZ: Europe/Berlin
@@ -143,12 +143,12 @@ services:
 
 #  # https://docs.gitea.com/usage/actions/act-runner
 #  # An extra host for the Runner is recommended. ;)
-#  # * mkdir ./data_git-server-runner
-#  # * docker run --entrypoint="" --rm -it gitea/act_runner:latest act_runner generate-config > ./data_git-server-runner/config.yaml
+#  # * mkdir ./data_gitea-runner
+#  # * docker run --entrypoint="" --rm -it gitea/act_runner:latest act_runner generate-config > ./data_gitea-runner/config.yaml
 #  # or for forgejo: https://forgejo.codeberg.page/docs/latest/admin/actions/#installation-of-the-oci-image
-#  git-server-runner:
+#  gitea-runner:
 #    image: gitea/act_runner:latest
-#    container_name: git-server-runner
+#    container_name: gitea-runner
 #    restart: unless-stopped
 #    environment:
 #      CONFIG_FILE: /config.yaml
@@ -157,14 +157,14 @@ services:
 #      GITEA_RUNNER_NAME: "GIT-Runner-0"
 #      GITEA_RUNNER_LABELS: ""
 #    volumes:
-#      - ./config_git-server-runner/config.yaml:/config.yaml
-#      - ./data_git-server-runner:/data:rw
+#      - ./config_gitea-runner/config.yaml:/config.yaml
+#      - ./data_gitea-runner:/data:rw
 #      - /var/run/docker.sock:/var/run/docker.sock
 #      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro  # when need other certs (e.g.: self-signed certificate)
 #    networks:
 #      - git-runner-net
 #    #depends_on:
-#    #  git-server:
+#    #  gitea:
 #    #    condition: service_healthy # or service_started
 
 networks:
