@@ -156,6 +156,25 @@ services:
       - "traefik.http.middlewares.vaultwarden-https.redirectscheme.scheme=https"
       #- "traefik.http.middlewares.vaultwarden-https.redirectscheme.permanent=true"
       - "traefik.http.middlewares.vaultwarden-https.redirectscheme.port=443"
+      # GUI (admin)
+      # http
+      - "traefik.http.routers.vaultwarden-admin-http.rule=Host(`vault.example.com`) && Path(`/admin`)"
+      - "traefik.http.routers.vaultwarden-admin-http.entrypoints=web"
+      - "traefik.http.routers.vaultwarden-admin-http.service=vaultwarden"
+      # https
+      - "traefik.http.routers.vaultwarden-admin-https.tls=true"
+      - "traefik.http.routers.vaultwarden-admin-https.rule=Host(`vault.example.com`) && Path(`/admin`)"
+      - "traefik.http.routers.vaultwarden-admin-https.entrypoints=websecure"
+      - "traefik.http.routers.vaultwarden-admin-https.service=vaultwarden"
+      # load middlewares for routers
+      - "traefik.http.routers.vaultwarden-admin-http.middlewares=vaultwarden-admin-https@docker,vaultwarden-admin-auth@docker"
+      - "traefik.http.routers.vaultwarden-admin-https.middlewares=vaultwarden-admin-auth@docker"
+      # http to https redirect
+      - "traefik.http.middlewares.vaultwarden-admin-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.vaultwarden-admin-https.redirectscheme.permanent=true"
+      - "traefik.http.middlewares.vaultwarden-admin-https.redirectscheme.port=443"
+      # basicauth !!
+      - "traefik.http.middlewares.vaultwarden-admin-auth.basicauth.users=admin:$$apr1$$DkgsQ5Rt$$zFBxcMihOh.2zbsJP0oWf1"
       # WEBSOCKET
       - "traefik.http.services.vaultwarden-ws.loadbalancer.server.port=3012"
       - "traefik.http.services.vaultwarden-ws.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
