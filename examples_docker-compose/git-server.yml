@@ -145,12 +145,11 @@ services:
 #  # An extra host for the Runner is recommended. ;)
 #  # * mkdir ./data_git-server-runner
 #  # * docker run --entrypoint="" --rm -it gitea/act_runner:latest act_runner generate-config > ./data_git-server-runner/config.yaml
-#  # or: https://forgejo.codeberg.page/docs/latest/admin/actions/#installation-of-the-oci-image
+#  # or for forgejo: https://forgejo.codeberg.page/docs/latest/admin/actions/#installation-of-the-oci-image
 #  git-server-runner:
 #    image: gitea/act_runner:latest
 #    container_name: git-server-runner
 #    restart: unless-stopped
-#    #privileged: true
 #    environment:
 #      CONFIG_FILE: /config.yaml
 #      GITEA_INSTANCE_URL: "https://git.example.com"
