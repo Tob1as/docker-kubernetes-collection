@@ -51,6 +51,7 @@ services:
       - GITEA__mailer__FROM=git@example.com
       - GITEA__service__REGISTER_EMAIL_CONFIRM=true
       - GITEA__service__ENABLE_NOTIFY_MAIL=true
+      - GITEA__service__DEFAULT_KEEP_EMAIL_PRIVATE=true
       #- GITEA__service__DISABLE_REGISTRATION=false
       - GITEA__log__LEVEL=Info # Trace, Debug, Info, Warn, Error, Critical, Fatal, None
     volumes:
