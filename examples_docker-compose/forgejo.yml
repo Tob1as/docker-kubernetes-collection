@@ -1,0 +1,173 @@
+# docker-compose -f forgejo.yml up -d
+version: '2.4'
+services:
+
+  # Git-Server: Forgejo or Gitea
+  # difference between Forgejo and Gitea: https://forgejo.org/compare/
+  # Forgejo: https://forgejo.org/
+  # * https://codeberg.org/forgejo/forgejo
+  # * https://forgejo.org/docs/latest/admin/installation-docker/
+  # * https://forgejo.org/docs/latest/admin/config-cheat-sheet/
+  # Gitea?, see: https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/gitea.yml
+  # Supported architectures: amd64, arm64
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:1.21
+    container_name: forgejo
+    restart: unless-stopped
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      # forgejo
+      - FORGEJO__DEFAULT__APP_NAME=Git
+      - FORGEJO__time__DEFAULT_UI_LOCATION=Europe/Berlin
+      - FORGEJO__server__DOMAIN=git.example.com
+      - FORGEJO__server__ROOT_URL=https://git.example.com
+      - FORGEJO__server__HTTP_PORT=3000
+      - FORGEJO__server__DISABLE_SSH=false
+      - FORGEJO__server__SSH_DOMAIN=git.example.com
+      - FORGEJO__server__SSH_PORT=2222
+      - FORGEJO__server__SSH_LISTEN_PORT=22
+      - FORGEJO__server__DISABLE_REGISTRATION=false
+      - FORGEJO__database__DB_TYPE=mysql  # sqlite3, mysql, postgres, mssql
+      - FORGEJO__database__HOST=forgejo-db:3306
+      - FORGEJO__database__NAME=git
+      - FORGEJO__database__USER=git
+      - FORGEJO__database__PASSWD=passw0rd
+      - FORGEJO__cache__ENABLED=true
+      - FORGEJO__cache__ADAPTER=redis  # memory, redis, redis-cluster, twoqueue or memcache
+      - FORGEJO__cache__HOST=redis://:passw0rd@forgejo-cache:6379/0?pool_size=100&idle_timeout=180s
+      - FORGEJO__cache__ITEM_TTL=24h
+      - FORGEJO__mailer__ENABLED=true
+      - FORGEJO__mailer__PROTOCOL=smtps # "smtp", "smtps", "smtp+starttls", "smtp+unix", "sendmail", "dummy"
+      - FORGEJO__mailer__SMTP_ADDR=mail.example.com
+      - FORGEJO__mailer__SMTP_PORT=465
+      - FORGEJO__mailer__USER=git@example.com
+      - FORGEJO__mailer__PASSWD=passw0rd
+      - FORGEJO__mailer__FROM=git@example.com
+      - FORGEJO__service__REGISTER_EMAIL_CONFIRM=true
+      - FORGEJO__service__ENABLE_NOTIFY_MAIL=true
+      - FORGEJO__service__DEFAULT_KEEP_EMAIL_PRIVATE=true
+      #- FORGEJO__service__DISABLE_REGISTRATION=false
+      - FORGEJO__log__LEVEL=Info # Trace, Debug, Info, Warn, Error, Critical, Fatal, None
+    volumes:
+      - ./data_forgejo:/data:rw
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      #- "3000:3000"
+      - "2222:22"
+    networks:
+      - forgejo-net
+      - traefik
+    depends_on:
+      forgejo-db:
+        condition: service_healthy # service_healthy or service_started
+      forgejo-cache:
+        condition: service_healthy # service_healthy or service_started
+    healthcheck:
+      test:  wget --quiet --tries=1 --spider --no-check-certificate http://127.0.0.1:3000/api/healthz || exit 1
+      #start_period: 30s
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.services.forgejo.loadbalancer.server.port=3000"
+      - "traefik.http.services.forgejo.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.forgejo-http.rule=Host(`git.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.forgejo-http.entrypoints=web"
+      - "traefik.http.routers.forgejo-http.service=forgejo"
+      # https
+      - "traefik.http.routers.forgejo-https.tls=true"
+      - "traefik.http.routers.forgejo-https.rule=Host(`git.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.forgejo-https.entrypoints=websecure"
+      - "traefik.http.routers.forgejo-https.service=forgejo"
+      # load middlewares for routers
+      - "traefik.http.routers.forgejo-http.middlewares=forgejo-https"
+      # http to https redirect
+      - "traefik.http.middlewares.forgejo-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.forgejo-https.redirectscheme.permanent=true"
+      - "traefik.http.middlewares.forgejo-https.redirectscheme.port=443"
+
+  # https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/mariadb.yml    
+  forgejo-db:
+    image: docker.io/library/mariadb:10.11
+    container_name: forgejo-db
+    restart: unless-stopped
+    volumes:
+      - ./data_forgejo-db:/var/lib/mysql:rw
+    environment:
+      TZ: Europe/Berlin
+      MARIADB_ROOT_PASSWORD: passw0rd
+      MARIADB_DATABASE: git
+      MARIADB_USER: git
+      MARIADB_PASSWORD: passw0rd
+      #MARIADB_AUTO_UPGRADE: 1
+    #ports:
+    #  - 127.0.0.1:3306:3306/tcp
+    healthcheck:
+      #test:  mysqladmin ping -h 127.0.0.1 -u root --password=$$MARIADB_ROOT_PASSWORD || exit 1
+      test:  mysqladmin ping -h 127.0.0.1 -u $$MARIADB_USER --password=$$MARIADB_PASSWORD || exit 1
+      #start_period: 30s
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - forgejo-net
+       
+  # https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/redis.yml       
+  forgejo-cache:
+    image: docker.io/library/redis:alpine
+    container_name: forgejo-cache
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Berlin
+      REDIS_PASSWORD: passw0rd
+    command: ["sh", "-c", "exec redis-server --loglevel warning --requirepass $${REDIS_PASSWORD}"]
+    healthcheck:
+      test: ["CMD","sh","-c","exec redis-cli --no-auth-warning -a $${REDIS_PASSWORD} ping"]
+      #start_period: 30s
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - forgejo-net
+
+#  # https://docs.gitea.com/usage/actions/act-runner
+#  # An extra host for the Runner is recommended. ;)
+#  # * mkdir ./config_gitea-runner
+#  # * docker run --entrypoint="" --rm -it gitea/act_runner:latest act_runner generate-config > ./config_gitea-runner/config.yaml
+#  # or: https://forgejo.codeberg.page/docs/latest/admin/actions/#installation-of-the-oci-image
+#  #     https://code.forgejo.org/forgejo/runner/src/branch/main/examples/docker-compose/compose-forgejo-and-runner.yml
+#  # Actions Workflow example: https://github.com/Tob1as/docker-build-example/blob/main/.github/workflows/build_docker_images.yaml.example
+#  forgejo-runner:
+#    image: gitea/act_runner:latest
+#    container_name: forgejo-runner
+#    restart: unless-stopped
+#    environment:
+#      CONFIG_FILE: /config.yaml
+#      GITEA_INSTANCE_URL: "https://git.example.com"
+#      GITEA_RUNNER_REGISTRATION_TOKEN: "TOKEN"
+#      GITEA_RUNNER_NAME: "GIT-Runner-0"
+#      GITEA_RUNNER_LABELS: ""
+#    volumes:
+#      - ./config_gitea-runner/config.yaml:/config.yaml:ro
+#      - ./data_forgejo-runner:/data:rw
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro  # when need other certs (e.g.: self-signed certificate)
+#    networks:
+#      - forgejo-runner-net
+#    depends_on:
+#      forgejo:
+#        condition: service_healthy # or service_started
+
+networks:
+  forgejo-net:
+    name: forgejo-net
+#  forgejo-runner-net:
+#    name: forgejo-runner-net
+  traefik:
+    external: true
+    name: mynetwork
