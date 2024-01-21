@@ -8,20 +8,15 @@ services:
   # * https://github.com/go-gitea/gitea
   # * https://docs.gitea.com/installation/install-with-docker
   # * https://docs.gitea.com/administration/config-cheat-sheet
-  # Forgejo: https://forgejo.org/
-  # * https://codeberg.org/forgejo/forgejo
-  # * https://forgejo.org/docs/latest/admin/installation-docker/
-  # * https://forgejo.org/docs/latest/admin/config-cheat-sheet/
+  # Forgejo?, see: https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/forgejo.yml
   # Supported architectures: amd64, arm64
   gitea:
     image: gitea/gitea:1.21
-    #image: codeberg.org/forgejo/forgejo:1.21
     container_name: gitea
     restart: unless-stopped
     environment:
       - USER_UID=1000
       - USER_GID=1000
-      # use GITEA__ OR FORGEJO__ !
       # Gitea
       - GITEA__DEFAULT__APP_NAME=Git
       - GITEA__time__DEFAULT_UI_LOCATION=Europe/Berlin
@@ -62,7 +57,7 @@ services:
       #- "3000:3000"
       - "2222:22"
     networks:
-      - git-net
+      - gitea-net
       - traefik
     depends_on:
       gitea-db:
@@ -122,7 +117,7 @@ services:
       timeout: 5s
       retries: 3
     networks:
-      - git-net
+      - gitea-net
        
   # https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/redis.yml       
   gitea-cache:
@@ -140,13 +135,13 @@ services:
       timeout: 5s
       retries: 3
     networks:
-      - git-net
+      - gitea-net
 
 #  # https://docs.gitea.com/usage/actions/act-runner
 #  # An extra host for the Runner is recommended. ;)
-#  # * mkdir ./data_gitea-runner
-#  # * docker run --entrypoint="" --rm -it gitea/act_runner:latest act_runner generate-config > ./data_gitea-runner/config.yaml
-#  # or for forgejo: https://forgejo.codeberg.page/docs/latest/admin/actions/#installation-of-the-oci-image
+#  # * mkdir ./config_gitea-runner
+#  # * docker run --entrypoint="" --rm -it gitea/act_runner:latest act_runner generate-config > ./config_gitea-runner/config.yaml
+#  # Actions Workflow example: https://github.com/Tob1as/docker-build-example/blob/main/.github/workflows/build_docker_images.yaml.example
 #  gitea-runner:
 #    image: gitea/act_runner:latest
 #    container_name: gitea-runner
@@ -158,21 +153,21 @@ services:
 #      GITEA_RUNNER_NAME: "GIT-Runner-0"
 #      GITEA_RUNNER_LABELS: ""
 #    volumes:
-#      - ./config_gitea-runner/config.yaml:/config.yaml
+#      - ./config_gitea-runner/config.yaml:/config.yaml:ro
 #      - ./data_gitea-runner:/data:rw
 #      - /var/run/docker.sock:/var/run/docker.sock
 #      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro  # when need other certs (e.g.: self-signed certificate)
 #    networks:
-#      - git-runner-net
-#    #depends_on:
-#    #  gitea:
-#    #    condition: service_healthy # or service_started
+#      - gitea-runner-net
+#    depends_on:
+#      gitea:
+#        condition: service_healthy # or service_started
 
 networks:
   git-net:
-    name: git-net
-#  git-runner-net:
-#    name: git-runner-net
+    name: gitea-net
+#  gitea-runner-net:
+#    name: gitea-runner-net
   traefik:
     external: true
     name: mynetwork
