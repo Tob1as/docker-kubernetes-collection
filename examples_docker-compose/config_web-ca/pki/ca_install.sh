@@ -56,7 +56,7 @@ fi
 if command_exists keytool; then
     JAVA_TRUSTSTORE_PATH="${JAVA_HOME}/lib/security/cacerts"
     JAVA_TRUSTSTORE_PASSWORD="changeit"
-	# When Warning message, replace "-keystore ${JAVA_TRUSTSTORE_PATH}" with "-trustcacerts -cacerts" for default Java TrustStore.
+    # When Warning message, replace "-keystore ${JAVA_TRUSTSTORE_PATH}" with "-trustcacerts -cacerts" for default Java TrustStore.
     echo ">> Update Java TrustStore"
     ${JAVA_HOME}/bin/keytool -keystore ${JAVA_TRUSTSTORE_PATH} -storepass ${JAVA_TRUSTSTORE_PASSWORD} -importcert -file ${CA_TARGET_PATH}/${CA_ROOT_FILENAME} -alias "${CA_ROOT_FILENAME%.crt}" -noprompt 2>/dev/null
     ${JAVA_HOME}/bin/keytool -keystore ${JAVA_TRUSTSTORE_PATH} -storepass ${JAVA_TRUSTSTORE_PASSWORD} -importcert -file ${CA_TARGET_PATH}/${CA_INTERMEDIATE_FILENAME} -alias "${CA_INTERMEDIATE_FILENAME%.crt}" -noprompt 2>/dev/null
