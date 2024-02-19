@@ -19,66 +19,80 @@ services:
       - ./data_minecraft:/data:rw
     ports:
       - 25565:25565/tcp
-      - 127.0.0.1:25565:25565/udp   # Query
+      #- 127.0.0.1:25565:25565/udp  # Query
       #- 127.0.0.1:25575:25575/tcp  # RCON
     mem_limit: 3g         # set a higher than MAX_MEMORY (Xmx)
     #mem_reservation: 512m
     cpus: 2.0
     environment:
+      # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#general-options
+      UID: "1000"
+      GID: "1000"
+      #MEMORY: 2G        # Xms + Xmx
+      INIT_MEMORY: "512M" # Xms
+      MAX_MEMORY: "4G"    # Xmx
       TZ: Europe/Berlin
-      EULA: "TRUE"
+      ENABLE_ROLLING_LOGS: "true"
+      # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#server
       TYPE: "vanilla"
+      EULA: "TRUE"
       VERSION: "latest"
-      #OVERRIDE_SERVER_PROPERTIES: "true"          # reset any manual configuration of the server.properties
-      MOTD: "A §l§cMinecraft§r §nserver"           # unicode characters allowed https://minecraft.fandom.com/wiki/Formatting_codes
-      DIFFICULTY: "normal"  # easy, normal, hard
-      #WHITELIST_FILE: "/extra/whitelist.json"
-      #WHITELIST: "user1,uuid2"
-      #OVERRIDE_WHITELIST: "true"
-      #ENFORCE_WHITELIST: "TRUE"
-      #ENABLE_WHITELIST: "TRUE"
-      #OPS_FILE: "https://config.example.com/extra/ops.json"
-      OPS: "user1,uuid2"                            # set your minecraft name! (UUID: https://playerdb.co/api/player/minecraft/USERNAME)
-      #OVERRIDE_OPS: "true"
+      #OVERRIDE_SERVER_PROPERTIES: "true"      # reset any manual configuration of the server.properties
+      MOTD: "A §l§cMinecraft§r §nserver"       # unicode characters allowed https://minecraft.fandom.com/wiki/Formatting_codes
+      DIFFICULTY: "normal" # peaceful, easy, normal, and hard
       #ICON: "http://..../some/other/image.png"
-      #OVERRIDE_ICON: "TRUE"
-      ENABLE_RCON: "true"
-      RCON_PASSWORD: "passw0rd"
-      #RCON_PORT: "25575"   # TCP-Port
-      ENABLE_QUERY: "true"
-      #QUERY_PORT: "25565"  # UDP-Port
+      #OVERRIDE_ICON: "FALSE"
       MAX_PLAYERS: "20"
       MAX_WORLD_SIZE: "10000"
       ALLOW_NETHER: "true"
-      ENABLE_COMMAND_BLOCK: "true"
-      FORCE_GAMEMODE: "true"
+      #ANNOUNCE_PLAYER_ACHIEVEMENTS: "true"
+      #ENABLE_COMMAND_BLOCK: "true"
+      FORCE_GAMEMODE: "false"
       GENERATE_STRUCTURES: "true"
       HARDCORE: "false"
       SNOOPER_ENABLED: "false"
       MAX_BUILD_HEIGHT: "256"
-      MAX_TICK_TIME: "60000"           # set -1 for disable
       SPAWN_ANIMALS: "true"
       SPAWN_MONSTERS: "true"
       SPAWN_NPCS: "true"
-      SPAWN_PROTECTION: "0"            # value 0 = disable, 1 = 3x3, 2 = 5x5, 3 = 7x7
-      #SEED: "1785852800490497919"
-      MODE: "survival"                 # creative, survival, adventure, spectator
+      SPAWN_PROTECTION: "2" # value 1 = 3x3, 2 = 5x5, 3 = 7x7
+      #VIEW_DISTANCE: "32"
+      #SEED: "3609884650702718645" # 1785852800490497919
+      MODE: "survival"  # creative, survival, adventure, spectator
       PVP: "false"
-      LEVEL_TYPE: "default"            # DEFAULT, FLAT, LARGEBIOMES, AMPLIFIED, CUSTOMIZED, BUFFET, BIOMESOP, BIOMESOPLENTY
-      #GENERATOR_SETTINGS: ''
-      ONLINE_MODE: "TRUE"              # server checks connecting players against Minecraft's account database
+      LEVEL_TYPE: "default" # DEFAULT, FLAT, LARGEBIOMES, AMPLIFIED, CUSTOMIZED, BUFFET, BIOMESOP, BIOMESOPLENTY
+      #GENERATOR_SETTINGS: ""
+      LEVEL: "world"
+      ONLINE_MODE: "true" # server checks connecting players against Minecraft's account database
       ALLOW_FLIGHT: "FALSE"
-      SERVER_NAME: "Minecraft Server"
-      #SERVER_PORT: "25565"            # default: 25565
-      #UID: "1000"
-      #GID: "1000"
-      #MEMORY: 2G                      # Xms + Xmx
-      INIT_MEMORY: "512M"              # Xms
-      MAX_MEMORY: "2G"                 # Xmx
-      #EXEC_DIRECTLY: "true"
-      ENABLE_ROLLING_LOGS: "true"
-      #PROXY: "proxy:3128"
-      #ENABLE_AUTOPAUSE: "TRUE"
+      #SERVER_NAME: "Minecraft Server - Java"
+      SERVER_NAME: "${MOTD}"
+      SERVER_PORT: "25565" # default: 25565  (TCP-Port)
+      #PLAYER_IDLE_TIMEOUT: "30"
+      # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#whitelist
+      ENABLE_WHITELIST: "true"
+      #WHITELIST: "user1,uuid2"
+      #WHITELIST_FILE: "/extra/whitelist.json"
+      EXISTING_WHITELIST_FILE: "SKIP"
+      #OVERRIDE_WHITELIST: "false"
+      #ENFORCE_WHITELIST: "true"
+      # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#rcon
+      ENABLE_RCON: "true"
+      #RCON_PASSWORD: "passw0rd"
+      #RCON_PORT: "25575"  # TCP-Port
+      # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#auto-pause
+      ENABLE_AUTOPAUSE: "true"
+      #MAX_TICK_TIME: "60000"
+      # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#auto-stop
+      #ENABLE_AUTOSTOP: "FALSE"
+      # https://docker-minecraft-server.readthedocs.io/en/latest/configuration/server-properties/#opadministrator-players
+      #OPS_FILE: "https://config.example.com/extra/ops.json"
+      OPS: "user1,uuid2" 
+      EXISTING_OPS_FILE: "SYNCHRONIZE"
+      #OVERRIDE_OPS: "false"
+      # https://docker-minecraft-server.readthedocs.io/en/latest/configuration/server-properties/#query
+      ENABLE_QUERY: "true"
+      #QUERY_PORT: "25565"  # UDP-Port
   
   # https://github.com/dirien/minecraft-prometheus-exporter
   # Supported architectures: arm64v8, amd64

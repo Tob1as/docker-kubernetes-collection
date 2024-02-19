@@ -46,7 +46,7 @@ services:
       #PLAYER_IDLE_TIMEOUT: "30"
       #MAX_THREADS: "8"
       #LEVEL_NAME: "Bedrock level"
-      #LEVEL_SEED: "33480944"   # other: "-129984066"
+      #LEVEL_SEED: "33480944"   # other: "-129984066" or "-6438155131507531770"
       #DEFAULT_PLAYER_PERMISSION_LEVEL: "member" # level for new player, Options: visitor, member, operator
       #TEXTUREPACK_REQUIRED: "false" # Options: true, false
       #SERVER_AUTHORITATIVE_MOVEMENT: "server-auth"
