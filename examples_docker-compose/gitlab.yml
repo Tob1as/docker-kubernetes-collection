@@ -1,0 +1,169 @@
+# docker-compose -f gitlab.yml up -d
+version: '2.4'
+services:
+
+  # GitLab: is an open source end-to-end software development platform with built-in version control, issue tracking, code review, CI/CD, and more.
+  # https://gitlab.com/gitlab-org/gitlab
+  # https://hub.docker.com/r/gitlab/gitlab-ce
+  # Docs: https://docs.gitlab.com/ee/install/docker.html#install-gitlab-using-docker-compose
+  # Example config gitlab.rb: https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-config-template/gitlab.rb.template
+  #               Monitoring: https://docs.gitlab.com/ee/administration/monitoring/prometheus/index.html#using-an-external-prometheus-server
+  #                  Backups: https://docs.gitlab.com/omnibus/settings/backups.html#creating-backups-for-gitlab-instances-in-docker-containers
+  #                           Backup-Data:   docker exec -t gitlab gitlab-backup
+  #                           Backup-Config: docker exec -t gitlab /bin/sh -c 'gitlab-ctl backup-etc && cd /etc/gitlab/config_backup && cp $(ls -t | head -n1) /var/opt/gitlab/backups'
+  # Supported architectures: amd64
+  gitlab:
+    image: gitlab/gitlab-ce:latest # 16.8.2-ce.0
+    container_name: gitlab
+    restart: unless-stopped
+    hostname: 'gitlab.example.com'
+    environment:
+      #GITLAB_ROOT_PASSWORD: passw0rd
+      GITLAB_OMNIBUS_CONFIG: |
+        #gitlab_rails['initial_root_password'] = "passw0rd"
+        #gitlab_rails['initial_shared_runners_registration_token'] = "YOUR-TOKEN"
+        gitlab_rails['time_zone'] = 'Europe/Berlin'
+
+        letsencrypt['enabled'] = false
+        
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        #nginx['client_max_body_size'] = '250m'
+        nginx['real_ip_trusted_addresses'] = [ '10.0.0.0/8', '192.168.0.0/16', '172.16.0.0/12', 'fd00::/8' ]
+        nginx['real_ip_header'] = 'X-Forwarded-For'
+        nginx['real_ip_recursive'] = 'on'
+        
+        external_url 'https://git.example.com'
+        
+        gitlab_rails['registry_enabled'] = true
+        registry_external_url 'https://registry.git.example.com'
+        gitlab_rails['registry_host'] = "registry.git.example.com"
+        registry_nginx['listen_port'] = 80
+        registry_nginx['listen_https'] = false
+
+        mattermost['enable'] = true
+        mattermost_external_url 'https://mattermost.git.example.com'
+        mattermost_nginx['listen_port'] = 80
+        mattermost_nginx['listen_https'] = false
+        
+        gitlab_pages['enable'] = false
+        #pages_external_url "https://pages.git.example.com"
+        ##gitlab_pages['access_control'] = true
+        #pages_nginx['listen_port'] = 80
+        #pages_nginx['listen_https'] = false
+        
+        gitlab_rails['gitlab_shell_ssh_port'] = 2222
+
+        #gitlab_rails['gitlab_username_changing_enabled'] = true
+        #gitlab_rails['gitlab_default_theme'] = 4
+        gitlab_rails['env'] = {"SSL_CERT_FILE" => "/etc/ssl/certs/ca-certificates.crt"}
+        #gitlab_rails['backup_keep_time'] = 604800
+        
+        # E-Mail  (465 for TLS and port 587 for STARTTLS)
+        gitlab_rails['smtp_enable'] = true
+        gitlab_rails['smtp_address'] = "mail.example.com"
+        gitlab_rails['smtp_port'] = 465
+        gitlab_rails['smtp_user_name'] = "git@example.com"
+        gitlab_rails['smtp_password'] = "passw0rd"
+        gitlab_rails['smtp_domain'] = "mail.example.com"
+        gitlab_rails['smtp_authentication'] = "login"
+        gitlab_rails['smtp_enable_starttls_auto'] = false
+        gitlab_rails['smtp_tls'] = true
+        #gitlab_rails['smtp_ca_file'] = "/etc/ssl/certs/ca-certificates.crt"
+        gitlab_rails['gitlab_email_enabled'] = true
+        gitlab_rails['gitlab_email_from'] = 'git@example.com'
+        gitlab_rails['gitlab_email_display_name'] = 'GitLab'
+        gitlab_rails['gitlab_email_reply_to'] = 'support@example.com'
+
+    ports:
+      #- '80:80'
+      #- '443:443'
+      - '2222:2222'
+    volumes:
+      - './data_gitlab/config:/etc/gitlab:rw'
+      - './data_gitlab/logs:/var/log/gitlab:rw'
+      - './data_gitlab/data:/var/opt/gitlab:rw'
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    shm_size: '256m'
+    networks:
+      - gitlab-net
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.services.gitlab.loadbalancer.server.port=80"
+      - "traefik.http.services.gitlab.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.gitlab-http.rule=Host(`git.example.com`,`mattermost.git.example.com`,`registry.git.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.gitlab-http.entrypoints=web"
+      - "traefik.http.routers.gitlab-http.service=gitlab"
+      # https
+      - "traefik.http.routers.gitlab-https.tls=true"
+      - "traefik.http.routers.gitlab-https.rule=Host(`git.example.com`,`mattermost.git.example.com`,`registry.git.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.gitlab-https.entrypoints=websecure"
+      - "traefik.http.routers.gitlab-https.service=gitlab"
+      # load middlewares for routers
+      - "traefik.http.routers.gitlab-http.middlewares=gitlab-https"
+      # http to https redirect
+      - "traefik.http.middlewares.gitlab-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.gitlab-https.redirectscheme.permanent=true"
+      - "traefik.http.middlewares.gitlab-https.redirectscheme.port=443"
+
+  # GitLab Runner (.gitlab-ci.yml)
+  # https://gitlab.com/gitlab-org/gitlab-runner
+  # https://hub.docker.com/r/gitlab/gitlab-runner
+  # Supported architectures: amd64, arm64, ...
+  gitlab-runner:
+    image: gitlab/gitlab-runner:alpine # or: gitlab/gitlab-runner:ubuntu or registry.gitlab.com/gitlab-org/gitlab-runner:<TAG>
+    container_name: gitlab-runner
+    restart: unless-stopped
+    #hostname: gitlab-runner
+    privileged: true
+    volumes:
+      - ./data_gitlab-runner/config:/etc/gitlab-runner:rw
+      - ./data_gitlab-runner/cache:/cache:rw
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    networks:
+      - gitlab-runner-net
+  
+  # https://docs.gitlab.com/runner/register/?tab=Docker#register-with-a-runner-registration-token-deprecated
+  # comment gitlab-runner-register out after first start !
+  gitlab-runner-register:
+    image: gitlab/gitlab-runner:alpine # or: gitlab/gitlab-runner:ubuntu or registry.gitlab.com/gitlab-org/gitlab-runner:<TAG>
+    container_name: gitlab-runner-register
+    restart: no
+    privileged: true
+    command:
+      - register
+      - --non-interactive
+      - --url=https://git.example.com
+      #- --token=YOUR-TOKEN
+      - --registration-token=YOUR-TOKEN
+      - --executor=docker
+      - --docker-image=alpine:latest
+      - --description=gitlab-runner
+      - --maintenance-note=GitLab Host Maintainer
+      - --tag-list=
+      - --run-untagged=true
+      - --locked=false
+      - --access-level=not_protected
+      - --docker-volumes=/var/run/docker.sock:/var/run/docker.sock
+      - --docker-volumes=/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+      - --tls-ca-file=/etc/ssl/certs/ca-certificates.crt
+    volumes:
+      - ./data_gitlab-runner/config:/etc/gitlab-runner:rw
+      - ./data_gitlab-runner/cache:/cache:rw
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    networks:
+      - gitlab-runner-net
+
+networks:
+  gitlab-net:
+    name: gitlab-net
+  gitlab-runner-net:
+    name: gitlab-runner-net
+  traefik:
+    external: true
+    name: mynetwork
