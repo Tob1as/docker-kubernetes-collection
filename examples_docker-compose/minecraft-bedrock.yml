@@ -7,7 +7,7 @@ services:
   # https://www.minecraft.net/
   # https://www.minecraft.net/en-us/download/server/bedrock
   # https://hub.docker.com/r/itzg/minecraft-bedrock-server + https://github.com/itzg/docker-minecraft-bedrock-server
-  # Supported architectures: amd64
+  # Supported architectures: arm64v8, amd64
   minecraft-bedrock:
     image: itzg/minecraft-bedrock-server:latest
     container_name: minecraft-bedrock
