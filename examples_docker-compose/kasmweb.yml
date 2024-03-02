@@ -1,0 +1,55 @@
+# docker-compose -f kasmweb.yml up -d
+version: '2.4'
+services:
+
+  # kasmweb - Kasm Workspaces is a docker container streaming platform for delivering browser-based access to desktops, applications, and web services.
+  # https://kasmweb.com/images
+  # https://github.com/kasmtech/workspaces-core-images
+  # https://hub.docker.com/r/kasmweb/core-ubuntu-bionic
+  # Docs:
+  # * https://kasmweb.com/docs/latest/how_to/building_images.html
+  # * sudo? https://kasmweb.com/docs/latest/how_to/running_as_root.html#building-a-workspace-with-sudo
+  # Supported architectures: amd64, arm64v8
+  # URL: https://localhost:6901/
+  kasmweb:
+    image: kasmweb/core-debian-bookworm:1.15.0 # or: kasmweb/core-ubuntu-jammy:1.15.0
+    #image: kasmweb/debian-bookworm-desktop:1.15.0 # or: kasmweb/ubuntu-jammy-desktop:1.15.0
+    container_name: kasmweb
+    restart: unless-stopped
+    tty: true         # docker run -i
+    stdin_open: true  # docker run -t
+    shm_size: 512m
+    environment:
+      TZ: Europe/Berlin
+      VNC_PW: passw0rd    # password for user: kasm_user
+    #volumes:
+    #  - ./data_kasmweb:/data:rw       # chmod 777 ./data_kasmweb/ && chown 1000:1000 ./data_kasmweb/
+    ##  - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+    #ports:
+    #  - "6901:6901/tcp"
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.kasmweb.loadbalancer.server.port=6901"
+      - "traefik.http.services.kasmweb.loadbalancer.server.scheme=https"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.kasmweb-http.rule=Host(`kasmweb.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.kasmweb-http.entrypoints=web"
+      - "traefik.http.routers.kasmweb-http.service=kasmweb"
+      # https
+      - "traefik.http.routers.kasmweb-https.tls=true"
+      - "traefik.http.routers.kasmweb-https.rule=Host(`kasmweb.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.kasmweb-https.entrypoints=websecure"
+      - "traefik.http.routers.kasmweb-https.service=kasmweb"
+      # load middlewares for routers
+      - "traefik.http.routers.kasmweb-http.middlewares=kasmweb-https@docker"
+      #- "traefik.http.routers.kasmweb-http.middlewares="
+      # http to https redirect
+      - "traefik.http.middlewares.kasmweb-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.kasmweb-https.redirectscheme.permanent=true"
+      - "traefik.http.middlewares.kasmweb-https.redirectscheme.port=443"
+
+networks:
+  default:
+    external: true
+    name: mynetwork

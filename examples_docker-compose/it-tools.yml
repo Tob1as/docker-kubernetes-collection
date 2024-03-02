@@ -1,0 +1,42 @@
+# docker-compose -f it-tools.yml up -d
+version: '2.4'
+services:
+
+  # IT-Tools - Useful tools for developer and people working in IT
+  # https://it-tools.tech/
+  # https://github.com/CorentinTh/it-tools
+  # https://hub.docker.com/r/corentinth/it-tools
+  # Supported architectures: amd64, arm64v8
+  # URL: http://localhost:8080/
+  it-tools:
+    image: corentinth/it-tools:latest # ghcr.io/corentinth/it-tools:latest
+    container_name: it-tools
+    restart: unless-stopped
+    #ports:
+    #  - "8080:80/tcp"
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.it-tools.loadbalancer.server.port=80"
+      - "traefik.http.services.it-tools.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.it-tools-http.rule=Host(`it-tools.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.it-tools-http.entrypoints=web"
+      - "traefik.http.routers.it-tools-http.service=it-tools"
+      # https
+      - "traefik.http.routers.it-tools-https.tls=true"
+      - "traefik.http.routers.it-tools-https.rule=Host(`it-tools.example.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.it-tools-https.entrypoints=websecure"
+      - "traefik.http.routers.it-tools-https.service=it-tools"
+      # load middlewares for routers
+      - "traefik.http.routers.it-tools-http.middlewares=it-tools-https@docker"
+      #- "traefik.http.routers.it-tools-http.middlewares="
+      # http to https redirect
+      - "traefik.http.middlewares.it-tools-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.it-tools-https.redirectscheme.permanent=true"
+      - "traefik.http.middlewares.it-tools-https.redirectscheme.port=443"
+
+networks:
+  default:
+    external: true
+    name: mynetwork
