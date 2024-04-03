@@ -26,5 +26,5 @@ for K8S_NAMESPACE in $(kubectl get namespaces -o=jsonpath='{.items[*].metadata.n
         --save-config \
         --dry-run=client \
         -o yaml | \
-        kubectl --namespace="${K8S_NAMESPACE}" apply -f -
+    kubectl --namespace="${K8S_NAMESPACE}" apply -f -
 done
