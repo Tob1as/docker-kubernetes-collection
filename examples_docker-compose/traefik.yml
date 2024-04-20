@@ -13,7 +13,7 @@ services:
   # https://community.traefik.io/t/enable-a-secure-dashboard-using-a-pathprefix/3763/6
   # https://github.com/traefik/traefik/issues/5853
   traefik:
-    image: traefik:v2.10
+    image: traefik:v2.11
     container_name: traefik
     restart: unless-stopped
     #network_mode: "host"
@@ -87,7 +87,7 @@ services:
       - "--experimental.plugins.blockpath.version=v0.2.1"
       # https://plugins.traefik.io/plugins/62947302108ecc83915d7781/geoblock
       #- "--experimental.plugins.geoblock.modulename=github.com/nscuro/traefik-plugin-geoblock"
-      #- "--experimental.plugins.geoblock.version=v0.13.0"
+      #- "--experimental.plugins.geoblock.version=v0.14.0"
 
       # Metrics https://doc.traefik.io/traefik/observability/metrics/prometheus/
       - "--metrics.prometheus=true"

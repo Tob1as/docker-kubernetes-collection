@@ -73,9 +73,9 @@ services:
   # https://manual.seafile.com/config/seahub_settings_py/
   # https://github.com/haiwen/seafile/issues/2118#issuecomment-523688712 (CSRF_TRUSTED_ORIGINS = ['seafile.example.com:23456'])
   # https://forum.seafile.com/t/check-status-of-seafile-server/3720/6
-  # Supported architectures: amd64
+  # Supported architectures: amd64, arm64
   seafile:
-    image: docker.seafile.top/seafileltd/seafile-pro-mc:latest # 10.x
+    image: docker.seafile.top/seafileltd/seafile-pro-mc:latest # 10.0.15  (10.0.15-arm), 11.0.6 (11.0.6-arm)
     container_name: seafile
     restart: unless-stopped
     #ports:
