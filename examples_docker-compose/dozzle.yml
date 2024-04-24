@@ -20,15 +20,15 @@ services:
     environment:
       #- "DOZZLE_ADDR=:8080"
       #- "DOZZLE_BASE=/logs"
-      - "DOZZLE_BASE=/"
+      #- "DOZZLE_BASE=/"
       #- "DOZZLE_HOSTNAME="
       #- "DOZZLE_REMOTE_HOST="
       #- "DOZZLE_ENABLE_ACTIONS=false"
       #- "DOZZLE_LEVEL=info"
       #- "DOZZLE_FILTER="
-      #- "DOZZLE_USERNAME=dozzle"
-      #- "DOZZLE_PASSWORD=passw0rd"
-      - "DOZZLE_AUTH_PROVIDER=simple"  # set to false to disable auth
+      #- "DOZZLE_USERNAME=dozzle"      # deprecated
+      #- "DOZZLE_PASSWORD=passw0rd"    # deprecated
+      - "DOZZLE_AUTH_PROVIDER=simple"  # set to none to disable auth
       #- "DOZZLE_NO_ANALYTICS=false"
     healthcheck:
       test: ["CMD", "/dozzle", "healthcheck"]
