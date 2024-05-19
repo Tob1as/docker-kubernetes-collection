@@ -261,7 +261,7 @@ data:
     mqtt.vhost            = /
     mqtt.exchange         = amq.topic
     # 24 hours by default
-    mqtt.subscription_ttl = 86400000
+    mqtt.max_session_expiry_interval_seconds = 86400
     mqtt.prefetch         = 10
 
   41-mqtt-ws.conf: |-
