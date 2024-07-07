@@ -116,12 +116,14 @@ services:
       ## (2) Traefik under main domain and subpath (need Plugin: plugin-rewritebody)  OR choose option (1)
       ## https://community.traefik.io/t/enable-a-secure-dashboard-using-a-pathprefix/3763/6
       ## https://github.com/traefik/traefik/issues/5853
-      #- "traefik.http.routers.traefik.middlewares=traefikdashboard,auth,traefik-rewrite-api"
+      ##- "traefik.http.routers.traefik.middlewares=traefikdashboard,auth,traefik-rewrite-api"
+      #- "traefik.http.routers.traefik.middlewares=traefikdashboard,auth"
       ##- "traefik.http.routers.traefik.rule=Host(`example.com`) && (PathPrefix(`/traefik`) || PathPrefix(`/api`))"
-      #- "traefik.http.routers.traefik.rule=Host(`example.com`) && PathPrefix(`/traefik`)"
+      ##- "traefik.http.routers.traefik.rule=Host(`example.com`) && PathPrefix(`/traefik`)"
+      #- "traefik.http.routers.traefik.rule=Host(`pluto.fritz.box`,`pluto`) && PathPrefix(`/traefik`) || HeadersRegexp(`Referer`, `.*/traefik/.*`)"
       #- "traefik.http.middlewares.traefikdashboard.stripprefix.prefixes=/traefik"
-      #- "traefik.http.middlewares.traefik-rewrite-api.plugin.plugin-rewritebody.rewrites[0].regex=/api"
-      #- "traefik.http.middlewares.traefik-rewrite-api.plugin.plugin-rewritebody.rewrites[0].replacement=/traefik/api"
+      ##- "traefik.http.middlewares.traefik-rewrite-api.plugin.plugin-rewritebody.rewrites[0].regex=/api"
+      ##- "traefik.http.middlewares.traefik-rewrite-api.plugin.plugin-rewritebody.rewrites[0].replacement=/traefik/api"
 
       # auth (You may need to escape any $ with another $ in password. create password: "docker run --rm tobi312/tools:htpasswd -bn admin 'passw0rd' | sed 's/\$/\$\$/g'"  OR  only for Password: "openssl passwd -apr1 'passw0rd' | sed 's/\$/\$\$/g'")
       - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$6Yq5UCPq$$ZmXnIrJwqH0qfKRurLAiR1,traefik:$$apr1$$zIohxmBm$$TVYfYKcqYXOdONsU93L8w0"
