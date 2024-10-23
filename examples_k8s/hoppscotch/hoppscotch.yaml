@@ -25,7 +25,10 @@ data:
   MAGIC_LINK_TOKEN_VALIDITY: "3"
   REFRESH_TOKEN_VALIDITY: "604800000"                                           # Default validity is 7 days (604800000 ms) in ms
   ACCESS_TOKEN_VALIDITY: "86400000"                                             # Default validity is 1 day (86400000 ms) in ms
+  ALLOW_SECURE_COOKIES: "true"
   VITE_ALLOWED_AUTH_PROVIDERS: "EMAIL"                                          # Supported: GOOGLE,GITHUB,MICROSOFT,EMAIL
+  MAILER_SMTP_ENABLE: "true"
+  MAILER_USE_CUSTOM_CONFIGS: "false"
   MAILER_ADDRESS_FROM: '"Hoppscotch" <hoppscotch@example.com>'
   RATE_LIMIT_TTL: "60"                                                          # In seconds
   RATE_LIMIT_MAX: "100"                                                         # Max requests per IP
@@ -35,7 +38,7 @@ data:
 
 ---
 
-## convert string to base64 in Linux: "echo -n 'value' | base64"
+## convert string to base64 in Linux: "echo -n 'value' | base64 -w0"
 
 apiVersion: v1
 kind: Secret
@@ -48,6 +51,7 @@ data:
   #DATABASE_URL: < see Deployment >
   JWT_SECRET: K1Z6OVlsZm1CcGtZYjR3c2tRL1BJK0lsYUM1RDVid0hDdXFzODVBWnlqST0=                      # +Vz9YlfmBpkYb4wskQ/PI+IlaC5D5bwHCuqs85AZyjI=  (Token generate with: "openssl rand -base64 32 | tr -d '\ n'")
   SESSION_SECRET: OGpJbE00bThTMVorZTI1N0lUZFB2SU56djlCNVVRR2ZZeXo3SlAyWU5EWT0=                  # 8jIlM4m8S1Z+e257ITdPvINzv9B5UQGfYyz7JP2YNDY=
+  DATA_ENCRYPTION_KEY: ZWlwaG9vTGFOZ29oaDlvYXBpZWthRmFlM2Vlem9va28=                             # eiphooLaNgohh9oapiekaFae3eezooko              (Token generate with: "pwgen 32 1")
   MAILER_SMTP_URL: c210cHM6Ly9ob3Bwc2NvdGNoQGV4YW1wbGUuY29tOnBhc3N3MHJkQG1haWwuZXhhbXBsZS5jb20= # smtps://hoppscotch@example.com:passw0rd@mail.example.com
 
 ---
@@ -68,14 +72,13 @@ spec:
     metadata:
       labels:
         app: hoppscotch
-      annotations: {}
     spec:
       #imagePullSecrets:
       #- name: regcred
       restartPolicy: Always
       containers:
       - name: hoppscotch
-        image: hoppscotch/hoppscotch:latest  # 2023.12.2
+        image: hoppscotch/hoppscotch:latest  # 2024.9.3
         imagePullPolicy: Always
         envFrom:
         - configMapRef:
@@ -167,7 +170,7 @@ spec:
           limits:
             memory: "1Gi"
             cpu: "1.0"
-        ## IMPORTANT: USE FOR FIRST RUN ! (to create database tables)
+        # IMPORTANT: USE FOR FIRST RUN ! (to create/update database tables)
         #command: [ "/bin/sh", "-c", "--" ]
         #args: [ "pnpx prisma migrate deploy" ]
         ##args: [ "while true; do sleep 60; done;" ]  # then execute in pod: "pnpx prisma migrate deploy"
