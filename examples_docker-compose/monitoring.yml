@@ -157,6 +157,11 @@ services:
       - GF_METRICS_DISABLE_TOTAL_STATS=false
       - GF_METRICS_BASIC_AUTH_USERNAME=metrics
       - GF_METRICS_BASIC_AUTH_PASSWORD=passw0rd
+      ## Grafana Image Renderer (see next service) https://grafana.com/docs/grafana/next/setup-grafana/configure-grafana/#rendering
+      #- GF_RENDERING_SERVER_URL=http://grafana-image-renderer:8081/render
+      #- GF_RENDERING_CALLBACK_URL=http://grafana:3000/grafana
+      ##- GF_RENDERING_RENDERER_TOKEN=J8yE7RxHYP4p5zCgB6d9amuQA3kFvj
+      #- GF_LOG_FILTERS=rendering=debug
     #ports:
     #  - 127.0.0.1:3000:3000/tcp
     healthcheck:
@@ -186,6 +191,29 @@ services:
       - "traefik.http.middlewares.grafana-https.redirectscheme.scheme=https"
       #- "traefik.http.middlewares.grafana-https.redirectscheme.permanent=true"
       #- "traefik.http.middlewares.grafana-https.redirectscheme.port=443"
+
+  # https://github.com/grafana/grafana-image-renderer
+  # https://grafana.com/docs/grafana/next/setup-grafana/image-rendering/
+  # Supported architectures: arm64v8, amd64
+  #grafana-image-renderer:
+  #  image: grafana/grafana-image-renderer:latest
+  #  container_name: grafana-image-renderer
+  #  restart: unless-stopped
+  #  environment:
+  #    - IGNORE_HTTPS_ERRORS=true
+  #    #- AUTH_TOKEN=J8yE7RxHYP4p5zCgB6d9amuQA3kFvj
+  #    #- ENABLE_METRICS=true
+  #    #- RENDERING_TIMING_METRICS=true
+  #    #- LOG_LEVEL=debug
+  #    #- BROWSER_TZ=Europe/Berlin
+  #  #ports:
+  #  #  - 8081/tcp
+  #  healthcheck:
+  #    test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 8081 || exit 1"]
+  #    interval: 10s
+  #    timeout: 3s
+  #    retries: 3
+  #    #start_period: 30s
 
   # https://github.com/google/cadvisor
   # Supported architectures: arm32v7, arm64v8, amd64
