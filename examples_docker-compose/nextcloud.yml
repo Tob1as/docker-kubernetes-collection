@@ -110,7 +110,7 @@ services:
     container_name: nextcloud-cron
     restart: unless-stopped
     volumes_from:
-      - nextcloud:rw
+      - nextcloud
     entrypoint: /cron.sh
     depends_on:
       nextcloud-db:
