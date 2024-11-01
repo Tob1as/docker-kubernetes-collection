@@ -53,6 +53,9 @@ services:
       #- "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       #- "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       #- "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      # https://doc.traefik.io/traefik/v2.11/routing/entrypoints/#http3
+      #- "--experimental.http3=true"
+      #- "--entryPoints.websecure.http3"
       # 
       # Teamspeak3
       #- "--entrypoints.ts-udp.address=:9987/udp"
@@ -140,6 +143,8 @@ services:
       - "80:80/tcp"
       # The HTTPS port
       - "443:443/tcp"
+      # The HTTPS port (udp for HTTP3)
+      - "443:443/udp"
       # The Web UI (enabled by --api.insecure=true)
       #- "127.0.0.1:8080:8080/tcp"
       # Metrics for Prometheus (enable by --metrics.prometheus=true)
