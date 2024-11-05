@@ -17,7 +17,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: hoppscotch-config
-  namespace: default
+  namespace: hoppscotch
   labels:
     app: hoppscotch
 data:
@@ -28,8 +28,12 @@ data:
   ALLOW_SECURE_COOKIES: "true"
   VITE_ALLOWED_AUTH_PROVIDERS: "EMAIL"                                          # Supported: GOOGLE,GITHUB,MICROSOFT,EMAIL
   MAILER_SMTP_ENABLE: "true"
-  MAILER_USE_CUSTOM_CONFIGS: "false"
+  MAILER_USE_CUSTOM_CONFIGS: "true"
   MAILER_ADDRESS_FROM: '"Hoppscotch" <hoppscotch@example.com>'
+  MAILER_SMTP_HOST: "mail.example.com"
+  MAILER_SMTP_PORT: "587"
+  MAILER_SMTP_SECURE: "true"
+  MAILER_TLS_REJECT_UNAUTHORIZED: "true"
   RATE_LIMIT_TTL: "60"                                                          # In seconds
   RATE_LIMIT_MAX: "100"                                                         # Max requests per IP
   VITE_APP_TOS_LINK: "https://docs.hoppscotch.io/support/terms"                 # Terms Of Service And Privacy Policy Links (Optional)
@@ -44,7 +48,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: hoppscotch-secret
-  namespace: default
+  namespace: hoppscotch
   labels:
     app: hoppscotch
 data:
@@ -52,7 +56,9 @@ data:
   JWT_SECRET: K1Z6OVlsZm1CcGtZYjR3c2tRL1BJK0lsYUM1RDVid0hDdXFzODVBWnlqST0=                      # +Vz9YlfmBpkYb4wskQ/PI+IlaC5D5bwHCuqs85AZyjI=  (Token generate with: "openssl rand -base64 32 | tr -d '\ n'")
   SESSION_SECRET: OGpJbE00bThTMVorZTI1N0lUZFB2SU56djlCNVVRR2ZZeXo3SlAyWU5EWT0=                  # 8jIlM4m8S1Z+e257ITdPvINzv9B5UQGfYyz7JP2YNDY=
   DATA_ENCRYPTION_KEY: ZWlwaG9vTGFOZ29oaDlvYXBpZWthRmFlM2Vlem9va28=                             # eiphooLaNgohh9oapiekaFae3eezooko              (Token generate with: "pwgen 32 1")
-  MAILER_SMTP_URL: c210cHM6Ly9ob3Bwc2NvdGNoQGV4YW1wbGUuY29tOnBhc3N3MHJkQG1haWwuZXhhbXBsZS5jb20= # smtps://hoppscotch@example.com:passw0rd@mail.example.com
+  #MAILER_SMTP_URL: c210cHM6Ly9ob3Bwc2NvdGNoQGV4YW1wbGUuY29tOnBhc3N3MHJkQG1haWwuZXhhbXBsZS5jb20= # smtps://hoppscotch@example.com:passw0rd@mail.example.com
+  MAILER_SMTP_USER: aG9wcHNjb3RjaEBleGFtcGxlLmNvbQ==                                            # hoppscotch@example.com
+  MAILER_SMTP_PASSWORD: cGFzc3cwcmQ=                                                            # passw0rd
 
 ---
 
@@ -60,7 +66,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hoppscotch
-  namespace: default
+  namespace: hoppscotch
 spec:
   replicas: 1
   strategy:
@@ -78,7 +84,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: hoppscotch
-        image: hoppscotch/hoppscotch:latest  # 2024.9.3
+        image: hoppscotch/hoppscotch:latest  # 2024.10.0
         imagePullPolicy: Always
         envFrom:
         - configMapRef:
@@ -147,19 +153,22 @@ spec:
         - containerPort: 80
           name: hoppscotch
           protocol: TCP
+        #- containerPort: 8080
+        #  name: node
+        #  protocol: TCP
         readinessProbe:
           exec:
-            command: ["/bin/sh", "-c", "curl --fail --insecure http://localhost:3170/ping"]
+            command: ["/bin/sh", "-c", "curl --fail --insecure http://localhost:8080/ping"]
           #tcpSocket:
-          #  port: 3170
+          #  port: 8080
           initialDelaySeconds: 15
           periodSeconds: 60
           timeoutSeconds: 5
         livenessProbe:
           exec:
-            command: ["/bin/sh", "-c", "curl --fail --insecure http://localhost:3170/ping"]
+            command: ["/bin/sh", "-c", "curl --fail --insecure http://localhost:8080/ping"]
           #tcpSocket:
-          #  port: 3170
+          #  port: 8080
           initialDelaySeconds: 30
           periodSeconds: 60
           timeoutSeconds: 5
@@ -181,7 +190,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: hoppscotch
-  namespace: default
+  namespace: hoppscotch
   labels:
     app: hoppscotch
 spec:
@@ -200,7 +209,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: hoppscotch
-  namespace: default
+  namespace: hoppscotch
   labels:
     app: hoppscotch
   annotations:
