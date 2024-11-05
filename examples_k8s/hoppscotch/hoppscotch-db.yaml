@@ -14,7 +14,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: hoppscotch-db-data
-  namespace: default
+  namespace: hoppscotch
   labels:
     app: hoppscotch-db
 spec:
@@ -32,7 +32,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: hoppscotch-db-config
-  namespace: default
+  namespace: hoppscotch
   labels:
     app: hoppscotch-db
 data:
@@ -47,7 +47,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: hoppscotch-db-secret
-  namespace: default
+  namespace: hoppscotch
   labels:
     app: hoppscotch-db
 data:
@@ -60,7 +60,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hoppscotch-db
-  namespace: default
+  namespace: hoppscotch
   labels:
     app: hoppscotch-db
 spec:
@@ -164,7 +164,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: hoppscotch-db
-  namespace: default
+  namespace: hoppscotch
   labels:
     app: hoppscotch-db
 spec:
