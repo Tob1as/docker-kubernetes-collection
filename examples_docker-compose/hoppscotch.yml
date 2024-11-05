@@ -7,7 +7,7 @@ services:
   # https://github.com/hoppscotch/hoppscotch + https://hub.docker.com/r/hoppscotch/hoppscotch
   # https://docs.hoppscotch.io/documentation/self-host/community-edition/install-and-build#using-the-aio-container
   hoppscotch:
-    image: hoppscotch/hoppscotch:latest  # 2023.12.2
+    image: hoppscotch/hoppscotch:latest  # 2024.10.0
     container_name: hoppscotch
     restart: unless-stopped
     env_file:
@@ -15,7 +15,7 @@ services:
     #ports:
     #  - 80/tcp
     healthcheck:
-      test: ["CMD", "curl", "--fail", "--insecure", "http://localhost:3170/ping"]
+      test: ["CMD", "curl", "--fail", "--insecure", "http://localhost:8080/ping"]
       #start_period: 30s
       interval: 10s
       timeout: 5s
