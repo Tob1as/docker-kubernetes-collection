@@ -1,0 +1,67 @@
+# docker-compose -f mssql.yml up -d
+version: '2.4'
+services:
+
+  # MS SQL - Microsoft SQL Server based on Ubuntu
+  # https://mcr.microsoft.com/en-us/artifact/mar/mssql/server/about
+  # https://github.com/Microsoft/mssql-docker 
+  # https://hub.docker.com/r/microsoft/mssql-server
+  # https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-docker-container-configure?view=sql-server-ver16&viewFallbackFrom=sql-server-ver22&pivots=cs1-bash
+  # docker exec -it mssql /opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P "YourStrong!Passw0rd" -C
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql
+    restart: unless-stopped
+    volumes:
+      - ./data_mssql:/var/opt/mssql:rw
+      # or:
+      #- ./data_mssql/data:/var/opt/mssql/data:rw
+      #- ./data_mssql/log:/var/opt/mssql/log:rw
+      #- ./data_mssql/secrets:/var/opt/mssql/secrets:rw
+    environment:
+      TZ: Europe/Berlin
+      ACCEPT_EULA: Y
+      MSSQL_SA_PASSWORD: YourStrong!Passw0rd # for user "SA"
+      MSSQL_PID: Developer
+    ports:
+      - 127.0.0.1:1433:1433/tcp
+    healthcheck:
+      test: ["CMD", "sh", "-c", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U SA -P $$MSSQL_SA_PASSWORD -C -Q 'SELECT 1'"]
+      #start_period: 15s
+      interval: 60s
+      timeout: 3s
+      retries: 3
+
+  # https://github.com/awaragi/prometheus-mssql-exporter
+  # https://hub.docker.com/r/awaragi/prometheus-mssql-exporter
+  # https://github.com/domstolene/prometheus-mssql-exporter
+  # Supported architectures: amd64
+  # Warning: The image is very old and is no longer maintained.
+  #mssql-exporter:
+  #  image: awaragi/prometheus-mssql-exporter:latest
+  #  #image: ghcr.io/domstolene/prometheus-mssql-exporter:latest
+  #  container_name: mssql-exporter
+  #  restart: unless-stopped
+  #  #ports:
+  #  #  - 127.0.0.1:4000:4000/tcp
+  #  environment:
+  #    SERVER: mssql
+  #    PORT: 1433
+  #    USERNAME: SA
+  #    PASSWORD: YourStrong!Passw0rd
+  #    ENCRYPT: 'true'
+  #    TRUST_SERVER_CERTIFICATE: 'true'
+  #    DEBUG: app,metrics,db,queries
+  #  depends_on:
+  #    - mssql
+  #  healthcheck:
+  #    test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 4000 || exit 1"]
+  #    #start_period: 5s
+  #    interval: 60s
+  #    timeout: 3s
+  #    retries: 3
+
+networks:
+  default:
+    external: true
+    name: mynetwork
