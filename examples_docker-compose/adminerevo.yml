@@ -1,0 +1,60 @@
+# docker-compose -f adminerevo.yml up -d
+version: '2.4'
+services:
+  
+  # AdminerEvo - (fork of Adminer) Database management in a single PHP file
+  # https://docs.adminerevo.org/
+  # https://github.com/adminerevo/adminerevo
+  # https://github.com/shyim/adminerevo-docker
+  # Supported architectures: amd64, arm64
+  # URL: http://localhost:8080/
+  adminerevo:
+    #image: ghcr.io/shyim/adminerevo:latest
+    #image: docker.io/shyim/adminerevo:latest
+    image: docker.io/tobi312/tools:adminerevo
+    container_name: adminerevo
+    restart: unless-stopped
+    environment:
+      #- ADMINER_PLUGINS=""
+      - ADMINER_DESIGN=nette
+      #- ADMINER_DEFAULT_DRIVER=mysql
+      #- ADMINER_DEFAULT_SERVER=db  # default: db
+      #- ADMINER_DEFAULT_SERVER=
+      #- ADMINER_DEFAULT_USER=
+      #- ADMINER_DEFAULT_PASSWORD=
+      #- ADMINER_DEFAULT_DB=
+    ports:
+      - 8080:8080/tcp
+    #healthcheck:
+    #  test: ["CMD-SHELL", "curl -f http://localhost:8080"]
+    #  #start_period: 30s
+    #  interval: 60s
+    #  timeout: 3s
+    #  retries: 3
+    labels:
+      # Explicitly tell Traefik to expose this container
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      # Tell Traefik to use the http port 8080 to connect to adminerevo container
+      - "traefik.http.services.adminerevo.loadbalancer.server.port=8080"
+      - "traefik.http.services.adminerevo.loadbalancer.server.scheme=http"
+      # http
+      - "traefik.http.routers.adminerevo-http.rule=Host(`adminerevo.example.com`)"
+      - "traefik.http.routers.adminerevo-http.entrypoints=web"
+      - "traefik.http.routers.adminerevo-http.service=adminerevo"
+      # https
+      - "traefik.http.routers.adminerevo-https.tls=true"
+      - "traefik.http.routers.adminerevo-https.rule=Host(`adminerevo.example.com`)"
+      - "traefik.http.routers.adminerevo-https.entrypoints=websecure"
+      - "traefik.http.routers.adminerevo-https.service=adminerevo"
+      # load middlewares for routes
+      - "traefik.http.routers.adminerevo-http.middlewares=adminerevo-https"
+      # http to https redirect      
+      - "traefik.http.middlewares.adminerevo-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.adminerevo-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.adminerevo-https.redirectscheme.port=443"
+
+networks:
+  default:
+    external: true
+    name: mynetwork
