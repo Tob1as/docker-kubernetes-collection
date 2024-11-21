@@ -6,8 +6,9 @@ services:
   # https://hoppscotch.io/
   # https://github.com/hoppscotch/hoppscotch + https://hub.docker.com/r/hoppscotch/hoppscotch
   # https://docs.hoppscotch.io/documentation/self-host/community-edition/install-and-build#using-the-aio-container
+  # Supported architectures: amd64, arm64
   hoppscotch:
-    image: hoppscotch/hoppscotch:latest  # 2024.10.0
+    image: hoppscotch/hoppscotch:latest  # 2024.10.2
     container_name: hoppscotch
     restart: unless-stopped
     env_file:
@@ -22,7 +23,7 @@ services:
       retries: 3
     labels:
       - "traefik.enable=true"
-      #- "traefik.docker.network=traefik"
+      - "traefik.docker.network=traefik"
       - "traefik.http.services.hoppscotch.loadbalancer.server.port=80"
       # http
       - "traefik.http.routers.hoppscotch-http.rule=Host(`hoppscotch.example.com`) && PathPrefix(`/`)"
@@ -75,6 +76,46 @@ services:
       retries: 5
     networks:
       - hoppscotch-net
+      
+  # proxyscotch - A simple proxy server created for Hoppscotch.
+  # https://github.com/hoppscotch/proxyscotch
+  # https://github.com/Tob1as/docker-tools
+  proxyscotch:
+    image: tobi312/tools:proxyscotch  # v0.1.1
+    container_name: proxyscotch
+    restart: unless-stopped
+    #ports:
+    #  - 9159/tcp
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.services.proxyscotch.loadbalancer.server.port=9159"
+      # http
+      - "traefik.http.routers.proxyscotch-http.rule=Host(`hoppscotch.example.com`) && Path(`/proxy`)"
+      - "traefik.http.routers.proxyscotch-http.entrypoints=web"
+      - "traefik.http.routers.proxyscotch-http.service=proxyscotch"
+      # https
+      - "traefik.http.routers.proxyscotch-https.tls=true"
+      - "traefik.http.routers.proxyscotch-https.rule=Host(`hoppscotch.example.com`) && Path(`/proxy`)"
+      - "traefik.http.routers.proxyscotch-https.entrypoints=websecure"
+      - "traefik.http.routers.proxyscotch-https.service=proxyscotch"
+      # load middlewares for routes
+      - "traefik.http.routers.proxyscotch-http.middlewares=proxyscotch-https,proxyscotch-headers"
+      - "traefik.http.routers.proxyscotch-https.middlewares=proxyscotch-headers"
+      # http to https redirect      
+      - "traefik.http.middlewares.proxyscotch-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.proxyscotch-https.redirectscheme.permanent=true"
+      - "traefik.http.middlewares.proxyscotch-https.redirectscheme.port=443"
+      
+      # CORS https://doc.traefik.io/traefik/middlewares/http/headers/#cors-headers
+      - "traefik.http.middlewares.proxyscotch-headers.headers.accesscontrolallowmethods=GET,OPTIONS,PUT"
+      - "traefik.http.middlewares.proxyscotch-headers.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.proxyscotch-headers.headers.accesscontrolalloworiginlist=https://hoppscotch.example.com"
+      - "traefik.http.middlewares.proxyscotch-headers.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.proxyscotch-headers.headers.addvaryheader=true"
+    networks:
+      #- proxyscotch-net
+      - traefik
 
 networks:
   hoppscotch-net:

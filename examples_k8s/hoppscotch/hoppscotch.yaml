@@ -84,7 +84,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: hoppscotch
-        image: hoppscotch/hoppscotch:latest  # 2024.10.0
+        image: hoppscotch/hoppscotch:latest  # 2024.10.2
         imagePullPolicy: Always
         envFrom:
         - configMapRef:
