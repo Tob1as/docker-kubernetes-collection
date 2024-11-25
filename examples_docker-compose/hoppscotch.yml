@@ -53,6 +53,9 @@ services:
       - traefik
     depends_on:
       - hoppscotch-db
+    # IMPORTANT: USE FOR FIRST RUN ! (to create/update database tables)
+    #entrypoint: [ "/bin/sh", "-c", "--" ]
+    #command: [ "pnpx prisma migrate deploy" ]
   
   # https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/postgres.yml
   hoppscotch-db:
@@ -81,9 +84,14 @@ services:
   # https://github.com/hoppscotch/proxyscotch
   # https://github.com/Tob1as/docker-tools
   proxyscotch:
-    image: tobi312/tools:proxyscotch  # v0.1.1
+    image: tobi312/tools:proxyscotch  # v0.1.1  (or: hoppscotch/proxyscotch:latest)
     container_name: proxyscotch
     restart: unless-stopped
+    #command:
+    #  - "-host"
+    #  - "0.0.0.0:9159"
+    #  - "-token"
+    #  - "my-token-passw0rd"
     #ports:
     #  - 9159/tcp
     labels:
@@ -91,12 +99,12 @@ services:
       - "traefik.docker.network=traefik"
       - "traefik.http.services.proxyscotch.loadbalancer.server.port=9159"
       # http
-      - "traefik.http.routers.proxyscotch-http.rule=Host(`hoppscotch.example.com`) && Path(`/proxy`)"
+      - "traefik.http.routers.proxyscotch-http.rule=Host(`hoppscotch.example.com`) && PathPrefix(`/proxy`)"
       - "traefik.http.routers.proxyscotch-http.entrypoints=web"
       - "traefik.http.routers.proxyscotch-http.service=proxyscotch"
       # https
       - "traefik.http.routers.proxyscotch-https.tls=true"
-      - "traefik.http.routers.proxyscotch-https.rule=Host(`hoppscotch.example.com`) && Path(`/proxy`)"
+      - "traefik.http.routers.proxyscotch-https.rule=Host(`hoppscotch.example.com`) && PathPrefix(`/proxy`)"
       - "traefik.http.routers.proxyscotch-https.entrypoints=websecure"
       - "traefik.http.routers.proxyscotch-https.service=proxyscotch"
       # load middlewares for routes

@@ -94,6 +94,8 @@ spec:
         env:
         - name: ENABLE_SUBPATH_BASED_ACCESS
           value: "true"   #  Do NOT change !
+        - name: HOPP_AIO_ALTERNATE_PORT
+          value: "80" 
         ## Database
         - name: POSTGRES_USER
           valueFrom:
