@@ -205,10 +205,10 @@ services:
     image: tobi312/tools:vwmetrics # ghcr.io/tricked-dev/vwmetrics:latest
     container_name: vaultwarden-exporter
     restart: unless-stopped
-    #volumes:
-    #  - ./data_vaultwarden:/data:ro
-    volumes_from:
-      - vaultwarden:ro
+    volumes:
+      - ./data_vaultwarden:/data:ro
+    #volumes_from:
+    #  - vaultwarden
     #ports:
     #  - 127.0.0.1:3040:3040/tcp
     #environment:
