@@ -218,7 +218,7 @@ services:
   # https://github.com/google/cadvisor
   # Supported architectures: arm32v7, arm64v8, amd64
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.47.2  # latest = v0.38.6
+    image: gcr.io/cadvisor/cadvisor:v0.49.2  # latest = v0.49.1
     container_name: cadvisor
     restart: unless-stopped
     volumes:

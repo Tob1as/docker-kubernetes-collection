@@ -1,7 +1,7 @@
 # docker-compose -f seafile-pro.yml up -d
 
-# fork of https://manual.seafile.com/docker/pro-edition/deploy_seafile_pro_with_docker/ ...
-# ... and change mount folder and add healtcheck!
+# fork of https://manual.seafile.com/latest/docker/pro-edition/deploy_seafile_pro_with_docker/ ...
+# ... and change mount folder, some image updates and add healtcheck!
 
 version: '2.4'
 services:
@@ -28,7 +28,7 @@ services:
 
   # https://hub.docker.com/_/memcached
   memcached:
-    image: memcached:1.6.18
+    image: memcached:1.6-alpine # old: 1.6.18
     container_name: seafile-memcached
     restart: unless-stopped
     entrypoint: memcached -m 256
@@ -43,13 +43,13 @@ services:
 
   # https://hub.docker.com/_/elasticsearch
   elasticsearch:
-    image: elasticsearch:8.6.2
+    image: elasticsearch:8.17.0 # old: 8.13.0
     container_name: seafile-elasticsearch
     restart: unless-stopped
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "ES_JAVA_OPTS=-Xms1g -Xmx2g"
     ulimits:
       memlock:
         soft: -1
@@ -75,7 +75,7 @@ services:
   # https://forum.seafile.com/t/check-status-of-seafile-server/3720/6
   # Supported architectures: amd64, arm64
   seafile:
-    image: docker.seafile.top/seafileltd/seafile-pro-mc:latest # 10.0.15  (10.0.15-arm), 11.0.6 (11.0.6-arm)
+    image: docker.seafile.top/seafileltd/seafile-pro-mc:11.0-latest
     container_name: seafile
     restart: unless-stopped
     #ports:
@@ -91,7 +91,9 @@ services:
       - SEAFILE_ADMIN_PASSWORD=passw0rd             # Specifies Seafile admin password, default is 'asecret'
       - SEAFILE_SERVER_LETSENCRYPT=false            # Whether to use https or not
       - SEAFILE_SERVER_HOSTNAME=seafile.example.com # Specifies your host name if https is enabled
+      #- FORCE_HTTPS_IN_CONF=true
       #- NON_ROOT=true
+      #- DEBUG=True
     depends_on:
       - db
       - memcached
