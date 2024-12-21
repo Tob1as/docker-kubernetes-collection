@@ -9,7 +9,7 @@ services:
   # Supported architectures: arm32v6, arm32v7, arm64v8, amd64
   # URL: http://localhost:8080/
   vaultwarden:
-    image: vaultwarden/server:latest  # ghcr.io/dani-garcia/vaultwarden:latest
+    image: vaultwarden/server:latest  # ghcr.io/dani-garcia/vaultwarden:latest  # 1.32.7
     container_name: vaultwarden
     restart: unless-stopped
     volumes:
@@ -202,7 +202,7 @@ services:
 
   # https://github.com/Tricked-dev/vwmetrics
   vaultwarden-exporter:
-    image: tobi312/tools:vwmetrics # ghcr.io/tricked-dev/vwmetrics:latest
+    image: ghcr.io/tricked-dev/vwmetrics:latest # or: tobi312/tools:vwmetrics
     container_name: vaultwarden-exporter
     restart: unless-stopped
     volumes:
@@ -217,7 +217,6 @@ services:
     #  - 'HOST=127.0.0.1'
     #  - 'UPDATE_SECONDS=60'      
     command:
-      #- '/usr/local/bin/vwmetrics'                           # need for images from tricked-dev
       #- '--help'
       - '--database-url=sqlite:///data/db.sqlite3?mode=ro'
       #- '--port=3040'
