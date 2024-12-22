@@ -37,15 +37,9 @@ services:
 #  with: https://github.com/anope/anope-docker for IRC Services
 
 #  # https://github.com/dgl/ircd_exporter
-#  # Supported architectures: amd64
+#  # Supported architectures: amd64, arm64, arm32v7
 #  ircd-exporter:
-#    image: tobi312/tools:ircd-exporter
-#    build:
-#      context: https://raw.githubusercontent.com/Tob1as/docker-tools/main/ircd-exporter.Dockerfile
-#      dockerfile: ircd-exporter.Dockerfile
-#      #args:
-#      #  GOLANG_VERSION: 1.21
-#      #  BUILD_DATE: 2023-10-01
+#    image: ghcr.io/dgl/ircd_exporter:latest
 #    container_name: ircd-exporter
 #    restart: unless-stopped
 #    #ports:
