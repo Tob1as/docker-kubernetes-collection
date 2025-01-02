@@ -100,7 +100,7 @@ metadata:
   annotations:
     #kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    #nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: nginx
   tls:
@@ -111,8 +111,8 @@ spec:
   - host: hoppscotch.example.com
     http:
       paths:
-      - path: /whoami
-        pathType: ImplementationSpecific
+      - path: /whoami(/|$)(.*)
+        pathType: ImplementationSpecific  # ImplementationSpecific or Prefix
         backend:
           service:
             name:  whoami

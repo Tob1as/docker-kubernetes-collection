@@ -94,7 +94,7 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "120s"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "120s"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "120s"
-    #nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: nginx
   tls:
@@ -105,7 +105,7 @@ spec:
   - host: hoppscotch.example.com
     http:
       paths:
-      - path: /proxy
+      - path: /proxy(/|$)(.*)
         pathType: ImplementationSpecific  # ImplementationSpecific or Prefix
         backend:
           service:
