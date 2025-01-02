@@ -1,0 +1,121 @@
+## WhoAmI - Tiny server that prints os information and HTTP request to output 
+## https://github.com/traefik/whoami
+## https://hub.docker.com/r/traefik/whoami
+
+## used for own https://echo.hoppscotch.io/ alternative ;-)
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whoami
+  namespace: hoppscotch
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: whoami
+  template:
+    metadata:
+      labels:
+        app: whoami
+    spec:
+      #imagePullSecrets:
+      #  - name: regcred
+      restartPolicy: Always
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 100
+        fsGroup: 100
+      containers:
+      - name: whoami
+        image: traefik/whoami:latest
+        imagePullPolicy: Always
+        env:
+        - name: WHOAMI_PORT_NUMBER
+          value: "8080"       # default: 80
+        - name: WHOAMI_NAME
+          value: "WhoAmI"
+        ports:
+        - containerPort: 8080
+          name: whoami
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: whoami
+          initialDelaySeconds: 15
+          periodSeconds: 60
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: whoami
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          timeoutSeconds: 5
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "0.1"
+          limits:
+            memory: "128Mi"
+            cpu: "0.1"
+        securityContext:
+          allowPrivilegeEscalation: false
+        ##args: [ "--verbose", "--port", "8080", "--name", "WhoAmI", "--cacert", "/etc/ssl/certs/ca-certificates.crt", "--cert", "", "--key", "" ]
+        args: [ "--verbose" ]
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: whoami
+  namespace: hoppscotch
+  labels:
+    app: whoami
+spec:
+  type: ClusterIP
+  ports:
+  - name: "whoami"
+    protocol: TCP
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: whoami
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: whoami
+  namespace: hoppscotch
+  labels:
+    app: whoami
+  annotations:
+    #kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    #nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - hoppscotch.example.com
+    secretName: ingress-tls-secret
+  rules:
+  - host: hoppscotch.example.com
+    http:
+      paths:
+      - path: /whoami
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name:  whoami
+            port:
+              #name: whoami
+              number: 8080

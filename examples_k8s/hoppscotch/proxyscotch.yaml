@@ -34,7 +34,7 @@ spec:
       containers:
       - name: proxyscotch
         image: tobi312/tools:proxyscotch  # v0.1.1  (or: hoppscotch/proxyscotch:latest)
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 9159
           name: proxyscotch
@@ -91,6 +91,10 @@ metadata:
   annotations:
     #kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "120s"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120s"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120s"
+    #nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: nginx
   tls:
