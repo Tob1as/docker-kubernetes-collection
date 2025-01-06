@@ -184,7 +184,8 @@ spec:
         # IMPORTANT: USE FOR FIRST RUN ! (to create/update database tables)
         #command: [ "/bin/sh", "-c", "--" ]
         #args: [ "pnpx prisma migrate deploy" ]
-        ##args: [ "while true; do sleep 60; done;" ]  # then execute in pod: "pnpx prisma migrate deploy"
+        #args: [ "pnpm prisma migrate deploy" ] # https://github.com/hoppscotch/hoppscotch/issues/4476
+        ##args: [ "while true; do sleep 60; done;" ]  # then execute in pod: "pnpx prisma migrate deploy" or "pnpm prisma migrate deploy"
 
 ---
 
