@@ -123,7 +123,7 @@ services:
       #- "traefik.http.routers.traefik.middlewares=traefikdashboard,auth"
       ##- "traefik.http.routers.traefik.rule=Host(`example.com`) && (PathPrefix(`/traefik`) || PathPrefix(`/api`))"
       ##- "traefik.http.routers.traefik.rule=Host(`example.com`) && PathPrefix(`/traefik`)"
-      #- "traefik.http.routers.traefik.rule=Host(`pluto.fritz.box`,`pluto`) && PathPrefix(`/traefik`) || HeadersRegexp(`Referer`, `.*/traefik/.*`)"
+      #- "traefik.http.routers.traefik.rule=Host(`example.com`) && PathPrefix(`/traefik`) || HeadersRegexp(`Referer`, `.*/traefik/.*`)"
       #- "traefik.http.middlewares.traefikdashboard.stripprefix.prefixes=/traefik"
       ##- "traefik.http.middlewares.traefik-rewrite-api.plugin.plugin-rewritebody.rewrites[0].regex=/api"
       ##- "traefik.http.middlewares.traefik-rewrite-api.plugin.plugin-rewritebody.rewrites[0].replacement=/traefik/api"
