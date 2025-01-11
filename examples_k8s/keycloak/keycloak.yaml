@@ -5,16 +5,20 @@
 ## |_|\_\___|\__, |\___|_|\___/ \__,_|_|\_\
 ##           |___/
 
-## Keycloak - identity and access management solution
+## Keycloak - Open Source Identity and Access Management
 ## https://www.keycloak.org/
 ## https://github.com/keycloak/keycloak
-## https://hub.docker.com/r/jboss/keycloak + https://github.com/keycloak/keycloak/tree/main/quarkus/container
+## https://hub.docker.com/r/keycloak/keycloak
+## https://quay.io/repository/keycloak/keycloak
 ## Docs:
-## * https://www.keycloak.org/guides + https://www.keycloak.org/documentation
+## * https://www.keycloak.org/getting-started/getting-started-docker
 ## * Container: https://www.keycloak.org/server/containers
 ## * All configuration: https://www.keycloak.org/server/all-config
 ## * Features: https://www.keycloak.org/server/features
-## Requirements: setup database (mariadb or other database) before start keycloak!
+## * healthcheck: https://www.keycloak.org/server/health
+## Supported architectures: amd64, arm64
+## URL: http://localhost:8080/auth
+## Requirements: setup database (mariadb, postgres or other database) before start keycloak!
 
 ---
 
@@ -22,22 +26,24 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: keycloak-env-config
-  namespace: default
+  namespace: keycloak
   labels:
     app: keycloak
 data:
   #TZ: Europe/Berlin
-  # Database OR import in deployment from Database secret
-  KC_DB: "mariadb"                                 # or postgres or other db ...
-  KC_DB_URL: "jdbc:mariadb://mariadb/keycloak" # jdbc:postgresql://postgres/keycloak
+  # Database
+  KC_DB: "mariadb"                                 # mariadb, postgres or other db ...
+  KC_DB_URL_HOST: "keycloak-db"
+  #KC_DB_URL_PORT: 3306
   # Feature
-  #KC_FEATURES: ""
+  #KC_FEATURES: "hostname:v2,docker:v1"
   #KC_FEATURES_DISABLED: ""
   # Hostname
-  #KC_HOSTNAME: "example.com"  # or set KC_HOSTNAME_URL
-  KC_HOSTNAME_URL: "https://example.com/auth"
+  #KC_HOSTNAME: "auth.example.com" # Host or full url
+  KC_HOSTNAME_STRICT: "false"
   # Proxy
-  KC_PROXY: "edge"
+  #KC_PROXY_PROTOCOL_ENABLED: "true"
+  KC_PROXY_HEADERS: xforwarded
   # HTTP/TLS
   KC_HTTP_RELATIVE_PATH: "/auth"  # default: "/"
   KC_HTTP_ENABLED: "true"         # default: false, but we use this for Proxy
@@ -50,13 +56,16 @@ data:
   #KC_HTTPS_PROTOCOLS: "TLSv1.3,TLSv1.2"
   #KC_HTTPS_TRUST_STORE_FILE: "/ssl/cacerts.jks"
   #KC_HTTPS_TRUST_STORE_TYPE: "jks"
+  # Truststore (CA files)
+  #KC_TRUSTSTORE_PATHS: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+  #KC_TLS_HOSTNAME_VERIFIER: DEFAULT
   # Healt & Metrics
-  KC_HEALTH_ENABLED: "true"   # /auth/health
-  KC_METRICS_ENABLED: "true"  # /auth/metrics
+  KC_HEALTH_ENABLED: "true"   # :9000/auth/health
+  KC_METRICS_ENABLED: "true"  # :9000/auth/metrics
   # Logging
   KC_LOG_LEVEL: "info"
   # JAVA_OPTS
-  #JAVA_OPTS_APPEND: "-Xms64m -Xmx512m -Djava.******"
+  #JAVA_OPTS_APPEND: ""
 
 ---
 
@@ -66,19 +75,16 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: keycloak-env-secret
-  namespace: default
+  namespace: keycloak
   labels:
     app: keycloak
-data:
+stringData:
   # Admin User
-  KEYCLOAK_ADMIN: YWRtaW4=                     # admin
-  KEYCLOAK_ADMIN_PASSWORD: cGFzc3cwcmQ=        # passw0rd
-  # Database (OR import in deployment from Database secret)
-  KC_DB_USERNAME: a2V5Y2xvYWs=                 # keycloak
-  KC_DB_PASSWORD: cGFzc3cwcmQ=                 # passw0rd
+  KC_BOOTSTRAP_ADMIN_USERNAME: "admin"
+  KC_BOOTSTRAP_ADMIN_PASSWORD: "passw0rd"
   # HTTP/TLS
-  #KC_HTTPS_KEY_STORE_PASSWORD: cGFzc3cwcmQ=   # passw0rd
-  #KC_HTTPS_TRUST_STORE_PASSWORD: Y2hhbmdlaXQ= # changeit
+  #KC_HTTPS_KEY_STORE_PASSWORD: "changeit"
+  #KC_HTTPS_TRUST_STORE_PASSWORD: "changeit"
 
 ---
 
@@ -86,7 +92,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: keycloak
-  namespace: default
+  namespace: keycloak
   labels:
     app: keycloak
 spec:
@@ -108,8 +114,8 @@ spec:
       restartPolicy: Always
       containers:
       - name: keycloak
-        image: quay.io/keycloak/keycloak:22.0
-        #image: keycloak/keycloak:22.0
+        image: quay.io/keycloak/keycloak:26.0
+        #image: docker.io/keycloak/keycloak:26.0
         imagePullPolicy: Always
         envFrom:
         - configMapRef:
@@ -117,24 +123,22 @@ spec:
         - secretRef:
             name: keycloak-env-secret
         ## Beginning: import from Database secret ##
-        #env:
-        #- name: KC_DB_USERNAME
-        #  valueFrom:
-        #    secretKeyRef:
-        #      name: mariadb-env-secret
-        #      key: MARIADB_USER
-        #- name: KC_DB_PASSWORD
-        #  valueFrom:
-        #    secretKeyRef:
-        #      name: mariadb-env-secret
-        #      key: MARIADB_PASSWORD
-        #- name: DATABASE_NAME
-        #  valueFrom:
-        #    configMapKeyRef:
-        #      name: mariadb-env-config
-        #      key: MARIADB_DATABASE
-        #- name: KC_DB_URL
-        #  value: "jdbc:mariadb://mariadb/$(DATABASE_NAME)"
+        env:
+        - name: KC_DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-db-env-secret
+              key: MARIADB_USER
+        - name: KC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-db-env-secret
+              key: MARIADB_PASSWORD
+        - name: KC_DB_URL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: keycloak-db-env-config
+              key: MARIADB_DATABASE
         ## END: import from Database secret ##
         args: ["start"]
         ports:
@@ -144,32 +148,31 @@ spec:
         - containerPort: 8443
           name: https
           protocol: TCP
+        - containerPort: 9000
+          name: management
+          protocol: TCP
         readinessProbe:
           httpGet:
             path: /auth/health/ready
-            port: 8080
+            port: 9000
             scheme: HTTP
           initialDelaySeconds: 15
-          periodSeconds: 120
+          periodSeconds: 60
           timeoutSeconds: 3
-          #failureThreshold: 4
-          #successThreshold: 1
         livenessProbe:
           httpGet:
             path: /auth/health/live
-            port: 8080
+            port: 9000
             scheme: HTTP
           initialDelaySeconds: 30
-          periodSeconds: 120
+          periodSeconds: 60
           timeoutSeconds: 3
-          #failureThreshold: 4
-          #successThreshold: 1
         resources:
           requests:
-            memory: "64Mi"
-            cpu: "0.1"
-          limits:
             memory: "512Mi"
+            cpu: "0.5"
+          limits:
+            memory: "1Gi"
             cpu: "1.0"
         volumeMounts:
         - name: cacerts-jks
@@ -203,7 +206,7 @@ spec:
 #kind: Secret
 #metadata:
 #  name: keycloak-ssl-secret
-#  namespace: default
+#  namespace: keycloak
 #  labels:
 #    app: keycloak
 #type: Opaque
@@ -217,11 +220,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: keycloak
-  namespace: default
+  namespace: keycloak
   labels:
     app: keycloak
 spec:
-  type: ClusterIP    # default: "ClusterIP" , set to "NodePort" for access over external-ip (not recommended)
+  type: ClusterIP
   ports:
     - name: "http"
       protocol: TCP
@@ -231,6 +234,10 @@ spec:
       protocol: TCP
       port: 8443
       targetPort: 8443
+    - name: "managment"
+      protocol: TCP
+      port: 9000
+      targetPort: 9000
   selector:
     app: keycloak
 
@@ -240,7 +247,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: keycloak
-  namespace: default
+  namespace: keycloak
   labels:
     app: keycloak
   annotations:
@@ -252,64 +259,16 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-buffering: "on"
     nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
 spec:
-  ingressClassName: nginx
+  #ingressClassName: nginx
   tls:
   - hosts:
-    - example.com
+    - auth.example.com
     secretName: ingress-tls-secret
   rules:
-  - host: example.com
+  - host: auth.example.com
     http:
       paths:
-      - path: /auth               # https://example.com/auth/
-        pathType: Prefix
-        backend:
-          service:
-            name: keycloak
-            port:
-              #name: http
-              number: 8080
-       
----
-
-# secure metric url
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: keycloak-metrics
-  namespace: default
-  labels:
-    app: keycloak
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    #nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    #nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    #nginx.ingress.kubernetes.io/proxy-buffer-size: 16k
-    #nginx.ingress.kubernetes.io/proxy-buffering: "on"
-    #nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
-    nginx.ingress.kubernetes.io/auth-type: basic
-    nginx.ingress.kubernetes.io/auth-secret: basic-auth
-    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - Keycloak'
-spec:
-  ingressClassName: nginx
-  tls:
-  - hosts:
-    - example.com
-    secretName: ingress-tls-secret
-  rules:
-  - host: example.com
-    http:
-      paths:
-      - path: /auth/metrics
-        pathType: Exact
-        backend:
-          service:
-            name: keycloak
-            port:
-              #name: http
-              number: 8080
-      - path: /auth/health
+      - path: /auth               # https://auth.example.com/auth/
         pathType: Prefix
         backend:
           service:
@@ -326,15 +285,15 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: keycloak
-  namespace: default
+  namespace: keycloak
   labels:
     app: keycloak
 spec:
   endpoints:
   - path: /auth/metrics
-    scheme: HTTP
-    port: http # 8080
-    targetPort: 8080
+    scheme: http
+    port: managment # 9000
+    targetPort: 9000
   selector:
     matchLabels:
       app: keycloak  # service
@@ -345,7 +304,7 @@ spec:
 #kind: PrometheusRule
 #metadata:
 #  name: keycloak
-#  namespace: default
+#  namespace: keycloak
 #  labels:
 #    app: keycloak
 #spec:
