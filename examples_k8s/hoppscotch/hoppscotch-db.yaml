@@ -180,3 +180,41 @@ spec:
     targetPort: 9187
   selector:
     app: hoppscotch-db
+
+---
+
+## After this line ONLY for Monitoring !
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: hoppscotch-db
+  namespace: hoppscotch
+  labels:
+    app: hoppscotch-db
+spec:
+  endpoints:
+  - path: /metrics
+    scheme: http
+    port: exporter # 9187
+    targetPort: 9187
+  selector:
+    matchLabels:
+      app: hoppscotch-db  # service
+
+#--- 
+#
+### Examples: https://samber.github.io/awesome-prometheus-alerts/rules#postgresql
+#
+#apiVersion: monitoring.coreos.com/v1
+#kind: PrometheusRule
+#metadata:
+#  name: postgres
+#  namespace: default
+#  labels:
+#    app: postgres
+#spec:
+#  groups:
+#    - name: postgres.rules
+#      rules:
+      
