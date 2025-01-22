@@ -1,4 +1,4 @@
-# docker-compose -f pgadmin.yml up -d
+# docker-compose -f pgadmin.yml -p pgadmin up -d
 version: '2.4'
 services:
    

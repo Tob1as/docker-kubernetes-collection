@@ -1,4 +1,4 @@
-# docker-compose -f mqtt-explorer.yml up -d
+# docker-compose -f mqtt-explorer.yml -p mqtt-explorer up -d
 version: '2.4'
 services:
 

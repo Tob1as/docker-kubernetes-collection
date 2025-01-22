@@ -1,4 +1,4 @@
-# docker-compose -f web-ca.yml up -d
+# docker-compose -f web-ca.yml -p web-ca up -d
 version: '2.4'
 services:
 

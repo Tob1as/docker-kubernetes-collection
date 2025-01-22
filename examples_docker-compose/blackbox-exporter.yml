@@ -1,4 +1,4 @@
-# docker-compose -f blackbox-exporter.yml up -d
+# docker-compose -f blackbox-exporter.yml -p blackbox-exporter up -d
 version: '2.4'
 services:
 

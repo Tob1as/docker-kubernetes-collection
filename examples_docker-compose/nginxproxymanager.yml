@@ -1,4 +1,4 @@
-# docker-compose -f nginxproxymanager.yml up -d
+# docker-compose -f nginxproxymanager.yml -p nginxproxymanager up -d
 version: '2.4'
 services:
 

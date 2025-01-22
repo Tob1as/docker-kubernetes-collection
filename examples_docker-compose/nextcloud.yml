@@ -1,4 +1,4 @@
-# docker-compose -f nextcloud.yml up -d
+# docker-compose -f nextcloud.yml -p nextcloud up -d
 version: '2.4'
 services:
 

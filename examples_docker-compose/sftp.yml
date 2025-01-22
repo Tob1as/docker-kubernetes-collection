@@ -1,4 +1,4 @@
-# docker-compose -f sftp.yml up -d
+# docker-compose -f sftp.yml -p sftp up -d
 version: '2.4'
 services:
 

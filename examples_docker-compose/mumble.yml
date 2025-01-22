@@ -1,4 +1,4 @@
-# docker-compose -f mumble.yml up -d
+# docker-compose -f mumble.yml -p mumble up -d
 version: '2.4'
 services:
 

@@ -1,4 +1,4 @@
-# docker-compose -f rabbitmq.yml up -d
+# docker-compose -f rabbitmq.yml -p rabbitmq up -d
 version: '2.4'
 services:
   

@@ -1,4 +1,4 @@
-# docker-compose -f samba.yml up -d
+# docker-compose -f samba.yml -p samba up -d
 version: '2.4'
 services:
 

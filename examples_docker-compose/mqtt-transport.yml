@@ -1,4 +1,4 @@
-# docker-compose -f mqtt-transport.yml up -d
+# docker-compose -f mqtt-transport.yml -p mqtt-transport up -d
 version: '2.4'
 services:
   

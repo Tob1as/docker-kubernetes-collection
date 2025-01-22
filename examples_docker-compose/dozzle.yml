@@ -1,4 +1,4 @@
-# docker-compose -f dozzle.yml up -d
+# docker-compose -f dozzle.yml -p dozzle up -d
 version: '2.4'
 services:
 

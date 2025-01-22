@@ -1,4 +1,4 @@
-# docker-compose -f redis.yml up -d
+# docker-compose -f redis.yml -p redis up -d
 version: '2.4'
 services:
   

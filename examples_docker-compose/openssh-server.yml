@@ -1,4 +1,4 @@
-# docker-compose -f openssh-server.yml up -d
+# docker-compose -f openssh-server.yml -p openssh-server up -d
 version: '2.4'
 services:
 

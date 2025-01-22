@@ -1,4 +1,4 @@
-# docker-compose -f teamspeak.yml up -d
+# docker-compose -f teamspeak.yml -p teamspeak up -d
 version: '2.4'
 services:
 

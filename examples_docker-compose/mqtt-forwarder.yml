@@ -1,11 +1,11 @@
-# docker-compose -f mqtt-forwarder.yml up -d
+# docker-compose -f mqtt-forwarder.yml -p mqtt-forwarder up -d
 version: '2.4'
 services:
 
   # mqtt-forwarder - Simple MQTT message forwarder to forward messages from one MQTT broker to another MQTT broker 
-  # https://github.com/Bobobo-bo-Bo-bobo/mqtt-forwarder
+  # https://git.ypbind.de/cgit/mqtt-forwarder/
   # https://github.com/Tob1as/docker-tools/blob/main/mqtt-forwarder.scratch.Dockerfile
-  # Run before start (and edit config): mkdir ./config_mqtt-forwarder && wget https://github.com/Bobobo-bo-Bo-bobo/mqtt-forwarder/raw/master/example/config.ini -O ./config_mqtt-forwarder/config.ini   
+  # Run before start (and edit config): mkdir ./config_mqtt-forwarder && wget https://git.ypbind.de/cgit/mqtt-forwarder/plain/example/config.ini -O ./config_mqtt-forwarder/config.ini   
   mqtt-forwarder:
     image: tobi312/tools:mqtt-forwarder
     build:

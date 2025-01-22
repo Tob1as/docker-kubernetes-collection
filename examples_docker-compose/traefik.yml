@@ -1,4 +1,4 @@
-# docker-compose -f traefik.yml up -d
+# docker-compose -f traefik.yml -p traefik up -d
 version: '2.4'
 services:
 

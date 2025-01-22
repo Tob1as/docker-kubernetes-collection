@@ -1,4 +1,4 @@
-# docker-compose -f postgres-timescaledb.yml up -d
+# docker-compose -f postgres-timescaledb.yml -p postgres-timescaledb up -d
 version: '2.4'
 services:
 

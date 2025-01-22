@@ -1,4 +1,4 @@
-# docker-compose -f seafile-pro.yml up -d
+# docker-compose -f seafile-pro.yml -p seafile-pro up -d
 
 # fork of https://manual.seafile.com/latest/docker/pro-edition/deploy_seafile_pro_with_docker/ ...
 # ... and change mount folder, some image updates and add healtcheck!

@@ -1,4 +1,4 @@
-# docker-compose -f haproxy.yml up -d
+# docker-compose -f haproxy.yml -p haproxy up -d
 version: '2.4'
 services:
 

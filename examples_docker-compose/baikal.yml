@@ -1,4 +1,4 @@
-# docker-compose -f baikal.yml up -d
+# docker-compose -f baikal.yml -p baikal up -d
 version: '2.4'
 services:
 

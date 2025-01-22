@@ -1,4 +1,4 @@
-# docker-compose -f kasmweb.yml up -d
+# docker-compose -f kasmweb.yml -p kasmweb up -d
 version: '2.4'
 services:
 

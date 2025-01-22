@@ -1,4 +1,4 @@
-# docker-compose -f minecraft-bedrock.yml up -d
+# docker-compose -f minecraft-bedrock.yml -p minecraft-bedrock up -d
 version: '2.4'
 services:
 

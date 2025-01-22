@@ -1,4 +1,4 @@
-# docker-compose -f minecraft.yml up -d
+# docker-compose -f minecraft.yml -p minecraft up -d
 version: '2.4'
 services:
 

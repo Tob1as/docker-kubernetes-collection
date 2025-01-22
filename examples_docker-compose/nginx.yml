@@ -1,4 +1,4 @@
-# docker-compose -f nginx.yml up -d
+# docker-compose -f nginx.yml -p nginx up -d
 version: '2.4'
 services:
   

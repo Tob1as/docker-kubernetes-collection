@@ -1,4 +1,4 @@
-# docker-compose -f icd.yml up -d
+# docker-compose -f ircd.yml -p ircd up -d
 version: '2.4'
 services:
 

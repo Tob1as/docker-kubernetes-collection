@@ -1,4 +1,4 @@
-# docker-compose -f docker-registry.yml up -d
+# docker-compose -f docker-registry.yml -p docker-registry up -d
 # EXAMPLE FOR USE WITH TRAEFIK AS PROXY!
 version: '2.4' 
 services:

@@ -1,4 +1,4 @@
-# docker-compose -f hoppscotch.yml up -d
+# docker-compose -f hoppscotch.yml -p hoppscotch up -d
 version: '2.4'
 services:
 

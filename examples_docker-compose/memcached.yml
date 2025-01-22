@@ -1,4 +1,4 @@
-# docker-compose -f memcached.yml up -d
+# docker-compose -f memcached.yml -p memcached up -d
 version: '2.4'
 services:
   

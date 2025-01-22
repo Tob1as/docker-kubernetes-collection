@@ -1,4 +1,4 @@
-# docker-compose -f yourls.yml up -d
+# docker-compose -f yourls.yml -p yourls up -d
 version: '2.4'
 services:
 

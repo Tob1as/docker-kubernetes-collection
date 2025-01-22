@@ -1,4 +1,4 @@
-# docker-compose -f keycloak.yml up -d
+# docker-compose -f keycloak.yml -p keycloak up -d
 version: '2.4'
 services:
 

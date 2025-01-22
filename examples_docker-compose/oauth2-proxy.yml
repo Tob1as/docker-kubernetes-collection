@@ -1,4 +1,4 @@
-# docker-compose -f oauth2-proxy.yml up -d
+# docker-compose -f oauth2-proxy.yml -p oauth2-proxy up -d
 version: '2.4'
 services:
 

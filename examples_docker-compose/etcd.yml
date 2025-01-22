@@ -1,4 +1,4 @@
-# docker-compose -f etcd.yml up -d
+# docker-compose -f etcd.yml -p etcd up -d
 version: '2.4'
 services:
 

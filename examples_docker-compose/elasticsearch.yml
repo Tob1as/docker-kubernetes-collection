@@ -1,4 +1,4 @@
-# docker-compose -f elasticsearch.yml up -d
+# docker-compose -f elasticsearch.yml -p elasticsearch up -d
 version: '2.4'
 services:
   

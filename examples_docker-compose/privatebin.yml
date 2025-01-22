@@ -1,4 +1,4 @@
-# docker-compose -f privatebin.yml up -d
+# docker-compose -f privatebin.yml -p privatebin up -d
 version: '2.4'
 services:
 

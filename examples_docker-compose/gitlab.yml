@@ -1,4 +1,4 @@
-# docker-compose -f gitlab.yml up -d
+# docker-compose -f gitlab.yml -p gitlab up -d
 version: '2.4'
 services:
 

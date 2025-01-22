@@ -1,4 +1,4 @@
-# docker-compose -f mssql.yml up -d
+# docker-compose -f mssql.yml -p mssql up -d
 version: '2.4'
 services:
 

@@ -1,4 +1,4 @@
-# docker-compose -f owncloud-infinitescale.yml up -d
+# docker-compose -f owncloud-infinitescale.yml -p owncloud-infinitescale up -d
 version: '2.4'
 services:
 

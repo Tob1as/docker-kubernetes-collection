@@ -1,4 +1,4 @@
-# docker-compose -f ping-exporter.yml up -d
+# docker-compose -f ping-exporter.yml -p ping-exporter up -d
 version: '2.4'
 services:
 

@@ -1,4 +1,4 @@
-# docker-compose -f mqttx-web.yml up -d
+# docker-compose -f mqttx-web.yml -p mqttx-web up -d
 version: '2.4'
 services:
 

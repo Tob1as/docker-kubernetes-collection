@@ -1,4 +1,4 @@
-# docker-compose -f adminerevo.yml up -d
+# docker-compose -f adminerevo.yml -p adminerevo up -d
 version: '2.4'
 services:
   

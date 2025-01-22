@@ -1,4 +1,4 @@
-# docker-compose -f uptime-kuma.yml up -d
+# docker-compose -f uptime-kuma.yml -p uptime-kuma up -d
 version: '2.4'
 services:
 

@@ -1,4 +1,4 @@
-# docker-compose -f apt-cacher-ng.yml up -d
+# docker-compose -f apt-cacher-ng.yml -p apt-cacher-ng up -d
 version: '2.4'
 services:
 

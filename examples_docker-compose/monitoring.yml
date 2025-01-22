@@ -1,4 +1,4 @@
-# docker-compose -f monitoring.yml up -d
+# docker-compose -f monitoring.yml -p monitoring up -d
 version: '2.4'
 services:
 
