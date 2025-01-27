@@ -11,7 +11,7 @@ services:
   # Forgejo?, see: https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/forgejo.yml
   # Supported architectures: amd64, arm64
   gitea:
-    image: gitea/gitea:1.21
+    image: gitea/gitea:1.22
     container_name: gitea
     restart: unless-stopped
     environment:
@@ -23,7 +23,7 @@ services:
       - GITEA__server__DOMAIN=git.example.com
       - GITEA__server__ROOT_URL=https://git.example.com
       - GITEA__server__HTTP_PORT=3000
-      - GITEA__server__DISABLE_SSH=false
+      - GITEA__server__DISABLE_SSH=true
       - GITEA__server__SSH_DOMAIN=git.example.com
       - GITEA__server__SSH_PORT=2222
       - GITEA__server__SSH_LISTEN_PORT=22
@@ -53,9 +53,9 @@ services:
       - ./data_gitea:/data:rw
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-    ports:
-      #- "3000:3000"
-      - "2222:22"
+    #ports:
+    #  #- "3000:3000"
+    #  - "2222:22"
     networks:
       - gitea-net
       - traefik
@@ -141,7 +141,10 @@ services:
 #  # An extra host for the Runner is recommended. ;)
 #  # * mkdir ./config_gitea-runner
 #  # * docker run --entrypoint="" --rm -it gitea/act_runner:latest act_runner generate-config > ./config_gitea-runner/config.yaml
-#  # Actions Workflow example: https://github.com/Tob1as/docker-build-example/blob/main/.github/workflows/build_docker_images.yaml.example
+#  # More Help:
+#  # * https://gitea.com/gitea/runner-images
+#  # * self-sign cert: https://forum.gitea.com/t/cannot-checkout-a-repository-hosted-on-a-gitea-instance-using-self-signed-certificate-server-certificate-verification-failed/7903/3
+#  # * Actions Workflow example: https://github.com/Tob1as/docker-build-example/blob/main/.github/workflows/build_docker_images.yaml
 #  gitea-runner:
 #    image: gitea/act_runner:latest
 #    container_name: gitea-runner
@@ -151,7 +154,7 @@ services:
 #      GITEA_INSTANCE_URL: "https://git.example.com"
 #      GITEA_RUNNER_REGISTRATION_TOKEN: "TOKEN"
 #      GITEA_RUNNER_NAME: "GIT-Runner-0"
-#      GITEA_RUNNER_LABELS: ""
+#      #GITEA_RUNNER_LABELS: ""
 #    volumes:
 #      - ./config_gitea-runner/config.yaml:/config.yaml:ro
 #      - ./data_gitea-runner:/data:rw
