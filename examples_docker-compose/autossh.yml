@@ -69,7 +69,7 @@ services:
       - ./data_openssh-server:/config:rw
       - ./ssh-key/autossh_id_rsa.pub:/autossh_id_rsa.pub:ro
     ports:
-      - 127.0.0.1:2222:2222/tcp  # SSH-Port
+      - 2222:2222/tcp  # SSH-Port
       - 8080:8080/tcp  # Web-Port from SSH-Tunnel via AutoSSH
     healthcheck:
       #test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 2222 || exit 1"]
