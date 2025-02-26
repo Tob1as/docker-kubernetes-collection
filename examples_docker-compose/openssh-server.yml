@@ -25,7 +25,7 @@ services:
       - USER_PASSWORD=passw0rd
       #- USER_PASSWORD_FILE=/path/to/file
     volumes:
-      #- ./config_openssh-server/sshd_portforwarding.sh:/custom-cont-init.d/10-sshd_portforwarding.sh:ro  # https://github.com/Tob1as/docker-php/blob/master/k8s.yaml#L356-L362
+      #- ./config_openssh-server/sshd_portforwarding.sh:/custom-cont-init.d/10-sshd_portforwarding.sh:ro  # https://raw.githubusercontent.com/Tob1as/docker-kubernetes-collection/refs/heads/master/examples_docker-compose/config_openssh-server/sshd_portforwarding.sh
       - ./data_openssh-server:/config:rw
     ports:
       - 2222:2222/tcp
