@@ -1,31 +1,143 @@
+# Example: Create SSH-Tunnel for local Webserver via (local) AutoSSH to public OpenSSH-Server.
+# 
+# 1. create SSH-Public+Private-Key: 
+# mkdir ./ssh-key
+# ssh-keygen -t rsa -b 4096 -C "sshuser@autossh" -f ./ssh-key/autossh_id_rsa -N '' -q
+# chmod 644 ./ssh-key/autossh_id_rsa
+# 2. start container
 # docker-compose -f autossh.yml -p autossh up -d
+# 
 version: '2.4'
 services:
-
+  
+  # Example: Create SSH-Tunnel for local Webserver via (local) AutoSSH to public OpenSSH-Server.
   # AutoSSH - Automatically restart SSH sessions and tunnels.
-  # https://www.harding.motd.ca/autossh/ + https://github.com/Autossh/autossh
-  # generate key: ssh-keygen -t rsa -b 4096 -C "autossh" -f ./autossh_id_rsa
+  # Dockerfile: https://github.com/Tob1as/docker-tools/blob/main/autossh.alpine.Dockerfile
   autossh:
     image: tobi312/tools:autossh
     container_name: autossh
     restart: unless-stopped
-    user: nobody
     environment:
-      - SSH_REMOTE_USER=sshuser
-      - SSH_REMOTE_HOST=example.com
-      - SSH_REMOTE_PORT=2222  # 2222 when use openssh-server.yml example
-      - SSH_BIND_IP=0.0.0.0
-      - SSH_TUNNEL_PORT=8080  # example call on remote host: http://localhost:8080
-      - SSH_TARGET_HOST=somewebsite-container-local
-      - SSH_TARGET_PORT=80
-      - SSH_MODE=-R           # make something under a local port reachable on a remote host
-      - SSH_KEYFILE=/id_rsa
+      #- AUTOSSH_GATETIME=30
+      #- AUTOSSH_FIRST_POLL=30
+      #- AUTOSSH_POLL=30
+      #- ...
+      - AUTOSSH_LOGLEVEL=7
     volumes:
-      - ./autossh_id_rsa:/id_rsa
-    #entrypoint: ["/bin/sh", "-c"]
-    command: ["/usr/bin/autossh -M 0 -N -o StrictHostKeyChecking=no -o UserKnownHostsFile=/tmp/known_hosts -o ServerAliveInterval=10 -o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes -t -t -R $${SSH_BIND_IP}:$${SSH_TUNNEL_PORT}:$${SSH_TARGET_HOST}:$${SSH_TARGET_PORT} -i $${SSH_KEYFILE} -p $${SSH_REMOTE_PORT} $${SSH_REMOTE_USER}@$${SSH_REMOTE_HOST}"]
-
-  # Alternative use docker image: https://github.com/jnovack/autossh !
+      - ./ssh-key/autossh_id_rsa:/id_rsa:ro
+    #entrypoint: [ "autossh" ]
+    command: >
+      -M 0 
+      -N
+      -o StrictHostKeyChecking=no
+      -o CheckHostIP=no
+      -o UserKnownHostsFile=/tmp/known_hosts
+      -o ServerAliveInterval=10
+      -o ServerAliveCountMax=3
+      -o ExitOnForwardFailure=yes
+      -R 
+      0.0.0.0:8080:web:80
+      -p 2222 
+      sshuser@openssh-server
+      -i /id_rsa
+    depends_on:
+      - web
+      #- openssh-server
+  
+  # Example: OpenSSH-Server on public (Internet) (Cloud-)Server
+  # more config see: https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/openssh-server.yml
+  openssh-server:
+    #image: ghcr.io/linuxserver/openssh-server:latest
+    image: linuxserver/openssh-server:latest
+    container_name: openssh-server
+    restart: unless-stopped
+    hostname: openssh-server
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+      #- PUBLIC_KEY=ssh-rsa AAAA*******== sshuser@autossh
+      - PUBLIC_KEY_FILE=/autossh_id_rsa.pub
+      #- PUBLIC_KEY_DIR=/path/to/directory/containing/_only_/pubkeys
+      - SUDO_ACCESS=false
+      - PASSWORD_ACCESS=false
+      - USER_NAME=sshuser
+      #- USER_PASSWORD=passw0rd
+      #- USER_PASSWORD_FILE=/path/to/file
+    volumes:
+      - ./config_openssh-server/sshd_portforwarding.sh:/custom-cont-init.d/10-sshd_portforwarding.sh:ro  # https://raw.githubusercontent.com/Tob1as/docker-kubernetes-collection/refs/heads/master/examples_docker-compose/config_openssh-server/sshd_portforwarding.sh
+      - ./data_openssh-server:/config:rw
+      - ./ssh-key/autossh_id_rsa.pub:/autossh_id_rsa.pub:ro
+    ports:
+      - 127.0.0.1:2222:2222/tcp  # SSH-Port
+      - 8080:8080/tcp  # Web-Port from SSH-Tunnel via AutoSSH
+    healthcheck:
+      #test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 2222 || exit 1"]
+      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 8080 || exit 1"]
+      #start_period: 5s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.openssh-server.loadbalancer.server.port=8080"
+      - "traefik.http.services.openssh-server.loadbalancer.server.scheme=http"
+      # http
+      - "traefik.http.routers.openssh-server-http.rule=Host(`public.example.com`)"
+      - "traefik.http.routers.openssh-server-http.entrypoints=web"
+      - "traefik.http.routers.openssh-server-http.service=openssh-server"
+      # https
+      - "traefik.http.routers.openssh-server-https.tls=true"
+      - "traefik.http.routers.openssh-server-https.rule=Host(`public.example.com`)"
+      - "traefik.http.routers.openssh-server-https.entrypoints=websecure"
+      - "traefik.http.routers.openssh-server-https.service=openssh-server"
+      # load middlewares for routes
+      #- "traefik.http.routers.openssh-server-http.middlewares=openssh-server-https"
+      # http to https redirect      
+      #- "traefik.http.middlewares.openssh-server-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.openssh-server-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.openssh-server-https.redirectscheme.port=443"
+  
+  # Example: Webserver on local private (Intranet) Server/RaspberryPI
+  # more config see: https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/nginx.yml
+  web:
+    image: nginx:alpine
+    container_name: web
+    restart: unless-stopped
+    #ports:
+    #  - "80:80/tcp"
+    #  - "443:443/tcp"
+    #volumes:
+    #  - ./html:/usr/share/nginx/html:rw
+    environment:
+      TZ: Europe/Berlin
+    healthcheck:
+      test: ["CMD-SHELL", "nc -nzv -w 3 localhost 80 || exit 1"]
+      #start_period: 10s
+      interval: 60s
+      timeout: 5s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      - "traefik.http.services.web.loadbalancer.server.port=80"
+      - "traefik.http.services.web.loadbalancer.server.scheme=http"
+      # http
+      - "traefik.http.routers.web-http.rule=Host(`private.example.com`)"
+      - "traefik.http.routers.web-http.entrypoints=web"
+      - "traefik.http.routers.web-http.service=web"
+      # https
+      - "traefik.http.routers.web-https.tls=true"
+      - "traefik.http.routers.web-https.rule=Host(`private.example.com`)"
+      - "traefik.http.routers.web-https.entrypoints=websecure"
+      - "traefik.http.routers.web-https.service=web"
+      # load middlewares for routes
+      #- "traefik.http.routers.web-http.middlewares=web-https"
+      # http to https redirect      
+      #- "traefik.http.middlewares.web-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.web-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.web-https.redirectscheme.port=443"
 
 networks:
   default:
