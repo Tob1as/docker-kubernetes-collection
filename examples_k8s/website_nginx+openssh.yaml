@@ -235,8 +235,8 @@ spec:
           mountPath: /config/.bash_profile
           readOnly: true
         - name: website-openssh-file-portforwarding
-          subPath: 10-sshd_portforwarding.sh
-          mountPath: /config/custom-cont-init.d/10-sshd_portforwarding.sh
+          subPath: sshd_portforwarding.sh
+          mountPath: /custom-cont-init.d/10-sshd_portforwarding.sh
           readOnly: true
       initContainers:
       - name: volume-mount-chmod
@@ -382,7 +382,7 @@ data:
 #    
 #    set -eu
 #    
-#    SSHD_CONF_FILE="/etc/ssh/sshd_config"
+#    SSHD_CONF_FILE="/config/sshd/sshd_config"
 #    
 #    # https://www.cyberciti.biz/faq/unix-linux-check-if-port-is-in-use-command/
 #    # https://www.ssh.com/academy/ssh/tunneling/example

@@ -5,10 +5,12 @@ services:
   # https://www.openssh.com/
   # https://github.com/linuxserver/docker-openssh-server + https://hub.docker.com/r/linuxserver/openssh-server
   # Supported architectures: amd64, arm64v8
+  # create SSH-Public+Private-Key: ssh-keygen -t rsa -b 4096 -C "user@host" -f ./openssh-server_id_rsa -N '' -q
   openssh-server:
     #image: ghcr.io/linuxserver/openssh-server:latest
     image: linuxserver/openssh-server:latest
     container_name: openssh-server
+    restart: unless-stopped
     hostname: openssh-server
     environment:
       - PUID=1000
@@ -23,12 +25,17 @@ services:
       - USER_PASSWORD=passw0rd
       #- USER_PASSWORD_FILE=/path/to/file
     volumes:
+      #- ./config_openssh-server/sshd_portforwarding.sh:/custom-cont-init.d/10-sshd_portforwarding.sh:ro  # https://github.com/Tob1as/docker-php/blob/master/k8s.yaml#L356-L362
       - ./data_openssh-server:/config:rw
-      #- ./config_openssh-server/sshd_portforwarding.sh:/config/custom-cont-init.d/10-sshd_portforwarding.sh:ro  # https://github.com/Tob1as/docker-php/blob/master/k8s.yaml#L356-L362
     ports:
       - 2222:2222/tcp
-    restart: unless-stopped
-
+    #healthcheck:
+    #  test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 2222 || exit 1"]
+    #  #start_period: 30s
+    #  interval: 60s
+    #  timeout: 5s
+    #  retries: 3
+      
 networks:
   default:
     external: true
