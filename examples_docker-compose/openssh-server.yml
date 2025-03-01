@@ -17,20 +17,22 @@ services:
       - PGID=1000
       - TZ=Europe/Berlin
       #- PUBLIC_KEY=ssh-rsa AAAA*******== user@host
-      #- PUBLIC_KEY_FILE=/path/to/file
+      #- PUBLIC_KEY_FILE=/id_rsa.pub
       #- PUBLIC_KEY_DIR=/path/to/directory/containing/_only_/pubkeys
       - SUDO_ACCESS=false
       - PASSWORD_ACCESS=true
       - USER_NAME=sshuser
       - USER_PASSWORD=passw0rd
-      #- USER_PASSWORD_FILE=/path/to/file
+      #- USER_PASSWORD_FILE=/sshd_password.txt
     volumes:
       #- ./config_openssh-server/sshd_portforwarding.sh:/custom-cont-init.d/10-sshd_portforwarding.sh:ro  # https://raw.githubusercontent.com/Tob1as/docker-kubernetes-collection/refs/heads/master/examples_docker-compose/config_openssh-server/sshd_portforwarding.sh
       - ./data_openssh-server:/config:rw
+      #- ./openssh-server_id_rsa.pub:/id_rsa.pub:ro
+      #- ./config_openssh-server/sshd_password.txt:/sshd_password.txt:ro
     ports:
       - 2222:2222/tcp
     #healthcheck:
-    #  test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 2222 || exit 1"]
+    #  test: ["CMD-SHELL", "nc -zv -w 3 127.0.0.1 2222 || exit 1"]
     #  #start_period: 30s
     #  interval: 60s
     #  timeout: 5s

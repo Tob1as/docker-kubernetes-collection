@@ -18,14 +18,15 @@ services:
     container_name: autossh
     restart: unless-stopped
     environment:
+      - AUTOSSH_LOGLEVEL=7
       #- AUTOSSH_GATETIME=30
       #- AUTOSSH_FIRST_POLL=30
       #- AUTOSSH_POLL=30
       #- ...
-      - AUTOSSH_LOGLEVEL=7
     volumes:
       - ./ssh-key/autossh_id_rsa:/id_rsa:ro
-    #entrypoint: [ "autossh" ]
+      #- ./config_openssh-server/sshd_password.txt:/sshd_password.txt:ro
+    #entrypoint: [ "autossh" ]    # default "autossh", set to "" when need other command
     command: >
       -M 0 
       -N
@@ -43,7 +44,46 @@ services:
     depends_on:
       - web
       #- openssh-server
-  
+
+#  # Alternative to AutoSSH Docker-Image and example from above. Using Static Binaries:
+#  # Dockerfile: https://github.com/Tob1as/docker-tools/blob/main/static-ssh-tools.Dockerfile
+#  autossh-tools:
+#    image: tobi312/tools:static-ssh-tools
+#    container_name: autossh-tools
+#    restart: unless-stopped
+#    environment:
+#      # requirements (do NOT change!)
+#      - AUTOSSH_LOGFILE=/dev/stdout
+#      - AUTOSSH_PATH=/usr/local/bin/ssh
+#      - AUTOSSH_PIDFILE=/autossh.pid
+#      # optional: 
+#      - AUTOSSH_LOGLEVEL=7
+#      #- AUTOSSH_GATETIME=30
+#      #- AUTOSSH_FIRST_POLL=30
+#      #- AUTOSSH_POLL=30
+#      #- ...
+#    volumes:
+#      - ./ssh-key/autossh_id_rsa:/id_rsa:ro
+#      #- ./config_openssh-server/sshd_password.txt:/sshd_password.txt:ro
+#    entrypoint: [ "autossh" ]    # default ""
+#    command: >
+#      -M 0 
+#      -N
+#      -o StrictHostKeyChecking=no
+#      -o CheckHostIP=no
+#      -o UserKnownHostsFile=/known_hosts
+#      -o ServerAliveInterval=10
+#      -o ServerAliveCountMax=3
+#      -o ExitOnForwardFailure=yes
+#      -R 
+#      0.0.0.0:8080:web:80
+#      -p 2222 
+#      sshuser@openssh-server
+#      -i /id_rsa
+#    depends_on:
+#      - web
+#      #- openssh-server
+
   # Example: OpenSSH-Server on public (Internet) (Cloud-)Server
   # more config see: https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/openssh-server.yml
   openssh-server:
@@ -57,17 +97,18 @@ services:
       - PGID=1000
       - TZ=Europe/Berlin
       #- PUBLIC_KEY=ssh-rsa AAAA*******== sshuser@autossh
-      - PUBLIC_KEY_FILE=/autossh_id_rsa.pub
+      - PUBLIC_KEY_FILE=/id_rsa.pub
       #- PUBLIC_KEY_DIR=/path/to/directory/containing/_only_/pubkeys
       - SUDO_ACCESS=false
       - PASSWORD_ACCESS=false
       - USER_NAME=sshuser
       #- USER_PASSWORD=passw0rd
-      #- USER_PASSWORD_FILE=/path/to/file
+      #- USER_PASSWORD_FILE=/sshd_password.txt
     volumes:
       - ./config_openssh-server/sshd_portforwarding.sh:/custom-cont-init.d/10-sshd_portforwarding.sh:ro  # https://raw.githubusercontent.com/Tob1as/docker-kubernetes-collection/refs/heads/master/examples_docker-compose/config_openssh-server/sshd_portforwarding.sh
       - ./data_openssh-server:/config:rw
-      - ./ssh-key/autossh_id_rsa.pub:/autossh_id_rsa.pub:ro
+      - ./ssh-key/autossh_id_rsa.pub:/id_rsa.pub:ro
+      #- ./config_openssh-server/sshd_password.txt:/sshd_password.txt:ro
     ports:
       - 2222:2222/tcp  # SSH-Port
       - 8080:8080/tcp  # Web-Port from SSH-Tunnel via AutoSSH
