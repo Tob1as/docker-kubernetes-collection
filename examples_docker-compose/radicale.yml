@@ -1,0 +1,63 @@
+# docker-compose -f radicale.yml -p radicale up -d
+version: '2.4'
+services:
+
+  # Radicale - A simple CalDAV (calendar) and CardDAV (contact) server. 
+  # https://radicale.org/v3.html
+  # https://github.com/Kozea/Radicale
+  # Config: https://raw.githubusercontent.com/Kozea/Radicale/refs/heads/master/config
+  # create mount folders (from volume) and set permission "chown 1000:1000 ./*_radicale"
+  radicale:
+    build: 
+      context: https://raw.githubusercontent.com/Kozea/Radicale/refs/heads/master/Dockerfile
+      args:
+        - VERSION=v3.4.1      # https://github.com/Kozea/Radicale/releases
+    image: local/radicale:latest
+    container_name: radicale
+    restart: unless-stopped
+    #ports:
+    #  - "5232:5232/tcp"
+    volumes:
+      - ./config_radicale:/etc/radicale:ro
+      - ./data_radicale:/var/lib/radicale:rw
+    environment:
+      RADICALE_CONFIG: /etc/radicale/config
+    healthcheck:
+      test: ["CMD-SHELL", "nc -zv -w 3 localhost 5232 || exit 1"]
+      #start_period: 5s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      # radicale
+      - "traefik.http.services.radicale.loadbalancer.server.port=5232"
+      - "traefik.http.services.radicale.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.radicale-http.rule=Host(`dav.example.com`)"
+      - "traefik.http.routers.radicale-http.entrypoints=web"
+      - "traefik.http.routers.radicale-http.service=radicale"
+      # https
+      - "traefik.http.routers.radicale-https.tls=true"
+      - "traefik.http.routers.radicale-https.rule=Host(`dav.example.com`)"
+      - "traefik.http.routers.radicale-https.entrypoints=websecure"
+      - "traefik.http.routers.radicale-https.service=radicale"
+      # load middlewares for routers
+      - "traefik.http.routers.radicale-http.middlewares=radicale-https"
+      #- "traefik.http.routers.radicale-http.middlewares=radicale-https,radicale-auth"
+      #- "traefik.http.routers.radicale-https.middlewares=radicale-auth"
+      # http to https redirect
+      - "traefik.http.middlewares.radicale-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.radicale-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.radicale-https.redirectscheme.port=443"
+      
+      # not used, but as example using traefik for auth : https://github.com/Kozea/Radicale/discussions/1368
+      # ... use then auth type "http_x_remote_user" in radicale
+      #- traefik.http.middlewares.radicale-auth.basicauth.usersfile=/auth/radicale
+      #- traefik.http.middlewares.radicale-auth.basicauth.headerField=X-Remote-User
+
+networks:
+  default:
+    external: true
+    name: mynetwork
