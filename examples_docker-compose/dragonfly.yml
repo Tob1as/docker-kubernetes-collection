@@ -1,0 +1,57 @@
+# docker-compose -f dragonfly.yml -p dragonfly up -d
+version: '2.4'
+services:
+
+  # Dragonfly - in-memory data store (replacement for Redis and Memcached)
+  # https://www.dragonflydb.io/
+  # https://github.com/dragonflydb/dragonfly
+  # Docs: https://www.dragonflydb.io/docs/getting-started/docker-compose
+  # 
+  # Docker Image Sourcecode:
+  # https://github.com/dragonflydb/dragonfly/blob/main/tools/packaging/Dockerfile.ubuntu-prod
+  # https://github.com/dragonflydb/dragonfly/tree/main/tools/docker
+  # 
+  # Supported architectures: amd64, arm64
+  dragonfly:
+    image: ghcr.io/dragonflydb/dragonfly:latest # or: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+    container_name: dragonfly
+    restart: unless-stopped
+    #environment:
+    #  DRAGONFLY_PASSWORD: passw0rd    # for user: default (http://localhost:6379)
+    #command: ["sh", "-c", "exec dragonfly --logtostderr --requirepass $${DRAGONFLY_PASSWORD}"]
+    ##command: ["dragonfly", "--logtostderr"]
+    ulimits:
+      memlock: -1
+    #ports:    # Do NOT open port external (without password)!
+    #  - "127.0.0.1:6379:6379/tcp"
+    volumes:
+      - ./data_dragonfly:/data:rw
+    #healthcheck:
+    #  #test: ["CMD","sh","-c","exec redis-cli --no-auth-warning -a $${DRAGONFLY_PASSWORD} ping"]
+    #  test: ["CMD", "redis-cli", "ping"]
+    #  #start_period: 5s
+    #  interval: 15s
+    #  timeout: 5s
+    #  retries: 3
+
+  ## https://github.com/oliver006/redis_exporter
+  #dragonfly-exporter:
+  #  image: oliver006/redis_exporter:latest
+  #  container_name: dragonfly-exporter
+  #  restart: unless-stopped
+  #  #ports:
+  #  #  - 127.0.0.1:9121:9121/tcp
+  #  command:
+  #    - "--redis.addr=redis://dragonfly:6379"
+  #    #- "--redis.password=passw0rd"
+  #    #- "--skip-tls-verification=true"
+  #    #- "--web.listen-address=:9121"
+  #    #- "--web.telemetry-path=/metrics"
+  #    #- "--debug=true"
+  #  depends_on:
+  #    - dragonfly
+
+networks:
+  default:
+    external: true
+    name: mynetwork
