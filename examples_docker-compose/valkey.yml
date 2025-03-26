@@ -1,0 +1,53 @@
+# docker-compose -f valkey.yml -p valkey up -d
+version: '2.4'
+services:
+
+  # Valkey - key-value datastore (fork of Redis)
+  # https://valkey.io/
+  # https://github.com/valkey-io/valkey
+  # https://github.com/valkey-io/valkey-container
+  # Supported architectures: amd64, arm64
+  valkey:
+    image: valkey/valkey:alpine # or: valkey/valkey:latest
+    container_name: valkey
+    restart: unless-stopped
+    #environment:
+    #  VALKEY_PASSWORD: passw0rd    # for user: default
+    #  #VALKEY_EXTRA_FLAGS: "--requirepass $${VALKEY_PASSWORD}"
+    #command: ["sh", "-c", "exec valkey-server --requirepass $${VALKEY_PASSWORD}"]
+    ##command: ["valkey-server"]
+    ulimits:
+      memlock: -1
+    ports:
+      - "127.0.0.1:6379:6379/tcp"
+    volumes:
+      - ./data_valkey:/data:rw
+    healthcheck:
+      #test: ["CMD","sh","-c","exec valkey-cli --no-auth-warning -a $${VALKEY_PASSWORD} ping"]
+      test: ["CMD", "valkey-cli", "ping"]
+      #start_period: 5s
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    
+  # https://github.com/oliver006/redis_exporter
+  valkey-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: valkey-exporter
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:9121:9121/tcp
+    command:
+      - "--redis.addr=redis://valkey:6379"
+      #- "--redis.password=passw0rd"
+      #- "--skip-tls-verification=true"
+      #- "--web.listen-address=:9121"
+      #- "--web.telemetry-path=/metrics"
+      #- "--debug=true"
+    depends_on:
+      - valkey
+
+#networks:
+#  default:
+#    external: true
+#    name: mynetwork
