@@ -4,9 +4,11 @@ version: '2.4'
 services:
 
   # Docker Registry - for storing and distributing Docker images
-  # https://hub.docker.com/_/registry & https://github.com/distribution/distribution 
-  # https://docs.docker.com/registry/
-  # https://docs.docker.com/registry/configuration/#override-specific-configuration-options
+  # https://distribution.github.io/distribution/ & https://github.com/distribution/distribution
+  # https://hub.docker.com/_/registry & https://github.com/distribution/distribution-library-image
+  # Docs:
+  # * https://distribution.github.io/distribution/about/configuration/#override-specific-configuration-options
+  # * https://docs.docker.com/docker-hub/image-library/mirror/
   # Supported architectures: arm32v6, arm32v7, arm64v8, amd64, ...
   # API URLs: 
   # * https://docker-registry.example.com/v2/_catalog?n=1000 
