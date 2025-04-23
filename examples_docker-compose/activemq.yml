@@ -11,7 +11,7 @@ services:
   # Before start: "mkdir -p ./data_activemq/data && chown 1001:1001 -R ./data_activemq/"
   # GUI URL: http://localhost:8161/console https://activemq.example.com/console
   activemq:
-    image: apache/activemq-artemis:latest-alpine
+    image: apache/activemq-artemis:latest-alpine  # 2.40.0-alpine
     container_name: activemq
     #hostname: activemq
     restart: unless-stopped
