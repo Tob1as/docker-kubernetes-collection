@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This policy file controls the Jolokia JMX-HTTP bridge security options for the web console.
+   see: https://jolokia.org/reference/html/security.html -->
+<!-- https://github.com/hawtio/hawtio/issues/3844#issuecomment-2733074741 -->
+<restrict>
+    <cors>
+        <!-- Allow cross-origin access from the origins that match the following pattern ... -->
+        <allow-origin>*://0.0.0.0*</allow-origin>
+        <!-- Use if Origin header can use https while the protocol is http (e.g., with TLS proxy) -->
+        <ignore-scheme/>
+    </cors>
+</restrict>

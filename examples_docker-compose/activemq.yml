@@ -1,0 +1,67 @@
+# docker-compose -f activemq.yml -p activemq up -d
+version: '2.4'
+services:
+
+  # Apache ActiveMQ is open source Java-based message broker
+  # https://activemq.apache.org/
+  # https://github.com/apache/activemq-artemis/tree/main/artemis-docker
+  # https://hub.docker.com/r/apache/activemq-artemis
+  # Docs: https://activemq.apache.org/components/artemis/documentation/latest/docker.html
+  # Supported architectures: amd64, arm64
+  # Before start: "mkdir -p ./data_activemq/data && chown 1001:1001 -R ./data_activemq/"
+  # GUI URL: http://localhost:8161/console https://activemq.example.com/console
+  activemq:
+    image: apache/activemq-artemis:latest-alpine
+    container_name: activemq
+    #hostname: activemq
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Berlin
+      ARTEMIS_USER: 'artemis'
+      ARTEMIS_PASSWORD: 'artemis'
+      ANONYMOUS_LOGIN: 'false'
+      #EXTRA_ARGS: '--http-host 0.0.0.0 --relax-jolokia'
+    volumes:
+      - ./config_activemq/etc:/var/lib/artemis-instance/etc-override:ro
+      - ./data_activemq/data:/var/lib/artemis-instance/data:rw
+    ports:
+      #- "8161:8161/tcp"    # HTTP   (comment in, when not use Proxy like Traefik)
+      - "61616:61616/tcp"   # CORE,MQTT,AMQP,HORNETQ,STOMP,OPENWIRE
+      #- "5445:5445/tcp"    # legacy HORNETQ,STOMP 
+      #- "5672:5672/tcp"    # AMQP
+      #- "1883:1883/tcp"    # MQTT
+      #- "61613:61613/tcp"  # STOMP
+    healthcheck:
+      test: ["CMD-SHELL", "nc -zv -w3 localhost 8161 || exit 1"]
+      start_period: 25s
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    labels:
+      # Explicitly tell Traefik to expose this container
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"
+      # Tell Traefik to use the http port 8161 to connect to activemq container
+      - "traefik.http.services.activemq.loadbalancer.server.port=8161"
+      - "traefik.http.services.activemq.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
+      # http
+      - "traefik.http.routers.activemq-http.rule=Host(`activemq.example.com`)"
+      - "traefik.http.routers.activemq-http.entrypoints=web"
+      - "traefik.http.routers.activemq-http.service=activemq"
+      # https
+      - "traefik.http.routers.activemq-https.tls=true"
+      - "traefik.http.routers.activemq-https.rule=Host(`activemq.example.com`)"
+      - "traefik.http.routers.activemq-https.entrypoints=websecure"
+      - "traefik.http.routers.activemq-https.service=activemq"
+      # load middlewares for routes
+      #- "traefik.http.routers.activemq-http.middlewares=activemq-https"
+      #- "traefik.http.routers.activemq-https.middlewares="
+      # Middleware: http to https redirect      
+      #- "traefik.http.middlewares.activemq-https.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.activemq-https.redirectscheme.permanent=true"
+      #- "traefik.http.middlewares.activemq-https.redirectscheme.port=443"
+
+networks:
+  default:
+    external: true
+    name: mynetwork
