@@ -1,0 +1,20 @@
+## https://docs.k3s.io/networking/networking-services#traefik-ingress-controller
+## https://docs.k3s.io/helm#customizing-packaged-components-with-helmchartconfig
+
+## copy-to/save-as: /var/lib/rancher/k3s/server/manifests/traefik-config.yaml
+
+---
+
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    #image:
+    #  repository: rancher/mirrored-library-traefik
+    #  tag: 3.3.6
+    additionalArguments:
+    - '--api.insecure=true'
+    #- '--log.level=DEBUG'
