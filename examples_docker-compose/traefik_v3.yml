@@ -48,6 +48,8 @@ services:
       - "--providers.file.directory=/etc/traefik/dynamic"
       - "--providers.file.watch=true"
       
+      # Traefik
+      #- "--entryPoints.traefik.address=:8080/tcp"
       # HTTP
       - "--entrypoints.web.address=:80"
       # HTTPS

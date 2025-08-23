@@ -1,11 +1,11 @@
 ## BasicAuth
 
 ## https://doc.traefik.io/traefik/middlewares/http/basicauth/ (Tabs: Kubernetes)
-apiVersion: traefik.containo.us/v1alpha1   # not work: traefik.io/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: basic-auth
-  namespace: default
+  namespace: kube-system
 spec:
   basicAuth:
     secret: basic-auth
@@ -21,7 +21,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: basic-auth
-  namespace: default
+  namespace: kube-system
 type: kubernetes.io/basic-auth
 data:
   username: YWRtaW4=      # admin     in base64

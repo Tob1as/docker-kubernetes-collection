@@ -49,7 +49,7 @@ You can rename it or delete it if you don't need it.
 
 ### Traefik (Proxy)
 
-Most examples are with [Traefik](https://traefik.io/traefik/) as Proxy. **[Traefik-Example](https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/traefik.yml)**   
+Most examples are with [Traefik](https://traefik.io/traefik/) as Proxy. **[Traefik-Example](https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/traefik_v2.yml)**   
 Important: The containers (example: Web-Applications) to be used with Traefik must be on the same Docker network.
   
 For more information about the Traefik, read the official documentation: https://doc.traefik.io/traefik/
