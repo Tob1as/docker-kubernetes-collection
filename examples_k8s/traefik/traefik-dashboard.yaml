@@ -1,10 +1,11 @@
 ## Traefik Dashboard
 ## https://doc.traefik.io/traefik/operations/dashboard/
-                  
----
 
 ## https://doc.traefik.io/traefik/operations/api/#configuration
 ## https://doc.traefik.io/traefik/routing/providers/kubernetes-crd/#kind-ingressroute
+                  
+---
+
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
@@ -15,7 +16,6 @@ metadata:
     app.kubernetes.io/name: traefik-dashboard
 spec:
   entryPoints:
-    #- web 
     - websecure
   routes:
     - match: Host(`traefik.example.com`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`)) # https://traefik.example.com/dashboard/ (note the trailing slash!)
@@ -28,10 +28,35 @@ spec:
       middlewares:
         - name: basic-auth
           namespace: kube-system    # (It can be omitted when the Middleware is in the IngressRoute namespace.)
-        #- name: https-redirectscheme
-        #  namespace: kube-system
   tls:
     secretName: ingress-tls-secret  # (In the IngressRoute namespace.) use file: ingress-tls-secret.yaml
     #options:
     #  name: default
     #  namespace: 
+
+---
+
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-dashboard-http
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/instance: traefik
+    app.kubernetes.io/name: traefik-dashboard
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`traefik.example.com`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`)) # https://traefik.example.com/dashboard/ (note the trailing slash!)
+      kind: Rule
+      #priority: 0
+      services:
+        - name: api@internal
+          kind: TraefikService
+          namespace: kube-system    # (It can be omitted when the Middleware is in the IngressRoute namespace.)
+      middlewares:
+        - name: basic-auth
+          namespace: kube-system    # (It can be omitted when the Middleware is in the IngressRoute namespace.)
+        - name: https-redirectscheme
+          namespace: kube-system
