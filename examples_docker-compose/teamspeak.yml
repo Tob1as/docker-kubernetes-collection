@@ -53,7 +53,7 @@ services:
     #  - "traefik.tcp.routers.teamspeak-tcp-sq.rule=HostSNI(`*`)"
     #  - "traefik.tcp.routers.teamspeak-tcp-sq.entrypoints=ts-tcp-sq"
     #  # TCP 30033 filetransfer
-    #  - "traefik.tcp.services.teamspeak-tcp-ft.loadbalancer.server.port=10011"
+    #  - "traefik.tcp.services.teamspeak-tcp-ft.loadbalancer.server.port=30033"
     #  - "traefik.tcp.routers.teamspeak-tcp-ft.service=teamspeak-tcp-ft"
     #  - "traefik.tcp.routers.teamspeak-tcp-ft.rule=HostSNI(`*`)"
     #  - "traefik.tcp.routers.teamspeak-tcp-ft.entrypoints=ts-tcp-ft"
