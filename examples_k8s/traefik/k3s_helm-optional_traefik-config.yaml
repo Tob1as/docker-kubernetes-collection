@@ -2,7 +2,12 @@
 ## https://docs.k3s.io/networking/networking-services#traefik-ingress-controller
 ## https://docs.k3s.io/helm#customizing-packaged-components-with-helmchartconfig
 
+## Instructions:
 ## copy-to/save-as: /var/lib/rancher/k3s/server/manifests/traefik-config.yaml
+## Traefik restarts automatically (after changes). If not, try a hard restart with “sudo systemctl restart k3s” to detect the file.
+## check:
+## - "kubectl -n kube-system get deployment/traefik -o yaml"
+## - "kubectl -n kube-system get daemonset/svclb-traefik-<NUMBER> -o yaml"
 
 ---
 
@@ -16,6 +21,26 @@ spec:
     #image:
     #  repository: rancher/mirrored-library-traefik
     #  tag: 3.3.6
+    #  pullPolicy: IfNotPresent
+    env:
+    - name: TZ
+      value: Europe/Berlin
     additionalArguments:
+    - "--accesslog.fields.names.StartUTC=drop"
+    - "--accesslog=true"
+    - "--serversTransport.insecureSkipVerify=true"
     - '--api.insecure=true'
-    #- '--log.level=DEBUG'
+    #- "--log.level=debug"
+    ports:
+      mqtt:
+        port: 1883
+        expose:
+          default: true
+        exposedPort: 1883
+        protocol: TCP
+      mqtts:
+        port: 8883
+        expose:
+          default: true
+        exposedPort: 8883
+        protocol: TCP
