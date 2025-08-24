@@ -18,7 +18,7 @@ services:
   # fix permission problem before startup: "mkdir ./data_vernemq && chmod 777 ./data_vernemq"
   # after start you can check generated config in folder ./data_vernemq/generated.configs/
   vernemq:
-    image: vernemq/vernemq:1.13.0-alpine
+    image: vernemq/vernemq:2.0.1-alpine
     container_name: vernemq
     #hostname: vernemq
     restart: unless-stopped
