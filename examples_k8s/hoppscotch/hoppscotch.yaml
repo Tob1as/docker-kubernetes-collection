@@ -234,7 +234,8 @@ metadata:
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection upgrade;
 spec:
-  ingressClassName: nginx
+  #ingressClassName: nginx
+  #ingressClassName: traefik
   tls:
   - hosts:
     - hoppscotch.example.com
@@ -244,7 +245,7 @@ spec:
     http:
       paths:
       - path: /
-        pathType: ImplementationSpecific
+        pathType: Prefix  # ImplementationSpecific or Prefix
         backend:
           service:
             name:  hoppscotch
