@@ -490,7 +490,7 @@ metadata:
 spec:
   endpoints:
   - path: /metrics
-    scheme: HTTP
+    scheme: http
     port: exporter # 9113
     targetPort: 9113
   selector:

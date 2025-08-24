@@ -182,7 +182,7 @@ spec:
       username:
         name: haproxy-stats-basic-auth
         key: user
-    scheme: HTTP
+    scheme: http
     port: stats-metrics # 8404
     targetPort: 8404
     #tlsConfig:

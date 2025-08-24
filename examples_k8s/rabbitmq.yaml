@@ -433,7 +433,7 @@ metadata:
 spec:
   endpoints:
   - path: /metrics
-    scheme: HTTP
+    scheme: http
     port: exporter # 15692
     targetPort: 15692
   selector:

@@ -279,7 +279,7 @@ metadata:
 spec:
   endpoints:
   - path: /minio/v2/metrics/cluster
-    scheme: HTTP
+    scheme: http
     port: minio # 9000
     targetPort: 9000
     #tlsConfig:
@@ -294,7 +294,7 @@ spec:
     #relabelings:
     #metricRelabelings:
   - path: /minio/v2/metrics/node
-    scheme: HTTP
+    scheme: http
     port: minio # 9000
     targetPort: 9000
     #tlsConfig:
@@ -309,7 +309,7 @@ spec:
     #relabelings:
     #metricRelabelings:
   - path: /minio/v2/metrics/bucket
-    scheme: HTTP
+    scheme: http
     port: minio # 9000
     targetPort: 9000
     #tlsConfig:
