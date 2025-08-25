@@ -428,6 +428,7 @@ metadata:
     # Traefik
     traefik.ingress.kubernetes.io/router.middlewares: 'default-basic-auth@kubernetescrd,default-https-redirectscheme@kubernetescrd'
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/service.serversscheme: http
 spec:
   #ingressClassName: nginx # nginx or traefik
   tls:
