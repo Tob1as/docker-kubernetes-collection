@@ -425,7 +425,9 @@ metadata:
     nginx.ingress.kubernetes.io/auth-type: basic
     nginx.ingress.kubernetes.io/auth-secret: basic-auth
     nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - VerneMQ'
+    # Traefik
     traefik.ingress.kubernetes.io/router.middlewares: 'default-basic-auth@kubernetescrd,default-https-redirectscheme@kubernetescrd'
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
 spec:
   #ingressClassName: nginx # nginx or traefik
   tls:
@@ -467,8 +469,10 @@ metadata:
     ## https://cert-manager.io/docs/
     #cert-manager.io/cluster-issuer: ingress-tls-secret
     #cert-manager.io/acme-challenge-type: http01
+    # Traefik
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
 spec:
-  #ingressClassName: nginx
+  #ingressClassName: nginx # nginx or traefik
   tls:
   - hosts:
     - vernemq.example.com
