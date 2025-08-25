@@ -258,8 +258,11 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-buffer-size: 16k
     nginx.ingress.kubernetes.io/proxy-buffering: "on"
     nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
+    # Traefik
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/service.serversscheme: http
 spec:
-  #ingressClassName: nginx
+  #ingressClassName: nginx # nginx or traefik
   tls:
   - hosts:
     - auth.example.com
