@@ -39,15 +39,12 @@ services:
       - "traefik.http.routers.apt-cacher-ng-https.service=apt-cacher-ng"
       # load middlewares for routers
       #- "traefik.http.routers.apt-cacher-ng-http.middlewares=apt-cacher-ng-https"  # or use next both & blockpath-middelware
-      - "traefik.http.routers.apt-cacher-ng-http.middlewares=apt-cacher-ng-https,apt-cacher-ng-blockpath"
-      - "traefik.http.routers.apt-cacher-ng-https.middlewares=apt-cacher-ng-blockpath"
+      - "traefik.http.routers.apt-cacher-ng-http.middlewares=apt-cacher-ng-https"
+      #- "traefik.http.routers.apt-cacher-ng-https.middlewares="
       # http to https redirect
       - "traefik.http.middlewares.apt-cacher-ng-https.redirectscheme.scheme=https"
       - "traefik.http.middlewares.apt-cacher-ng-https.redirectscheme.permanent=true"
       - "traefik.http.middlewares.apt-cacher-ng-https.redirectscheme.port=443"
-      
-      # "acng-report" deny from external, need plugin: https://plugins.traefik.io/plugins/62947354108ecc83915d778e/block-path
-      - "traefik.http.middlewares.apt-cacher-ng-blockpath.plugin.blockpath.Regex=/acng-report.html"
 
 networks:
   default:
