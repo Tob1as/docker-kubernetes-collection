@@ -3,7 +3,7 @@
 version: '2.4' 
 services:
 
-  # Docker Registry - for storing and distributing Docker images
+  # Docker Registry - for storing and distributing container images
   # https://distribution.github.io/distribution/ & https://github.com/distribution/distribution
   # https://hub.docker.com/_/registry & https://github.com/distribution/distribution-library-image
   # Docs:
@@ -15,7 +15,7 @@ services:
   # * https://docker-registry.example.com/v2/<NAMESPACE/IMAGENAME>/tags/list
   # * https://docker-registry.example.com/v2/<NAMESPACE/IMAGENAME>/manifests/<TAG>
   docker-registry:
-    image: registry:latest # 2.8
+    image: registry:latest # 3.0  (ghcr.io/distribution/distribution:latest)
     container_name: docker-registry
     restart: unless-stopped
     #ports:
@@ -33,7 +33,7 @@ services:
       REGISTRY_HEALTH_STORAGEDRIVER_THRESHOLD: '3'
       # ADDITIONAL / OPTIONAL
       REGISTRY_STORAGE_DELETE_ENABLED: 'true'
-      #REGISTRY_PROXY_REMOTEURL: 'https://registry-1.docker.io'   # docker registries: https://registry-1.docker.io , https://ghcr.io , https://quay.io , https://registry.gitlab.com
+      #REGISTRY_PROXY_REMOTEURL: 'https://registry-1.docker.io'   # docker registries: https://registry-1.docker.io , https://dhi.io , https://ghcr.io , https://quay.io , https://registry.gitlab.com
       #REGISTRY_PROXY_USERNAME: ''
       #REGISTRY_PROXY_PASSWORD: ''
       REGISTRY_AUTH_HTPASSWD_REALM: 'basic-realm'
@@ -47,7 +47,9 @@ services:
       REGISTRY_HTTP_HEADERS_Access-Control-Allow-Credentials: '[true]'
       REGISTRY_HTTP_HEADERS_Access-Control-Allow-Headers: '[Authorization,Accept,Cache-Control]'
       REGISTRY_HTTP_HEADERS_Access-Control-Expose-Headers: '[Docker-Content-Digest]'
-      #REGISTRY_LOG_LEVEL: 'debug'
+      #REGISTRY_LOG_LEVEL: 'debug'  # default: info
+      # other
+      OTEL_TRACES_EXPORTER: 'none'
     volumes:
       - docker-registry-data:/var/lib/registry:rw
       #- ./data_docker-registry:/var/lib/registry:rw
