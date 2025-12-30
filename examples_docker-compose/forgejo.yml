@@ -12,7 +12,7 @@ services:
   # Gitea?, see: https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/gitea.yml
   # Supported architectures: amd64, arm64
   forgejo:
-    image: codeberg.org/forgejo/forgejo:10.0.0
+    image: codeberg.org/forgejo/forgejo:13
     container_name: forgejo
     restart: unless-stopped
     environment:
@@ -156,14 +156,14 @@ services:
   # * self-sign cert: https://forum.gitea.com/t/cannot-checkout-a-repository-hosted-on-a-gitea-instance-using-self-signed-certificate-server-certificate-verification-failed/7903/3
   # Examples: 
   # * docker-compose: https://code.forgejo.org/forgejo/runner/src/branch/main/examples/docker-compose/compose-forgejo-and-runner.yml
-  # * Action Workflow: https://github.com/Tob1as/docker-build-example/blob/main/.github/workflows/build_docker_images.yaml
+  # * Action Workflow: https://github.com/Tob1as/docker-build-example/
   # Run first: 
   # * mdkir ./data_forgejo-runner
-  # * docker run --entrypoint='' --rm --name forgejo-runner-config -it code.forgejo.org/forgejo/runner:6 forgejo-runner generate-config > ./data_forgejo-runner/config.yml
+  # * docker run --entrypoint='' --rm --name forgejo-runner-config -it code.forgejo.org/forgejo/runner:12 forgejo-runner generate-config > ./data_forgejo-runner/config.yml
   # * and edit or use my example: ./data_forgejo-runner/config.yml
-  # * docker run --rm --name forgejo-runner-config -it code.forgejo.org/forgejo/runner:6 forgejo-runner create-runner-file --name forgejo-runner-0 --instance https://git.example.conf --secret <RUNNER-SECRET> --connect
+  # * docker run --rm --name forgejo-runner-config -it code.forgejo.org/forgejo/runner:12 forgejo-runner create-runner-file --name forgejo-runner-0 --instance https://git.example.conf --secret <RUNNER-SECRET> --connect
   forgejo-runner:
-    image: 'code.forgejo.org/forgejo/runner:6'
+    image: code.forgejo.org/forgejo/runner:12  # or: data.forgejo.org/forgejo/runner:12
     depends_on:
       forgejo-did:
         condition: service_started  # or service_healthy
@@ -177,6 +177,7 @@ services:
     volumes:
       - ./data_forgejo-runner:/data:rw                                              # after register runner you find here .runner and .cache files
       - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro    # when need other certs (e.g.: self-signed certificate)
+      #- ./ssl/fullca.crt:/etc/ssl/certs/fullca.crt:ro                              # use when own CA Cert is need
     restart: 'unless-stopped'
     #command: '/bin/sh -c "while : ; do sleep 1 ; done ;"'
     command: /bin/sh -c "while ! nc -z forgejo-did 2376 </dev/null; do echo 'waiting for docker daemon...'; sleep 5; done; forgejo-runner --config config.yml daemon"
@@ -194,6 +195,7 @@ services:
     restart: 'unless-stopped'
     volumes:
       - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+      #- ./ssl/fullca.crt:/etc/ssl/certs/fullca.crt:ro                              # use when own CA Cert is need
     networks:
       - forgejo-runner-net
     healthcheck:
