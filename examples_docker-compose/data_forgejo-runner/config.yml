@@ -83,7 +83,7 @@ container:
   # And other options to be used when the container is started (eg, --add-host=my.forgejo.url:host-gateway).
   #options:
   options: --mount type=bind,source=/etc/ssl/certs/ca-certificates.crt,target=/etc/ssl/certs/ca-certificates.crt,readonly --add-host=dockerhost:172.17.0.1
-  #options: --mount type=bind,source=/etc/ssl/certs/ca-certificates.crt,target=/etc/ssl/certs/ca-certificates.crt,readonly --mount type=bind,source=/etc/ssl/certs/fullca.crt,target=/etc/ssl/certs/fullca.crt,readonly --add-host=dockerhost:172.17.0.1
+  #options: --mount type=bind,source=/etc/ssl/certs/ca-certificates.crt,target=/etc/ssl/certs/ca-certificates.crt,readonly --mount type=bind,source=/etc/ssl/certs/ca-chain.crt,target=/etc/ssl/certs/ca-chain.crt,readonly --add-host=dockerhost:172.17.0.1
   # The parent directory of a job's working directory.
   # If it's empty, /workspace will be used.
   workdir_parent:
@@ -99,7 +99,7 @@ container:
   #valid_volumes: []
   valid_volumes:
     - '/etc/ssl/certs/ca-certificates.crt'
-    # - '/etc/ssl/certs/fullca.crt'          # use when own CA Cert is need
+    # - '/etc/ssl/certs/ca-chain.crt'          # use when own CA Cert is need
   # overrides the docker client host with the specified one.
   # If "-" or "", an available docker host will automatically be found.
   # If "automount", an available docker host will automatically be found and mounted in the job container (e.g. /var/run/docker.sock).

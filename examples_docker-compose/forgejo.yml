@@ -63,6 +63,7 @@ services:
       - ./data_forgejo:/data:rw
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      #- /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro    # when need other certs (e.g.: self-signed certificate)
     #ports:
     #  #- "3000:3000"
     #  - "2222:22"
@@ -177,7 +178,7 @@ services:
     volumes:
       - ./data_forgejo-runner:/data:rw                                              # after register runner you find here .runner and .cache files
       - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro    # when need other certs (e.g.: self-signed certificate)
-      #- ./ssl/fullca.crt:/etc/ssl/certs/fullca.crt:ro                              # use when own CA Cert is need
+      #- ./ssl/ca-chain.crt:/etc/ssl/certs/ca-chain.crt:ro                          # use when own CA Cert is need
     restart: 'unless-stopped'
     #command: '/bin/sh -c "while : ; do sleep 1 ; done ;"'
     command: /bin/sh -c "while ! nc -z forgejo-did 2376 </dev/null; do echo 'waiting for docker daemon...'; sleep 5; done; forgejo-runner --config config.yml daemon"
@@ -195,7 +196,7 @@ services:
     restart: 'unless-stopped'
     volumes:
       - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
-      #- ./ssl/fullca.crt:/etc/ssl/certs/fullca.crt:ro                              # use when own CA Cert is need
+      #- ./ssl/ca-chain.crt:/etc/ssl/certs/ca-chain.crt:ro                          # use when own CA Cert is need
     networks:
       - forgejo-runner-net
     healthcheck:
