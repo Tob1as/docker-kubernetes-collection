@@ -2,41 +2,39 @@
 version: '2.4'
 services:
 
-  # MQTT-Explorer - MQTT Web Client Tool (wss:// and mqtt:// connections) 
+  # MQTT-Explorer - MQTT Web Client Tool (wss:// and mqtt:// connections)
+  # https://mqtt-explorer.com/
   # https://github.com/thomasnordquist/MQTT-Explorer
-  # https://hub.docker.com/r/smeagolworms4/mqtt-explorer & https://github.com/Smeagolworms4/MQTT-Explorer
-  # https://github.com/Tob1as/docker-mqtt-explorer
-  # Supported architectures: arm32v6, arm32v7, arm64v8, amd64
+  # https://github.com/thomasnordquist/MQTT-Explorer/blob/master/Dockerfile.browser
+  # https://github.com/thomasnordquist/MQTT-Explorer/blob/master/docker-compose.yml
+  # Supported architectures: arm32v7, arm64v8, amd64
   # fix permission problem before startup: "mkdir ./data_mqtt-explorer/ && chmod 777 ./data_mqtt-explorer/"
   mqtt-explorer:
-    image: smeagolworms4/mqtt-explorer:latest
-    #image: ghcr.io/tob1as/docker-mqtt-explorer:latest
+    image: ghcr.io/thomasnordquist/mqtt-explorer:latest
     container_name: mqtt-explorer
     restart: unless-stopped
     environment:
-      - HTTP_USER=admin
-      - HTTP_PASSWORD=passw0rd
-    #  - HTTP_PORT=4000
-    #  - CONFIG_PATH=/mqtt-explorer/config
-    #  - SSL_KEY_PATH=
-    #  - SSL_CERT_PATH=
-    #  - INITIAL_CONFIG= # Initial json configuration for start
-    #  - NODE_EXTRA_CA_CERTS=/ssl/ca.crt
+      - MQTT_EXPLORER_USERNAME=admin
+      - MQTT_EXPLORER_PASSWORD=changeme
+      # Uncomment to disable authentication (use only behind a secure proxy!)
+      #- MQTT_EXPLORER_SKIP_AUTH=true
+      # SSL (example: own CA certificate)
+      #- NODE_EXTRA_CA_CERTS=/ssl/ca.crt
     volumes:
-      - ./data_mqtt-explorer:/mqtt-explorer/config:rw
+      - ./data_mqtt-explorer:/app/data:rw
     #  - ./ssl:/ssl:ro
     #ports:
-    #  - 4000:4000/tcp
-    healthcheck:
-      test: ["CMD-SHELL", "nc -nzv -w 3 127.0.0.1 4000 || exit 1"]
-      #start_period: 30s
-      interval: 60s
-      timeout: 5s
-      retries: 3
+    #  - 3000:3000/tcp
+    #healthcheck:
+    #  test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+    #  interval: 30s
+    #  timeout: 10s
+    #  retries: 3
+    #  start_period: 40s
     labels:
       - "traefik.enable=true"
       #- "traefik.docker.network=mynetwork"
-      - "traefik.http.services.mqtt-explorer.loadbalancer.server.port=4000"
+      - "traefik.http.services.mqtt-explorer.loadbalancer.server.port=3000"
       - "traefik.http.services.mqtt-explorer.loadbalancer.server.scheme=http"  # when "https" then set "--serversTransport.insecureSkipVerify=true" for traefik
       # http
       - "traefik.http.routers.mqtt-explorer-http.rule=Host(`mqtt-explorer.example.com`)"
