@@ -49,3 +49,5 @@ spec:
           default: true
         exposedPort: 8883
         protocol: TCP
+    #deployment:
+    #  kind: DaemonSet
