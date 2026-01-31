@@ -20,7 +20,7 @@ spec:
   valuesContent: |-
     #image:
     #  repository: rancher/mirrored-library-traefik
-    #  tag: 3.3.6
+    #  tag: 3.5.1
     #  pullPolicy: IfNotPresent
     env:
     - name: TZ
@@ -31,6 +31,11 @@ spec:
     - "--serversTransport.insecureSkipVerify=true"
     - '--api.insecure=true'
     #- "--log.level=debug"
+    - "--entrypoints.web.forwardedheaders.trustedips=10.0.0.0/8"
+    - "--entrypoints.websecure.forwardedheaders.trustedips=10.0.0.0/8"
+    service:
+      spec:
+        externalTrafficPolicy: Local
     ports:
       mqtt:
         port: 1883
