@@ -71,6 +71,9 @@ services:
       #- "--entryPoints.ping.address=:8082"
       - "--ping=true"
       - "--ping.entryPoint=metrics"
+
+      #- "--global.checknewversion=false"
+      #- "--global.sendanonymoususage=false"
       
       # Traefik Plugins https://plugins.traefik.io/install
       # https://plugins.traefik.io/plugins/62947307108ecc83915d7783/rewrite-body
@@ -94,12 +97,14 @@ services:
       ##- "traefik.http.routers.traefik-http.rule=Host(`traefik.example.com`) && PathPrefix(`/traefik`)"
       #- "traefik.http.routers.traefik-http.entrypoints=web"
       #- "traefik.http.routers.traefik-http.service=api@internal"
+      ##- "traefik.http.routers.traefik-http.priority=1000"
       # https
       - "traefik.http.routers.traefik-https.tls=true"
       - "traefik.http.routers.traefik-https.rule=Host(`traefik.example.com`) && PathPrefix(`/`)"
       #- "traefik.http.routers.traefik-https.rule=Host(`traefik.example.com`) && PathPrefix(`/traefik`)"
       - "traefik.http.routers.traefik-https.entrypoints=websecure"
       - "traefik.http.routers.traefik-https.service=api@internal"
+      #- "traefik.http.routers.traefik-https.priority=1000"
       
       # Routes loads Middlewares
       #- "traefik.http.routers.traefik-http.middlewares=traefik-auth@docker"          # use this (for auth) for http
