@@ -17,7 +17,12 @@ services:
     volumes:
       - ./data_minecraft-bedrock:/data:rw
     ports:
-      - 19132:19132/udp
+      # NetherNet (default since Bedrock 1.26.50):
+      - 19132:19132/tcp               # signaling + status (GET /v1/join), IPv4 + IPv6
+      - 19140-19159:19140-19159/udp   # gameplay, one port per player (see MAX_PLAYERS and SERVER_UDP_PORTS)
+      # RakNet (legacy, only with TRANSPORT: raknet):
+      #- 19132:19132/udp
+      #- 19133:19133/udp
     #mem_limit: 2g
     #mem_reservation: 256m
     #cpus: 2.0
@@ -29,6 +34,10 @@ services:
       #GID: "1000"
       #PACKAGE_BACKUP_KEEP: "2"
       SERVER_NAME: "Minecraft Bedrock Server"
+      # https://github.com/itzg/docker-minecraft-bedrock-server#nethernet
+      TRANSPORT: "nethernet"  # nethernet (default) or raknet (legacy, no longer supported by new Bedrock versions)
+      SERVER_UDP_PORTS: "152.53.178.209:19140-19159:19140-19159"  # public IP:public ports:local ports, or "<public_ipv4>:19140-19159:19140-19159"
+      #ENABLE_BDS_V6BIND_FIX: "true"  # only used with TRANSPORT=raknet
       #SERVER_PORT: "19132"
       #SERVER_PORT_V6: "19132"
       GAMEMODE: "survival"   # Options: survival, creative, adventure
@@ -57,6 +66,9 @@ services:
       OPS: "xuid1,xuid2"    # XUID: https://cxkes.me/xbox/xuid (Decimal)
       #MEMBERS: "xuid3,xuid4"
       #VISITORS: "xuid7,xuid6"
+
+# Minecraft Java & Bedrock server status as JSON via HTTP (Python), with player avatars and html examples.
+# https://github.com/Tob1as/mcstatus-httpd
 
 networks:
   default:
