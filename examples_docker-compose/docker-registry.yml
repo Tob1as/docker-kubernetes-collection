@@ -3,7 +3,7 @@
 version: '2.4' 
 services:
 
-  # Docker Registry - for storing and distributing container images
+  # Distribution Registry - for storing and distributing container images
   # https://distribution.github.io/distribution/ & https://github.com/distribution/distribution
   # https://hub.docker.com/_/registry & https://github.com/distribution/distribution-library-image
   # Docs:
@@ -15,7 +15,7 @@ services:
   # * https://docker-registry.example.com/v2/<NAMESPACE/IMAGENAME>/tags/list
   # * https://docker-registry.example.com/v2/<NAMESPACE/IMAGENAME>/manifests/<TAG>
   docker-registry:
-    image: registry:latest # 3.0  (ghcr.io/distribution/distribution:latest)
+    image: docker.io/library/registry:latest # 3.0  (ghcr.io/distribution/distribution:latest)
     container_name: docker-registry
     restart: unless-stopped
     #ports:

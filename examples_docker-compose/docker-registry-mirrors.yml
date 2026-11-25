@@ -1,0 +1,190 @@
+# docker-compose -f docker-registry-mirrors.yml -p docker-registry-mirrors up -d
+
+# Docker Registry Mirrors:
+# Pull-through cache mirrors for Docker Hub, Docker Hardened Images (dhi.io), quay.io, ghcr.io and registry.gitlab.com
+# The registry (distribution) supports only ONE upstream (REGISTRY_PROXY_REMOTEURL) per instance,
+# therefore one container per upstream; common settings are shared via YAML anchors.
+
+# https://distribution.github.io/distribution/ & https://github.com/distribution/distribution
+# https://hub.docker.com/_/registry & https://github.com/distribution/distribution-library-image
+
+# for own registry see: https://github.com/Tob1as/docker-kubernetes-collection/blob/master/examples_docker-compose/docker-registry.yml
+
+version: '2.4' 
+
+x-registry-env: &registry-env
+  # DEFAULT
+  REGISTRY_LOG_FIELDS_SERVICE: 'registry'
+  REGISTRY_STORAGE_CACHE_BLOBDESCRIPTOR: 'inmemory'
+  REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: '/var/lib/registry'
+  REGISTRY_HTTP_ADDR: ':5000'
+  REGISTRY_HTTP_HEADERS_X-Content-Type-Options: '[nosniff]'
+  REGISTRY_HEALTH_STORAGEDRIVER_ENABLED: 'true'
+  REGISTRY_HEALTH_STORAGEDRIVER_INTERVAL: '10s'
+  REGISTRY_HEALTH_STORAGEDRIVER_THRESHOLD: '3'
+  # ADDITIONAL / OPTIONAL
+  REGISTRY_LOG_LEVEL: 'info'
+  REGISTRY_STORAGE_DELETE_ENABLED: 'true'
+  REGISTRY_MAINTENANCE_READONLY_ENABLED: 'false'
+  OTEL_TRACES_EXPORTER: 'none'
+  # OPTIONAL AUTH (native registry htpasswd, alternative to Traefik basic auth below - use only one of both):
+  # To enable: uncomment these 3 lines + the "# AUTH (native)" volume line of each service below.
+  # htpasswd (bcrypt, one file for all mirrors): docker run --rm httpd:2.4-alpine htpasswd -Bbn <user> <password> > htpasswd
+  #REGISTRY_AUTH: 'htpasswd'
+  #REGISTRY_AUTH_HTPASSWD_REALM: 'registry-mirror'
+  #REGISTRY_AUTH_HTPASSWD_PATH: '/auth/htpasswd'
+
+x-registry: &registry
+  image: docker.io/library/registry:latest # 3.0  (ghcr.io/distribution/distribution:latest)
+  restart: unless-stopped
+  healthcheck:
+    # "/" instead of "/v2/": also works with native auth (/v2/ returns 401 then)
+    test: wget --quiet --tries=1 --spider http://localhost:5000/ || exit 1
+    start_period: 30s
+    interval: 60s
+    timeout: 5s
+    retries: 3
+
+x-traefik-labels: &traefik-labels
+  traefik.enable: 'true'
+  # http to https redirect (shared by all routers below)
+  traefik.http.middlewares.registry-mirror-https.redirectscheme.scheme: 'https'
+  # OPTIONAL AUTH (Traefik basic auth, alternative to native registry auth above - use only one of both):
+  # To enable: uncomment this line + the "# AUTH (Traefik)" line of each service below.
+  # Hash (bcrypt, "$" escaped as "$$"): docker run --rm httpd:2.4-alpine htpasswd -Bbn <user> <password> | sed -e 's/\$/\$\$/g'
+  # Multiple users: comma separated, e.g. 'user1:$$2y$$05$$...,user2:$$2y$$05$$...'
+  #traefik.http.middlewares.registry-mirror-auth.basicauth.users: 'mirror:$$2y$$05$$REPLACE_WITH_BCRYPT_HASH'
+
+services:
+
+  docker-hub-registry:
+    <<: *registry
+    container_name: docker-hub-registry
+    environment:
+      <<: *registry-env
+      REGISTRY_PROXY_REMOTEURL: 'https://registry-1.docker.io'
+      #REGISTRY_PROXY_USERNAME: '${DOCKERHUB_USERNAME:?set DOCKERHUB_USERNAME in .env}'
+      #REGISTRY_PROXY_PASSWORD: '${DOCKERHUB_PASSWORD:?set DOCKERHUB_PASSWORD in .env}'
+    volumes:
+      - docker-hub-registry-data:/var/lib/registry:rw
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+      #- ./htpasswd:/auth/htpasswd:ro  # AUTH (native)
+    labels:
+      <<: *traefik-labels
+      traefik.http.services.docker-hub-registry.loadbalancer.server.port: '5000'
+      traefik.http.routers.docker-hub-registry-http.rule: 'Host(`docker-hub.registry.example.com`) && PathPrefix(`/v2`)'
+      traefik.http.routers.docker-hub-registry-http.entrypoints: 'web'
+      traefik.http.routers.docker-hub-registry-http.service: 'docker-hub-registry'
+      traefik.http.routers.docker-hub-registry-http.middlewares: 'registry-mirror-https'
+      traefik.http.routers.docker-hub-registry-https.tls: 'true'
+      traefik.http.routers.docker-hub-registry-https.rule: 'Host(`docker-hub.registry.example.com`) && PathPrefix(`/v2`)'
+      traefik.http.routers.docker-hub-registry-https.entrypoints: 'websecure'
+      traefik.http.routers.docker-hub-registry-https.service: 'docker-hub-registry'
+      #traefik.http.routers.docker-hub-registry-https.middlewares: 'registry-mirror-auth'  # AUTH (Traefik)
+
+  dhi-registry:
+    <<: *registry
+    container_name: dhi-registry
+    environment:
+      <<: *registry-env
+      REGISTRY_PROXY_REMOTEURL: 'https://dhi.io'  # https://www.docker.com/blog/docker-hardened-images-for-every-developer/
+      # same Docker account as Docker Hub (use separate variables here if different)
+      #REGISTRY_PROXY_USERNAME: '${DOCKERHUB_USERNAME:?set DOCKERHUB_USERNAME in .env}'
+      #REGISTRY_PROXY_PASSWORD: '${DOCKERHUB_PASSWORD:?set DOCKERHUB_PASSWORD in .env}'
+    volumes:
+      - dhi-registry-data:/var/lib/registry:rw
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+      #- ./htpasswd:/auth/htpasswd:ro  # AUTH (native)
+    labels:
+      <<: *traefik-labels
+      traefik.http.services.dhi-registry.loadbalancer.server.port: '5000'
+      traefik.http.routers.dhi-registry-http.rule: 'Host(`dhi.registry.example.com`) && PathPrefix(`/v2`)'
+      traefik.http.routers.dhi-registry-http.entrypoints: 'web'
+      traefik.http.routers.dhi-registry-http.service: 'dhi-registry'
+      traefik.http.routers.dhi-registry-http.middlewares: 'registry-mirror-https'
+      traefik.http.routers.dhi-registry-https.tls: 'true'
+      traefik.http.routers.dhi-registry-https.rule: 'Host(`dhi.registry.example.com`) && PathPrefix(`/v2`)'
+      traefik.http.routers.dhi-registry-https.entrypoints: 'websecure'
+      traefik.http.routers.dhi-registry-https.service: 'dhi-registry'
+      #traefik.http.routers.dhi-registry-https.middlewares: 'registry-mirror-auth'  # AUTH (Traefik)
+
+  quay-registry:
+    <<: *registry
+    container_name: quay-registry
+    environment:
+      <<: *registry-env
+      REGISTRY_PROXY_REMOTEURL: 'https://quay.io'
+    volumes:
+      - quay-registry-data:/var/lib/registry:rw
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+      #- ./htpasswd:/auth/htpasswd:ro  # AUTH (native)
+    labels:
+      <<: *traefik-labels
+      traefik.http.services.quay-registry.loadbalancer.server.port: '5000'
+      traefik.http.routers.quay-registry-http.rule: 'Host(`quay.registry.example.com`) && PathPrefix(`/v2`)'
+      traefik.http.routers.quay-registry-http.entrypoints: 'web'
+      traefik.http.routers.quay-registry-http.service: 'quay-registry'
+      traefik.http.routers.quay-registry-http.middlewares: 'registry-mirror-https'
+      traefik.http.routers.quay-registry-https.tls: 'true'
+      traefik.http.routers.quay-registry-https.rule: 'Host(`quay.registry.example.com`) && PathPrefix(`/v2`)'
+      traefik.http.routers.quay-registry-https.entrypoints: 'websecure'
+      traefik.http.routers.quay-registry-https.service: 'quay-registry'
+      #traefik.http.routers.quay-registry-https.middlewares: 'registry-mirror-auth'  # AUTH (Traefik)
+
+  ghcr-registry:
+    <<: *registry
+    container_name: ghcr-registry
+    environment:
+      <<: *registry-env
+      REGISTRY_PROXY_REMOTEURL: 'https://ghcr.io'
+    volumes:
+      - ghcr-registry-data:/var/lib/registry:rw
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+      #- ./htpasswd:/auth/htpasswd:ro  # AUTH (native)
+    labels:
+      <<: *traefik-labels
+      traefik.http.services.ghcr-registry.loadbalancer.server.port: '5000'
+      traefik.http.routers.ghcr-registry-http.rule: 'Host(`ghcr.registry.example.com`) && PathPrefix(`/v2`)'
+      traefik.http.routers.ghcr-registry-http.entrypoints: 'web'
+      traefik.http.routers.ghcr-registry-http.service: 'ghcr-registry'
+      traefik.http.routers.ghcr-registry-http.middlewares: 'registry-mirror-https'
+      traefik.http.routers.ghcr-registry-https.tls: 'true'
+      traefik.http.routers.ghcr-registry-https.rule: 'Host(`ghcr.registry.example.com`) && PathPrefix(`/v2`)'
+      traefik.http.routers.ghcr-registry-https.entrypoints: 'websecure'
+      traefik.http.routers.ghcr-registry-https.service: 'ghcr-registry'
+      #traefik.http.routers.ghcr-registry-https.middlewares: 'registry-mirror-auth'  # AUTH (Traefik)
+
+  gitlab-registry:
+    <<: *registry
+    container_name: gitlab-registry
+    environment:
+      <<: *registry-env
+      REGISTRY_PROXY_REMOTEURL: 'https://registry.gitlab.com'
+    volumes:
+      - gitlab-registry-data:/var/lib/registry:rw
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
+      #- ./htpasswd:/auth/htpasswd:ro  # AUTH (native)
+    labels:
+      <<: *traefik-labels
+      traefik.http.services.gitlab-registry.loadbalancer.server.port: '5000'
+      traefik.http.routers.gitlab-registry-http.rule: 'Host(`gitlab.registry.example.com`) && PathPrefix(`/v2`)'
+      traefik.http.routers.gitlab-registry-http.entrypoints: 'web'
+      traefik.http.routers.gitlab-registry-http.service: 'gitlab-registry'
+      traefik.http.routers.gitlab-registry-http.middlewares: 'registry-mirror-https'
+      traefik.http.routers.gitlab-registry-https.tls: 'true'
+      traefik.http.routers.gitlab-registry-https.rule: 'Host(`gitlab.registry.example.com`) && PathPrefix(`/v2`)'
+      traefik.http.routers.gitlab-registry-https.entrypoints: 'websecure'
+      traefik.http.routers.gitlab-registry-https.service: 'gitlab-registry'
+      #traefik.http.routers.gitlab-registry-https.middlewares: 'registry-mirror-auth'  # AUTH (Traefik)
+
+volumes:
+  docker-hub-registry-data:
+  dhi-registry-data:
+  quay-registry-data:
+  ghcr-registry-data:
+  gitlab-registry-data:
+
+networks:
+  default:
+    external: true
+    name: mynetwork
