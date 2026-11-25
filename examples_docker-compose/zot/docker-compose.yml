@@ -1,0 +1,76 @@
+# zot - ONE registry: pull-through cache (mirror) for several upstreams + own registry, with Web UI and CVE scanning
+# https://zotregistry.dev/ & https://github.com/project-zot/zot
+#
+# Setup:
+#   cp credentials.example.json credentials.json   # Docker Hub username + PAT (for registry-1.docker.io and dhi.io)
+#   create htpasswd with users admin, developer, ci, ... (see config.yaml -> http.auth)
+#   docker compose up -d
+#   local test instance (port 5080, no Traefik): docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
+#
+# Web UI: https://cr.example.com/   (replace cr.example.com with your hostname, also in the Traefik labels)
+#
+# Mirror pull: <host>/<upstream>/<repo>:<tag>, e.g.
+#   docker pull cr.example.com/docker.io/library/alpine:latest   (login required; official images need "library/")
+#   docker pull cr.example.com/dhi.io/alpine-base:3.24           (login required)
+#   docker pull cr.example.com/quay.io/prometheus/prometheus:latest
+#   docker pull cr.example.com/ghcr.io/project-zot/zot:latest
+#   docker pull cr.example.com/registry.gitlab.com/<group>/<project>:<tag>
+# Own registry: <host>/(<namespace>/)<repo>:<tag> (pull: every user, push: group "developers")
+#
+# NOTE Docker CLI: always needs "docker login <host>" (also for the anonymous mirrors quay/ghcr/gitlab):
+#   zot answers the Docker client on /v2/ with 401 when anonymous and login-only repos are mixed,
+#   otherwise Docker would never send credentials. Other clients (containerd/Kubernetes, podman, skopeo, crane)
+#   can pull the anonymous mirrors without login.
+version: '2.4'
+services:
+
+  zot-registry:
+    image: ghcr.io/project-zot/zot:latest   # full build incl. extensions (sync, search/cve, ui); NOT zot-minimal
+    container_name: zot-registry
+    restart: unless-stopped
+    command: ["serve", "/etc/zot/config.yaml"]
+    #command: ["serve", "/etc/zot/config.json"]
+    #ports:
+    #  - "5000:5000"
+    volumes:
+      - zot-registry-data:/var/lib/registry:rw
+      - ./config.yaml:/etc/zot/config.yaml:ro
+      #- ./config.json:/etc/zot/config.json:ro
+      - ./credentials.json:/etc/zot/credentials.json:ro
+      - ./htpasswd:/etc/zot/htpasswd:ro
+    healthcheck:
+      # distroless image (no shell/wget); binary name depends on arch: zot-linux-amd64 / zot-linux-arm64
+      test: ["CMD", "/usr/local/bin/zot-linux-amd64", "healthcheck", "/etc/zot/config.yaml"]
+      start_period: 10s
+      interval: 60s
+      timeout: 5s
+      retries: 3
+    labels:
+      # Explicitly tell Traefik to expose this container
+      - "traefik.enable=true"
+      #- "traefik.docker.network=mynetwork"  # traefik
+      # Tell Traefik to use the port 5000 to connect to zot-registry container
+      - "traefik.http.services.zot-registry.loadbalancer.server.port=5000"
+      # http (whole host, not only /v2: Web UI runs on /)
+      - "traefik.http.routers.zot-registry-http.rule=Host(`cr.example.com`)"
+      - "traefik.http.routers.zot-registry-http.entrypoints=web"
+      - "traefik.http.routers.zot-registry-http.service=zot-registry"
+      # https
+      - "traefik.http.routers.zot-registry-https.tls=true"
+      - "traefik.http.routers.zot-registry-https.rule=Host(`cr.example.com`)"
+      - "traefik.http.routers.zot-registry-https.entrypoints=websecure"
+      - "traefik.http.routers.zot-registry-https.service=zot-registry"
+      # load middlewares for routes
+      - "traefik.http.routers.zot-registry-http.middlewares=zot-registry-https"
+      # http to https redirect
+      - "traefik.http.middlewares.zot-registry-https.redirectscheme.scheme=https"
+      # No Traefik basic auth here: zot does authentication itself (htpasswd + accessControl in config.yaml)
+
+volumes:
+  zot-registry-data:
+
+networks:
+  default:
+    # external Docker network shared with Traefik -> adjust to your setup
+    external: true
+    name: mynetwork  # traefik

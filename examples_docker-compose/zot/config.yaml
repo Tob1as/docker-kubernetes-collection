@@ -1,0 +1,186 @@
+# zot config (YAML instead of JSON, so optional parts can be commented out)
+# https://zotregistry.dev/latest/admin-guide/admin-configuration/
+# Check: docker run --rm -v ./config.yaml:/etc/zot/config.yaml:ro ghcr.io/project-zot/zot:latest verify /etc/zot/config.yaml
+distSpecVersion: "1.1.1"
+
+storage:
+  rootDirectory: /var/lib/registry
+  dedupe: true
+  gc: true      # GC + retention run every gcInterval (default 1h), unreferenced blobs removed after gcDelay (default 1h)
+
+  # Retention: delete tags that were neither pulled nor pushed (mirror: synced) within the period.
+  # - per repo the FIRST policy whose glob matches applies; repos without policy are never touched
+  # - per tag the FIRST keepTags entry whose patterns match applies (regex, NOT anchored -> use ^...$;
+  #   no patterns = all tags); within an entry: kept if ANY rule matches (pulledWithin OR pushedWithin)
+  # - Go durations, no days/months: 3 months = 2160h (90 d), 12 months = 8760h (365 d)
+  # - deleted mirror images are fetched again from upstream on the next pull
+  # - "pulled" = manifest downloaded (GET). Clients that already have the image locally only send HEAD
+  #   -> NOT counted (tested). An image used daily from the node cache still expires after push + period!
+  # - log: "module":"retention" ... "decision":"delete"/"keep"; dryRun: true = only log, delete nothing
+  retention:
+    dryRun: false
+    delay: 24h          # untagged manifests and referrers without subject: deleted only if older than this
+    policies:
+      # mirrors: 3 months (every sync destination below must be listed here, otherwise "**" applies)
+      - repositories: ["docker.io/**", "dhi.io/**", "quay.io/**", "ghcr.io/**", "registry.gitlab.com/**"]
+        deleteReferrers: true
+        deleteUntagged: true
+        keepTags:
+          - pulledWithin: 2160h
+            pushedWithin: 2160h
+
+      # own registry, exceptions: image:tag kept forever -> own policy per repo BEFORE "**"
+      # (only the first matching policy applies -> the 12 month rule must be repeated here)
+      # - repositories: ["myteam/myapp"]
+      #   deleteReferrers: true
+      #   deleteUntagged: true
+      #   keepTags:
+      #     - patterns: ['^1\.0$', '^stable$']   # these tags: kept forever
+      #     - pulledWithin: 8760h                # all other tags of this repo: 12 months
+      #       pushedWithin: 8760h
+      #       mostRecentlyPushedCount: 3
+
+      # own registry: 12 months
+      - repositories: ["**"]
+        deleteReferrers: true
+        deleteUntagged: true
+        keepTags:
+          - pulledWithin: 8760h
+            pushedWithin: 8760h
+            mostRecentlyPushedCount: 3   # always keep the 3 newest tags per repo (OR rule)
+            # mostRecentlyPulledCount: 3   # keep the 3 most RECENTLY downloaded tags (not most popular; HEAD not counted;
+            #                              # if fewer were ever pulled, filled up with unpulled tags by name)
+
+http:
+  address: 0.0.0.0
+  port: "5000"
+  compat: [docker2s2]   # keep Docker media types -> same digests as upstream
+
+  # Users: htpasswd (bcrypt), one line per user, e.g.:
+  #   docker run --rm httpd:2.4-alpine htpasswd -Bbn admin <password>     >  htpasswd
+  #   docker run --rm httpd:2.4-alpine htpasswd -Bbn developer <password> >> htpasswd
+  #   docker run --rm httpd:2.4-alpine htpasswd -Bbn ci <password>        >> htpasswd
+  #   docker run --rm httpd:2.4-alpine htpasswd -Bbn reader <password>    >> htpasswd
+  #   docker run --rm httpd:2.4-alpine htpasswd -Bbn prometheus <password> >> htpasswd   # metrics scraper
+  #   docker run --rm httpd:2.4-alpine htpasswd -Bbn prefetch <password>   >> htpasswd   # prefetch-platforms.sh (read only)
+  # Changes in htpasswd need a restart of zot.
+  auth:
+    htpasswd:
+      path: /etc/zot/htpasswd
+    failDelay: 5
+
+  # Policy:
+  # - own registry (all repos that are NOT a mirror path): pull = every logged-in user, push/delete = group "developers"
+  # - mirrors: read-only; docker.io + dhi.io only with login (they use our Docker account -> private images),
+  #   quay.io, ghcr.io, registry.gitlab.com also anonymous
+  # - admin: everything, also on the mirrors
+  # IMPORTANT: every sync "destination" below needs its own read-only entry here,
+  #            otherwise "**" (own registry) applies and the mirror path becomes writable for developers!
+  accessControl:
+    groups:
+      admins:
+        users: [admin]
+      developers:
+        users: [developer, ci]
+    repositories:
+      # own registry
+      "**":
+        defaultPolicy: [read]
+        policies:
+          - groups: [developers]
+            actions: [read, create, update, delete]
+      # mirrors with our Docker account: login required
+      "docker.io/**":
+        #anonymousPolicy: [read]
+        defaultPolicy: [read]
+      "dhi.io/**":
+        #anonymousPolicy: [read]
+        defaultPolicy: [read]
+      # public mirrors: also anonymous
+      "quay.io/**":
+        anonymousPolicy: [read]
+        defaultPolicy: [read]
+      "ghcr.io/**":
+        anonymousPolicy: [read]
+        defaultPolicy: [read]
+      "registry.gitlab.com/**":
+        anonymousPolicy: [read]
+        defaultPolicy: [read]
+    adminPolicy:
+      # users can also be specified directly, but we are using groups instead
+      #users: [admin]
+      groups: [admins]
+      actions: [read, create, update, delete]
+    # Prometheus endpoint /metrics: only these (logged-in) users, all others get 403/401
+    # (only "users", no groups possible; anonymous scraping would be: anonymousPolicy: [read])
+    metrics:
+      users: [prometheus, admin]
+
+log:
+  level: info
+
+extensions:
+  # Search (GraphQL API) - required for UI and CVE scanning
+  search:
+    enable: true
+    # CVE scanning with Trivy: DB update every updateInterval (min. 2h), all images are scanned
+    # automatically in the background (new/unscanned images every 15 min, all again after each DB update).
+    # Results: UI (per image/tag) or GraphQL /v2/_zot/ext/search. DB stored in <rootDirectory>/_trivy.
+    cve:
+      updateInterval: 24h
+      trivy:
+        # Only ONE source possible (no fallback list). Default would be ghcr.io (pull rate limits).
+        # Alternatives: public.ecr.aws/aquasecurity/trivy-db + public.ecr.aws/aquasecurity/trivy-java-db
+        #               ghcr.io/aquasecurity/trivy-db       + ghcr.io/aquasecurity/trivy-java-db
+        dbRepository: mirror.gcr.io/aquasec/trivy-db
+        javaDBRepository: mirror.gcr.io/aquasec/trivy-java-db
+
+  # Web UI at https://<host>/ (login with htpasswd user; shows only repos the user may read)
+  ui:
+    enable: true
+
+  # Prometheus metrics at https://<host>/metrics (access: http.accessControl.metrics)
+  metrics:
+    enable: true
+    prometheus:
+      path: /metrics
+
+  sync:
+    enable: true
+    credentialsFile: /etc/zot/credentials.json
+    # onDemand: image is fetched on first pull. A TAG (e.g. latest) is checked against upstream
+    # on EVERY pull (manifestCheckInterval default 0) -> pulls always get the current upstream version.
+    # (manifestCheckInterval: 1h would only check once per hour per tag -> fewer upstream requests)
+    # Periodic sync (pollInterval) is NOT usable for these upstreams: zot first lists ALL repos of the
+    # upstream (/v2/_catalog), which Docker Hub & co. deny ("failed to list repositories ... unauthorized").
+    registries:
+      - urls: ["https://registry-1.docker.io"]
+        onDemand: true
+        tlsVerify: true
+        content:
+          - prefix: "**"
+            destination: /docker.io
+      - urls: ["https://dhi.io"]
+        onDemand: true
+        tlsVerify: true
+        content:
+          - prefix: "**"
+            destination: /dhi.io
+      - urls: ["https://quay.io"]
+        onDemand: true
+        tlsVerify: true
+        content:
+          - prefix: "**"
+            destination: /quay.io
+      - urls: ["https://ghcr.io"]
+        onDemand: true
+        tlsVerify: true
+        content:
+          - prefix: "**"
+            destination: /ghcr.io
+      - urls: ["https://registry.gitlab.com"]
+        onDemand: true
+        tlsVerify: true
+        content:
+          - prefix: "**"
+            destination: /registry.gitlab.com

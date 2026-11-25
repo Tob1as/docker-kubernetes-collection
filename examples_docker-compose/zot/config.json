@@ -1,0 +1,154 @@
+{
+  "distSpecVersion": "1.1.1",
+  "storage": {
+    "rootDirectory": "/var/lib/registry",
+    "dedupe": true,
+    "gc": true,
+    "retention": {
+      "dryRun": false,
+      "delay": "24h",
+      "policies": [
+        {
+          "repositories": ["docker.io/**", "dhi.io/**", "quay.io/**", "ghcr.io/**", "registry.gitlab.com/**"],
+          "deleteReferrers": true,
+          "deleteUntagged": true,
+          "keepTags": [
+            {
+              "pulledWithin": "2160h",
+              "pushedWithin": "2160h"
+            }
+          ]
+        },
+        {
+          "repositories": ["**"],
+          "deleteReferrers": true,
+          "deleteUntagged": true,
+          "keepTags": [
+            {
+              "pulledWithin": "8760h",
+              "pushedWithin": "8760h",
+              "mostRecentlyPushedCount": 3
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "http": {
+    "address": "0.0.0.0",
+    "port": "5000",
+    "compat": ["docker2s2"],
+    "auth": {
+      "htpasswd": {
+        "path": "/etc/zot/htpasswd"
+      },
+      "failDelay": 5
+    },
+    "accessControl": {
+      "groups": {
+        "admins": {
+          "users": ["admin"]
+        },
+        "developers": {
+          "users": ["developer", "ci"]
+        }
+      },
+      "repositories": {
+        "**": {
+          "defaultPolicy": ["read"],
+          "policies": [
+            {
+              "groups": ["developers"],
+              "actions": ["read", "create", "update", "delete"]
+            }
+          ]
+        },
+        "docker.io/**": {
+          "defaultPolicy": ["read"]
+        },
+        "dhi.io/**": {
+          "defaultPolicy": ["read"]
+        },
+        "quay.io/**": {
+          "anonymousPolicy": ["read"],
+          "defaultPolicy": ["read"]
+        },
+        "ghcr.io/**": {
+          "anonymousPolicy": ["read"],
+          "defaultPolicy": ["read"]
+        },
+        "registry.gitlab.com/**": {
+          "anonymousPolicy": ["read"],
+          "defaultPolicy": ["read"]
+        }
+      },
+      "adminPolicy": {
+        "groups": ["admins"],
+        "actions": ["read", "create", "update", "delete"]
+      },
+      "metrics": {
+        "users": ["prometheus", "admin"]
+      }
+    }
+  },
+  "log": {
+    "level": "info"
+  },
+  "extensions": {
+    "search": {
+      "enable": true,
+      "cve": {
+        "updateInterval": "24h",
+        "trivy": {
+          "dbRepository": "mirror.gcr.io/aquasec/trivy-db",
+          "javaDBRepository": "mirror.gcr.io/aquasec/trivy-java-db"
+        }
+      }
+    },
+    "ui": {
+      "enable": true
+    },
+    "metrics": {
+      "enable": true,
+      "prometheus": {
+        "path": "/metrics"
+      }
+    },
+    "sync": {
+      "enable": true,
+      "credentialsFile": "/etc/zot/credentials.json",
+      "registries": [
+        {
+          "urls": ["https://registry-1.docker.io"],
+          "onDemand": true,
+          "tlsVerify": true,
+          "content": [{ "prefix": "**", "destination": "/docker.io" }]
+        },
+        {
+          "urls": ["https://dhi.io"],
+          "onDemand": true,
+          "tlsVerify": true,
+          "content": [{ "prefix": "**", "destination": "/dhi.io" }]
+        },
+        {
+          "urls": ["https://quay.io"],
+          "onDemand": true,
+          "tlsVerify": true,
+          "content": [{ "prefix": "**", "destination": "/quay.io" }]
+        },
+        {
+          "urls": ["https://ghcr.io"],
+          "onDemand": true,
+          "tlsVerify": true,
+          "content": [{ "prefix": "**", "destination": "/ghcr.io" }]
+        },
+        {
+          "urls": ["https://registry.gitlab.com"],
+          "onDemand": true,
+          "tlsVerify": true,
+          "content": [{ "prefix": "**", "destination": "/registry.gitlab.com" }]
+        }
+      ]
+    }
+  }
+}

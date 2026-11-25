@@ -1,0 +1,25 @@
+# LOCAL TEST override for docker-compose.yml: local port, no Traefik, own project/volume/network
+#
+#   cd zot
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
+#   UI: http://localhost:5080   (test users: see README.md -> "Local test instance")
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml down -v   # remove incl. data
+#
+# Needs credentials.json and htpasswd in this directory (not in git), e.g. for tests:
+#   echo '{}' > credentials.json   # no upstream credentials (Docker Hub anonymous, dhi.io not usable)
+#   htpasswd with test users, see README.md
+name: zot-local
+services:
+
+  zot-registry:
+    container_name: zot-local
+    restart: "no"
+    ports:
+      - "127.0.0.1:5080:5000"
+    labels:
+      - "traefik.enable=false"
+
+networks:
+  default:
+    name: zot-local
+    external: false

@@ -3,3 +3,7 @@
 *.iml
 .vscode
 temp/
+# zot - container registry
+examples_docker-compose/zot/credentials.json
+examples_docker-compose/zot/htpasswd
+examples_docker-compose/zot/docker-compose.traefik.yml
